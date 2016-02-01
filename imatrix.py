@@ -1,41 +1,36 @@
+"""
+imatrix - 2d-numpy arrays decorated with row and column indices
+"""
+
 import csv
+import numpy
 
 
 class IMatrix:
-    def __init__(self):
-        self.row_idx = {}
-        self.col_idx = {}
-        self.values = {}
+    def __init__(self, row_index, column_index):
+        self.row_index = row_index
+        self.column_index = column_index
+        self.data = numpy.zeros((len(row_index), len(column_index)))
 
     @property
-    def rows(self):
-        return len(self.row_idx)
+    def row_count(self):
+        return len(self.row_index)
 
     @property
-    def cols(self):
-        return len(self.col_idx)
+    def column_count(self):
+        return len(self.column_index)
 
-    @property
-    def row_keys(self):
-        return self.row_idx.keys()
+    def get_row(self, row_key):
+        """ Returns the zero-based index of the row with the given key """
+        for idx, key in enumerate(self.row_index):
+            if key == row_key:
+                return idx
+        return -1
 
-    @property
-    def col_keys(self):
-        return self.col_idx.keys()
+    def get_column(self, col_key):
+        """ Returns the zero-based index of the column with the given key """
 
-    def add_row(self, row_key):
-        if row_key in self.row_idx:
-            return self.row_idx[row_key]
-        idx = len(self.row_idx)
-        self.row_idx[row_key] = idx
-        return idx
 
-    def add_col(self, col_key):
-        if col_key in self.col_idx:
-            return self.col_idx[col_key]
-        idx = len(self.col_idx)
-        self.col_idx[col_key] = idx
-        return idx
 
     def add_entry(self, row_key, col_key, value):
         if value is None:
