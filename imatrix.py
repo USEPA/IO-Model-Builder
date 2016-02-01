@@ -1,5 +1,5 @@
 """
-imatrix - 2d-numpy arrays decorated with row and column indices
+imatrix - 2d-numpy arrays decorated with row and column headers.
 """
 
 import csv
@@ -7,53 +7,46 @@ import numpy
 
 
 class IMatrix:
-    def __init__(self, row_index, column_index):
-        self.row_index = row_index
-        self.column_index = column_index
-        self.data = numpy.zeros((len(row_index), len(column_index)))
+    def __init__(self, row_headers, column_headers):
+        self.row_headers = row_headers
+        self.column_headers = column_headers
+        self.data = numpy.zeros((len(row_headers), len(column_headers)))
 
     @property
     def row_count(self):
-        return len(self.row_index)
+        return len(self.row_headers)
 
     @property
     def column_count(self):
-        return len(self.column_index)
+        return len(self.column_headers)
 
-    def get_row(self, row_key):
-        """ Returns the zero-based index of the row with the given key """
-        for idx, key in enumerate(self.row_index):
-            if key == row_key:
+    def get_row(self, row_header):
+        """ Returns the zero-based index of the row with the given header """
+        for idx, key in enumerate(self.row_headers):
+            if key == row_header:
                 return idx
         return -1
 
-    def get_column(self, col_key):
-        """ Returns the zero-based index of the column with the given key """
+    def get_column(self, col_header):
+        """ Returns the zero-based index of the column with the given header """
+        for idx, key in enumerate(self.column_headers):
+            if key == col_header:
+                return idx
+        return -1
 
-
-
-    def add_entry(self, row_key, col_key, value):
-        if value is None:
+    def get_value(self, row_header, col_header):
+        row = self.get_row(row_header)
+        col = self.get_column(col_header)
+        if row == -1 or col == -1:
             return 0
-        v = float(value)
-        row = self.add_row(row_key)
-        col = self.add_col(col_key)
-        if row not in self.values:
-            self.values[row] = {}
-        self.values[row][col] = v
-        return v
+        return self.data[row, col]
 
-    def get_row_key(self, row):
-        for key in self.row_idx:
-            if self.row_idx[key] == row:
-                return key
-        return None
-
-    def get_col_key(self, col):
-        for key in self.col_idx:
-            if self.col_idx[key] == col:
-                return key
-        return None
+    def set_value(self, row_header, col_header, value):
+        row = self.get_row(row_header)
+        col = self.get_column(col_header)
+        if row == -1 or col == -1:
+            return
+        self.data[row, col] = value
 
     def get_entry(self, row, col):
         r = row
@@ -166,10 +159,32 @@ class IMatrix:
                 first_row = False
 
 
-def read_sparse_csv(file_path):
-    m = IMatrix()
+class HeaderIndex:
+
+    def __init__(self, values=[]):
+        self.
+
+
+def read_file(file_path):
+    is_dense = False
+    row_headers = []
+    col_headers = []
     with open(file_path, 'r', newline='\n') as f:
         reader = csv.reader(f)
+        i = 0
         for row in reader:
-            m.add_entry(row[0], row[1], row[2])
-    return m
+            row_head = row[0].strip()
+            if i == 0 and row_head == '':
+                is_dense = True
+                for j in range(1, len(row)):
+                    col_head = row[j].strip()
+                    if col_head not in col_headers:
+                        col_headers.append(col_head)
+                continue
+            if row_head not in row_headers:
+
+            if is_dense:
+                pass
+            i += 1
+
+
