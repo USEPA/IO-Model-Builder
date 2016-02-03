@@ -7,10 +7,10 @@ import numpy
 
 
 class IMatrix:
-    def __init__(self, row_headers, column_headers):
-        self.row_headers = row_headers
-        self.column_headers = column_headers
-        self.data = numpy.zeros((len(row_headers), len(column_headers)))
+    def __init__(self, row_idx, col_idx):
+        self.row_idx = row_idx
+        self.col_idx = col_idx
+        self.data = numpy.zeros((len(row_idx), len(col_idx)))
 
     @property
     def row_count(self):
@@ -161,8 +161,28 @@ class IMatrix:
 
 class HeaderIndex:
 
-    def __init__(self, values=[]):
-        self.
+    def __init__(self, headers=[]):
+        self.headers = headers
+        self.idx_map = {}
+        for header in headers:
+            self.idx_map[header] = len(self.idx_map)
+
+    def get_idx(self, header):
+        """
+        Get the matrix index of the given header or -1 if the given header is
+        not contained in this index.
+        """
+        return self.idx_map[header] if header in self.idx_map else -1
+
+    def get_header(self, idx):
+        """ Get the header at the given index. """
+        if idx < 0 or idx > (len(self.headers) - 1):
+            return None
+        else:
+            return self.headers[idx]
+
+    def __len__(self):
+        return len(self.headers)
 
 
 def read_file(file_path):
@@ -182,9 +202,8 @@ def read_file(file_path):
                         col_headers.append(col_head)
                 continue
             if row_head not in row_headers:
-
-            if is_dense:
-                pass
-            i += 1
+                if is_dense:
+                    pass
+                i += 1
 
 

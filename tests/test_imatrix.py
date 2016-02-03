@@ -2,6 +2,17 @@ import imatrix
 import unittest
 
 
+class TestHeaderIndex(unittest.TestCase):
+
+    def test_it(self):
+        idx = imatrix.HeaderIndex(['a 1', 'b 2', 'c 3'])
+        self.assertEqual(0, idx.get_idx('a 1'))
+        self.assertEqual(2, idx.get_idx('c 3'))
+        self.assertEqual('a 1', idx.get_header(0))
+        self.assertEqual('c 3', idx.get_header(2))
+        self.assertEqual(3, len(idx))
+
+
 class TestIMatrixMethods(unittest.TestCase):
 
     def test_size(self):
