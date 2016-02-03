@@ -8,31 +8,25 @@ import numpy
 
 class IMatrix:
     def __init__(self, row_idx, col_idx):
-        self.row_idx = row_idx
-        self.col_idx = col_idx
+        self.row_idx = Index(row_idx) if type(row_idx) is list else row_idx
+        self.col_idx = Index(col_idx) if type(col_idx) is list else col_idx
         self.data = numpy.zeros((len(row_idx), len(col_idx)))
 
     @property
     def row_count(self):
-        return len(self.row_headers)
+        return len(self.row_idx)
 
     @property
     def column_count(self):
-        return len(self.column_headers)
+        return len(self.col_idx)
 
     def get_row(self, row_header):
         """ Returns the zero-based index of the row with the given header """
-        for idx, key in enumerate(self.row_headers):
-            if key == row_header:
-                return idx
-        return -1
+        return self.row_idx.get_idx(row_header)
 
     def get_column(self, col_header):
         """ Returns the zero-based index of the column with the given header """
-        for idx, key in enumerate(self.column_headers):
-            if key == col_header:
-                return idx
-        return -1
+        return self.col_idx.get_idx(col_header)
 
     def get_value(self, row_header, col_header):
         row = self.get_row(row_header)
@@ -47,22 +41,6 @@ class IMatrix:
         if row == -1 or col == -1:
             return
         self.data[row, col] = value
-
-    def get_entry(self, row, col):
-        r = row
-        c = col
-        if type(row) == str:
-            r = self.row_idx[row] if row in self.row_idx else None
-            c = self.col_idx[col] if col in self.col_idx else None
-        if r is None or c is None:
-            return 0
-        if r not in self.values:
-            return 0
-        row_entries = self.values[r]
-        if c not in row_entries:
-            return 0
-        val = row_entries[c]
-        return 0 if val is None else val
 
     def get_col_sums(self):
         sums = {}
@@ -159,7 +137,7 @@ class IMatrix:
                 first_row = False
 
 
-class HeaderIndex:
+class Index:
 
     def __init__(self, headers=[]):
         self.headers = headers
