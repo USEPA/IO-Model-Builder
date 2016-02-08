@@ -16,7 +16,7 @@ print(color.Fore.RESET + color.Back.RESET + color.Style.RESET_ALL)
 print('back to normal now')
 """
 
-print('\033[31m ABCDE \033[39m')
+print('\033[31mABCDE\033[39m')
 print("black?")
 
 
