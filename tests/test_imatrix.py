@@ -24,9 +24,23 @@ class TestIMatrixMethods(unittest.TestCase):
         m = imatrix.IMatrix(['r1', 'r2', 'r3'], ['c1', 'c2'])
         self.assertEqual(2, m.get_row('r3'))
         self.assertEqual(1, m.get_column('c2'))
-        m.set_value('r1', 'c1', 42)
+        m['r1', 'c1'] = 42
         self.assertEqual(42, m.data[0, 0])
-        self.assertEqual(42, m.get_value('r1', 'c1'))
+        self.assertEqual(42, m['r1', 'c1'])
+
+    def test_read_sparse(self):
+        m = imatrix.read_file('sample_data/use_table_sparse.csv')
+        self.assertEqual(50, m['A', 'A'])
+        self.assertEqual(40, m['A', 'FD'])
+        self.assertEqual(47, m['VA', 'A'])
+        self.assertEqual(34, m['VA', 'C'])
+
+    def test_read_dense(self):
+        m = imatrix.read_file('sample_data/use_table_dense.csv')
+        self.assertEqual(50, m['A', 'A'])
+        self.assertEqual(40, m['A', 'FD'])
+        self.assertEqual(47, m['VA', 'A'])
+        self.assertEqual(34, m['VA', 'C'])
 
 if __name__ == '__main__':
     unittest.main()

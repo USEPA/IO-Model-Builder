@@ -20,12 +20,12 @@ with an `o_`:
 
     + data
       - economic
-        i_a_sectors.csv
-        i_d_make_table.csv
-        i_d_use_table.csv
-        i_d_value_added_sectors.csv
-        o_d_direct_requirements.csv
-        o_d_direct_requirements_coefficients.csv
+        i_sectors.csv
+        i_make_table.csv
+        i_use_table.csv
+        i_value_added_sectors.csv
+        o_direct_requirements.csv
+        o_direct_requirements_coefficients.csv
         ...
         
 The sub-folders of the `data` folder that start with an `x_` contain the 
@@ -37,10 +37,10 @@ All data is stored in simple CSV files with the following properties:
 
 * Commas (`,`) are used as column separators
 * Character strings have to be enclosed in double quotes (`"`) if they contain 
-  a comma or contain multiple lines. In other cases the quoting is optional.
+  a comma or multiple lines. In other cases the quoting is optional.
 * Numbers or boolean values (true, false) are never enclosed in quotes. The
   decimal separator is a point (`.`).
-* Leading and trailing whitespaces of values are ignored
+* Leading and trailing whitespaces are ignored
 * The file encoding is UTF-8 with Windows line endings (`CR` `LF`)
 
 ## Matrix files

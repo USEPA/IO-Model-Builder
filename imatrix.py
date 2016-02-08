@@ -28,19 +28,27 @@ class IMatrix:
         """ Returns the zero-based index of the column with the given header """
         return self.col_idx.get_idx(col_header)
 
-    def get_value(self, row_header, col_header):
+    def get(self, row_header, col_header):
         row = self.get_row(row_header)
         col = self.get_column(col_header)
         if row == -1 or col == -1:
             return 0
         return self.data[row, col]
 
-    def set_value(self, row_header, col_header, value):
+    def __getitem__(self, cell_headers):
+        row_header, col_header = cell_headers
+        return self.get(row_header, col_header)
+
+    def set(self, row_header, col_header, value):
         row = self.get_row(row_header)
         col = self.get_column(col_header)
         if row == -1 or col == -1:
             return
         self.data[row, col] = value
+
+    def __setitem__(self, cell_headers, value):
+        row_header, col_header = cell_headers
+        self.set(row_header, col_header, value)
 
     def get_col_sums(self):
         sums = {}
@@ -98,26 +106,25 @@ class IMatrix:
                 m.add_entry(row_key, col_key, entry[2])
         return m
 
-    def write_dense_csv(self, file_path, delimiter=','):
+    def write_dense(self, file_path):
         row_keys = []
-        row_keys.extend(self.row_keys)
+        row_keys.extend(self.row_idx.headers)
         row_keys.sort()
         col_keys = []
-        col_keys.extend(self.col_keys)
+        col_keys.extend(self.col_idx.headers)
         col_keys.sort()
         with open(file_path, 'w', newline='\n') as f:
-            writer = csv.writer(f, quoting=csv.QUOTE_NONNUMERIC,
-                                delimiter=delimiter)
+            writer = csv.writer(f)
             headers = ['']
             headers.extend(col_keys)
             writer.writerow(headers)
             for row_key in row_keys:
                 entries = [row_key]
                 for col_key in col_keys:
-                    entries.append(self.get_entry(row_key, col_key))
+                    entries.append(self.get(row_key, col_key))
                 writer.writerow(entries)
 
-    def write_sparse_csv(self, file_path):
+    def write_sparse(self, file_path):
         row_keys = [r for r in self.row_keys]
         row_keys.sort()
         col_keys = [c for c in self.col_keys]
@@ -164,24 +171,61 @@ class Index:
 
 
 def read_file(file_path):
-    is_dense = False
+    matrix, is_dense = __parse_shape(file_path)
+    col_idx = {}
+    i = -1
+    for row in __rows(file_path):
+        i += 1
+        if i == 0 and is_dense:
+            for j in range(1, len(row)):
+                col_head = row[j].strip()
+                col_idx[j] = col_head
+            continue
+        row_head = row[0].strip()
+        if is_dense:
+            for j in range(1, len(row)):
+                val_str = row[j].strip()
+                if val_str == '':
+                    continue
+                col_head = col_idx[j]
+                matrix.set(row_head, col_head, float(val_str))
+        else:
+            col_head = row[1].strip()
+            val_str = row[2].strip()
+            if val_str != '':
+                matrix.set(row_head, col_head, float(val_str))
+    return matrix
+
+
+def __parse_shape(file_path):
     row_headers = []
     col_headers = []
+    is_dense = False
+    i = -1
+    for row in __rows(file_path):
+        i += 1
+        row_head = row[0].strip()
+        if i == 0 and row_head == '':
+            is_dense = True
+            for j in range(1, len(row)):
+                col_head = row[j].strip()
+                if col_head not in col_headers:
+                    col_headers.append(col_head)
+            continue
+        if row_head not in row_headers:
+            row_headers.append(row_head)
+        if is_dense:
+            continue
+        col_head = row[1].strip()
+        if col_head not in col_headers:
+            col_headers.append(col_head)
+    row_headers.sort()
+    col_headers.sort()
+    return IMatrix(row_headers, col_headers), is_dense
+
+
+def __rows(file_path):
     with open(file_path, 'r', newline='\n') as f:
         reader = csv.reader(f)
-        i = 0
         for row in reader:
-            row_head = row[0].strip()
-            if i == 0 and row_head == '':
-                is_dense = True
-                for j in range(1, len(row)):
-                    col_head = row[j].strip()
-                    if col_head not in col_headers:
-                        col_headers.append(col_head)
-                continue
-            if row_head not in row_headers:
-                if is_dense:
-                    pass
-                i += 1
-
-
+            yield row
