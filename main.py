@@ -1,22 +1,5 @@
-import colorama as color
+import openio.imatrix
+import openio.log
 
-color.init()
-
-RESET = color.Fore.RESET + color.Back.RESET + color.Style.RESET_ALL;
-
-
-def green(text):
-    print(color.Fore.GREEN + text + RESET)
-
-"""
-print(color.Fore.RED + 'some red text')
-print(color.Back.GREEN + 'and with a green background')
-print(color.Style.DIM + 'and in dim text')
-print(color.Fore.RESET + color.Back.RESET + color.Style.RESET_ALL)
-print('back to normal now')
-"""
-
-print('\033[31mABCDE\033[39m')
-print("black?")
 
 
