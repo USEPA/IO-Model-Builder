@@ -4,4 +4,6 @@ __pycache__/
 data/
 notebooks/.ipynb_checkpoints
 
+doc/build
+
 openio.egg-info
