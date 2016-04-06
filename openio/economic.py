@@ -20,18 +20,45 @@ class Module(object):
         self.make_table = make_table
 
     def viz_use_table(self):
+        """
+        Creates a visualization of the shape of the use table.
+        """
         fig = plt.figure(figsize=(4, 4))
         sub = fig.add_subplot(111, aspect='equal')
 
-        rect = patches.Rectangle((0, 0.2), 0.8, 0.8, facecolor='#409f9c',
-                                 edgecolor='#409f9c')
-        sub.add_patch(rect)
-        rect = patches.Rectangle((0, 0.0), 0.8, 0.2, facecolor='#9c0000',
-                                 edgecolor='#9c0000')
-        sub.add_patch(rect)
-        rect = patches.Rectangle((0.8, 0.2), 0.2, 0.8, facecolor='#f3ffb2',
-                                 edgecolor='#f3ffb2')
-        sub.add_patch(rect)
+        ut = self.use_table
+        max_size = max(len(ut.index), len(ut.columns))
+        size_x = len(ut.columns) / max_size
+        size_y = len(ut.index) / max_size
+        fd_share = len(self.get_final_demands()) / len(ut.columns)
+        va_share = len(self.get_added_values()) / len(ut.index)
+
+        # industry inputs
+        ind_x = 0
+        ind_y = (1 - size_y) + (size_y * va_share)
+        ind_w = size_x - (size_x * fd_share)
+        ind_h = 1 - ind_y
+        ind_col = '#409f9c'
+        sub.add_patch(patches.Rectangle((ind_x, ind_y), ind_w, ind_h,
+                                        facecolor=ind_col, edgecolor=ind_col))
+
+        # value added
+        va_x = 0
+        va_y = 1 - size_y
+        va_w = ind_w
+        va_h = size_y - ind_h
+        va_col = '#9c0000'
+        sub.add_patch(patches.Rectangle((va_x, va_y), va_w, va_h,
+                                        facecolor=va_col, edgecolor=va_col))
+
+        # final demands
+        fd_x = ind_w
+        fd_y = ind_y
+        fd_w = size_x - ind_w
+        fd_h = ind_h
+        fd_col = '#f3ffb2'
+        sub.add_patch(patches.Rectangle((fd_x, fd_y), fd_w, fd_h,
+                                        facecolor=fd_col, edgecolor=fd_col))
 
         sub.axes.get_xaxis().set_ticks([])
         sub.set_xlabel('Industries')
@@ -39,9 +66,9 @@ class Module(object):
         sub.set_ylabel('Commodities')
 
         legend_entries = [
-            patches.Patch(color='#409f9c', label='Industry inputs'),
-            patches.Patch(color='#9c0000', label='Value added'),
-            patches.Patch(color='#f3ffb2', label='Final demand')]
+            patches.Patch(color=ind_col, label='Industry inputs'),
+            patches.Patch(color=va_col, label='Value added'),
+            patches.Patch(color=fd_col, label='Final demand')]
         sub.legend(handles=legend_entries, fontsize=10, loc=2)
         plt.show()
 
