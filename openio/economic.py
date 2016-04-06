@@ -66,9 +66,35 @@ class Module(object):
         sub.set_ylabel('Commodities')
 
         legend_entries = [
-            patches.Patch(color=ind_col, label='Industry inputs'),
+            patches.Patch(color=ind_col, label='Commodity inputs'),
             patches.Patch(color=va_col, label='Value added'),
             patches.Patch(color=fd_col, label='Final demand')]
+        sub.legend(handles=legend_entries, fontsize=10, loc=2)
+        plt.show()
+
+    def viz_make_table(self):
+        """
+        Creates a visualization of the shape of the make table.
+        """
+        fig = plt.figure(figsize=(4, 4))
+        sub = fig.add_subplot(111, aspect='equal')
+
+        mt = self.make_table
+        max_size = max(len(mt.index), len(mt.columns))
+        size_x = len(mt.columns) / max_size
+        size_y = len(mt.index) / max_size
+
+        col = '#409f9c'
+        sub.add_patch(patches.Rectangle((0, 1 - size_y), size_x, size_y,
+                                        facecolor=col, edgecolor=col))
+
+        sub.axes.get_xaxis().set_ticks([])
+        sub.set_xlabel('Commodities')
+        sub.axes.get_yaxis().set_ticks([])
+        sub.set_ylabel('Industries')
+
+        legend_entries = [
+            patches.Patch(color=col, label='Commodity outputs')]
         sub.legend(handles=legend_entries, fontsize=10, loc=2)
         plt.show()
 
