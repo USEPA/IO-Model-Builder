@@ -4,6 +4,14 @@ openio package
 Submodules
 ----------
 
+openio.economic module
+----------------------
+
+.. automodule:: openio.economic
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 openio.imatrix module
 ---------------------
 

@@ -16,7 +16,7 @@ setup(
     keywords="example documentation tutorial",
     url="http://packages.python.org/openio",
     packages=['openio'],
-    install_requires=['numpy', 'pandas'],
+    install_requires=['numpy', 'pandas', 'matplotlib'],
     long_description=read('README.md'),
     classifiers=[
         "Development Status :: 3 - Alpha",
