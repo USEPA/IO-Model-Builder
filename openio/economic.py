@@ -98,6 +98,23 @@ class Module(object):
         sub.legend(handles=legend_entries, fontsize=10, loc=2)
         plt.show()
 
+    def viz_commodity_totals(self):
+        fig = plt.figure(figsize=(6, 6))
+        make_totals = self.make_table.sum(axis=0)
+        use_totals = self.use_table.sum(axis=1)
+        x = []
+        y = []
+        for com in self.get_commodities():
+            x.append(make_totals[com])
+            y.append(use_totals[com])
+        plt.xscale('log')
+        plt.title('Commodity totals')
+        plt.xlabel('Make table')
+        plt.ylabel('Use table')
+        plt.yscale('log')
+        plt.scatter(x, y)
+        plt.show()
+
     def get_final_demands(self) -> list:
         """
         The use table contains in the columns the industry sectors and final
@@ -129,3 +146,17 @@ class Module(object):
             if com not in is_commodity:
                 added_values.append(com)
         return added_values
+
+    def get_commodities(self) -> list:
+        """
+        Returns a list which contains the commodities from the make and use
+        tables.
+        """
+        in_use = {}
+        for com in self.use_table.index:
+            in_use[com] = True
+        commodities = []
+        for com in self.make_table.columns:
+            if com in in_use:
+                commodities.append(com)
+        return commodities
