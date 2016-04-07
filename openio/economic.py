@@ -98,21 +98,31 @@ class Module(object):
         sub.legend(handles=legend_entries, fontsize=10, loc=2)
         plt.show()
 
-    def viz_commodity_totals(self):
-        fig = plt.figure(figsize=(6, 6))
-        make_totals = self.make_table.sum(axis=0)
-        use_totals = self.use_table.sum(axis=1)
-        x = []
-        y = []
+    def viz_totals(self):
+        fig, (plot1, plot2) = plt.subplots(1, 2, sharex=True, sharey=True,
+                                           figsize=(10, 6))
+        make_com_totals = self.make_table.sum(axis=0)
+        make_ind_totals = self.make_table.sum(axis=1)
+        use_com_totals = self.use_table.sum(axis=1)
+        use_ind_totals = self.use_table.sum(axis=0)
+        ind_x, ind_y, com_x, com_y = [], [], [], []
         for com in self.get_commodities():
-            x.append(make_totals[com])
-            y.append(use_totals[com])
-        plt.xscale('log')
-        plt.title('Commodity totals')
-        plt.xlabel('Make table')
-        plt.ylabel('Use table')
-        plt.yscale('log')
-        plt.scatter(x, y)
+            com_x.append(make_com_totals[com])
+            com_y.append(use_com_totals[com])
+        for ind in self.get_industries():
+            ind_x.append(make_ind_totals[ind])
+            ind_y.append(use_ind_totals[ind])
+        plt.ticklabel_format(style='sci', scilimits=(0, 0))
+
+        plot1.set_title('Commodity totals')
+        plot1.scatter(com_x, com_y)
+        plot1.set_xlabel('Make table')
+        plot1.set_ylabel('Use table')
+
+        plot2.set_title('Industry totals')
+        plot2.scatter(ind_x, ind_y)
+        plot2.set_xlabel('Make table')
+        plot2.set_ylabel('Use table')
         plt.show()
 
     def get_final_demands(self) -> list:
@@ -160,3 +170,16 @@ class Module(object):
             if com in in_use:
                 commodities.append(com)
         return commodities
+
+    def get_industries(self) -> list:
+        """
+        Returns a list with the industry sectors from the make and use tables.
+        """
+        in_use = {}
+        for ind in self.use_table.columns:
+            in_use[ind] = True
+        industries = []
+        for ind in self.make_table.index:
+            if ind in in_use:
+                industries.append(ind)
+        return industries
