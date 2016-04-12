@@ -38,5 +38,13 @@ class TestEconomicModule(unittest.TestCase):
         self.assertAlmostEqual(150/412, drs['B']['C'], delta=1e-8)
         self.assertAlmostEqual(1/265, drs['C']['Scrap'], delta=1e-8)
 
+    def test_get_dr_coefficients(self):
+        drc = self.em.get_dr_coefficients()
+        print(drc)  # TODO: test something
+
+    def test_get_tr_coefficients(self):
+        trc = self.em.get_tr_coefficients()
+        print(trc)  # TODO: test something
+
 if __name__ == '__main__':
     unittest.main()

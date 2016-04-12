@@ -2,6 +2,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import openio.validation as validation
+import numpy as np
+import numpy.linalg as linalg
 
 
 class Module(object):
@@ -230,6 +232,25 @@ class Module(object):
                 dr = drs.get_value(com, ind) / total
                 drs.set_value(com, ind, dr)
         return drs
+
+    def get_dr_coefficients(self) -> pd.DataFrame:
+        """
+        Calculates the direct requirement coefficients from the market shares
+        and direct requirements table. This method returns a commodity*commodity
+        matrix.
+        """
+        drs = self.get_direct_requirements()
+        ms = self.get_market_shares()
+        return drs.dot(ms)
+
+    def get_tr_coefficients(self) -> pd.DataFrame:
+        """
+        Calculates the total requirements coefficients.
+        """
+        drc = self.get_dr_coefficients()
+        eye = np.eye(drc.shape[0], dtype=np.float64)
+        data = linalg.inv(eye - drc.as_matrix())
+        return pd.DataFrame(data=data, index=drc.index, columns=drc.columns)
 
     def check(self) -> validation.Validation:
         """
