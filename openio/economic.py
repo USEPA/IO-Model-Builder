@@ -19,6 +19,8 @@ class Module(object):
         """
         self.use_table = use_table
         self.make_table = make_table
+        self._industries = None
+        self._commodities = None
 
     def viz_use_table(self):
         """
@@ -163,6 +165,8 @@ class Module(object):
         Returns a list which contains the commodities from the make and use
         tables.
         """
+        if self._commodities is not None:
+            return self._commodities
         in_use = {}
         for com in self.use_table.index:
             in_use[com] = True
@@ -170,12 +174,16 @@ class Module(object):
         for com in self.make_table.columns:
             if com in in_use:
                 commodities.append(com)
+        commodities.sort()
+        self._commodities = commodities
         return commodities
 
     def get_industries(self) -> list:
         """
         Returns a list with the industry sectors from the make and use tables.
         """
+        if self._industries is not None:
+            return self._industries
         in_use = {}
         for ind in self.use_table.columns:
             in_use[ind] = True
@@ -183,7 +191,45 @@ class Module(object):
         for ind in self.make_table.index:
             if ind in in_use:
                 industries.append(ind)
+        industries.sort()
+        self._industries = industries
         return industries
+
+    def get_market_shares(self) -> pd.DataFrame:
+        """
+        Calculates the market shares from the make table. This method returns
+        an industry*commodity matrix.
+        """
+        commodity_totals = self.make_table.sum(axis=0)
+
+        # short solution (equivalent to explicit solution below)
+        # shares = self.make_table.div(commodity_totals, axis=1)
+        # shares = shares.ix[self.get_industries(), self.get_commodities()]
+
+        shares = self.make_table.ix[self.get_industries(),
+                                    self.get_commodities()]
+        for com in self.get_commodities():
+            total = commodity_totals[com]
+            for ind in self.get_industries():
+                share = shares.get_value(ind, com) / total
+                shares.set_value(ind, com, share)
+        return shares
+
+    def get_direct_requirements(self) -> pd.DataFrame:
+        """
+        Calculates the direct requirements table from the use table but it takes
+        the industry totals from the make table in order to handle commodities
+        with different units correctly (TODO: link to documentation. This method
+        returns a commodity*industry matrix.
+        """
+        industry_totals = self.make_table.sum(axis=1)
+        drs = self.use_table.ix[self.get_commodities(), self.get_industries()]
+        for ind in self.get_industries():
+            total = industry_totals[ind]
+            for com in self.get_commodities():
+                dr = drs.get_value(com, ind) / total
+                drs.set_value(com, ind, dr)
+        return drs
 
     def check(self) -> validation.Validation:
         """
