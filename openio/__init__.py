@@ -49,6 +49,9 @@ class DataFolder(object):
         df = pd.read_csv(self.data_dir + '/' + io_file.path, index_col=0,
                          header=0)
         df.fillna(0.0, inplace=True)
+
+        def strip(x): return x.strip()
+        df.rename(index=strip, columns=strip, inplace=True)
         return df
 
     def get_economic_module(self) -> economic.Module:
