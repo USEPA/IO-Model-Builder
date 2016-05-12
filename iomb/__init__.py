@@ -1,7 +1,18 @@
 import os.path as path
 import pandas as pd
 import numpy as np
-import openio.economic as economic
+import iomb.economic as economic
+
+
+def read_csv_data_frame(csv_file) -> pd.DataFrame:
+    """ Loads a pandas DataFrame from the given CSV file. """
+    df = pd.read_csv(csv_file, index_col=0, header=0)
+    df.fillna(0.0, inplace=True)
+
+    def strip(x): return x.strip()
+
+    df.rename(index=strip, columns=strip, inplace=True)
+    return df
 
 
 class DataFile(object):
@@ -46,13 +57,8 @@ class DataFolder(object):
     def load_data_frame(self, io_file: DataFile) -> pd.DataFrame:
         """ Loads a pandas DataFrame from the given file. """
         # TODO: check io_file.path
-        df = pd.read_csv(self.data_dir + '/' + io_file.path, index_col=0,
-                         header=0)
-        df.fillna(0.0, inplace=True)
-
-        def strip(x): return x.strip()
-        df.rename(index=strip, columns=strip, inplace=True)
-        return df
+        file_path = self.data_dir + '/' + io_file.path
+        return read_csv_data_frame(file_path)
 
     def get_economic_module(self) -> economic.Module:
         """ Creates the economic module from the make and use tables in this

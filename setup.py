@@ -7,15 +7,15 @@ def read(fname):
 
 
 setup(
-    name="openio",
+    name="iomb",
     version="0.0.1",
-    author="Michael Srocka",
+    author="msrocka",
     author_email="michael.srocka@greendelta.com",
-    description="openio is a library for creating input-output models",
+    description="iomb is a package for creating environmentally extended input-output models",
     license="MIT",
     keywords="example documentation tutorial",
-    url="http://packages.python.org/openio",
-    packages=['openio'],
+    url="http://packages.python.org/iomb",
+    packages=['iomb'],
     install_requires=['numpy', 'pandas', 'matplotlib'],
     long_description=read('README.md'),
     classifiers=[

@@ -1,5 +1,5 @@
-# openio
-This is an open source version of the openIO model written in Python.
+# iomb - input-output model builder
+iomb is a package for creating environmentally extended input-output models. 
 
 ## Data tables
 The model is build an top of a set of data tables with a defined format. Some of

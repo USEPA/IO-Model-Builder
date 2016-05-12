@@ -1,7 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-import openio.validation as validation
+import iomb.validation as validation
 import numpy as np
 import numpy.linalg as linalg
 
