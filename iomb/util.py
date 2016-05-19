@@ -12,25 +12,29 @@ def make_uuid(*args: list) -> str:
     return str(uuid.uuid3(uuid.NAMESPACE_OID, path))
 
 
-def uuid_of_process(sector_name: str, sector_code: str) -> str:
-    return make_uuid('Process', sector_name, sector_code)
+def uuid_of_process(sector_name: str, sector_code: str, location: str) -> str:
+    return make_uuid('Process', sector_name, sector_code, location)
 
 
-def uuid_of_product(sector_name: str, sector_code: str) -> str:
-    return make_uuid('Flow', sector_name, sector_code)
+def uuid_of_product(sector_name: str, sector_code: str, location: str) -> str:
+    return make_uuid('Flow', sector_name, sector_code, location)
 
 
-def uuid_of_flow(name: str, category: str, sub_category: str) -> str:
-    return make_uuid('Flow', name, category, sub_category)
+def uuid_of_flow(name: str, category: str, sub_category: str, unit: str) -> str:
+    return make_uuid('Flow', name, category, sub_category, unit)
 
 
-def each_csv_row(csv_file, func):
-    """ Iterates over each row in the given CSV file. It skips the first row and
-        removes leading and trailing whitespaces.
+def each_csv_row(csv_file, func, skip_header=False):
+    """ Iterates over each row in the given CSV file. It skips the first row if
+        specified and removes leading and trailing whitespaces.
     """
     with open(csv_file) as f:
         reader = csv.reader(f)
-        next(reader)  # skip header
+        i = 0
+        if skip_header:
+            next(reader)
+            i += 1
         for row in reader:
-            r = [i.strip() for i in row]
-            func(r)
+            r = [v.strip() for v in row]
+            func(r, i)
+            i += 1

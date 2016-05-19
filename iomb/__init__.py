@@ -2,6 +2,15 @@ import os.path as path
 import pandas as pd
 import numpy as np
 import iomb.economic as economic
+import iomb.sat as sat
+
+
+def make_sat_table(*args: list) -> sat.Table:
+    """ Constructs the satellite table from the given CSV files. """
+    table = sat.Table()
+    for csv_file in args:
+        table.add_file(csv_file)
+    return table
 
 
 def read_csv_data_frame(csv_file) -> pd.DataFrame:
