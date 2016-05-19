@@ -4,7 +4,7 @@ import iomb.util as util
 class ElemFlow(object):
     """ Describes an elementary flow in the satellite table. """
 
-    def __init__(self, name='', category='', sub_category='', unit='',
+    def __init__(self, name='', category='', sub_category='', unit='kg',
                  uid=None):
         self.name = name
         self.category = category
@@ -14,6 +14,7 @@ class ElemFlow(object):
             self.uid = uid
         else:
             self.uid = util.uuid_of_flow(name, category, sub_category, unit)
+        self.factor = 1
         self.property_uid = ''
         self.unit_uid = ''
 
