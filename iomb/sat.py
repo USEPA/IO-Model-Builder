@@ -1,33 +1,8 @@
 import iomb.util as util
 import matplotlib.pyplot as plt
+import iomb.model as model
 import pandas as pd
 import numpy as np
-
-
-class Flow(object):
-    def __init__(self, name='', category='', sub_category='', unit=''):
-        self.name = name
-        self.category = category
-        self.sub_category = sub_category
-        self.unit = unit
-        self.uid = util.uuid_of_flow(name, category, sub_category, unit)
-
-    @property
-    def key(self):
-        return '%s / %s / %s [%s]' % (self.category, self.sub_category,
-                                      self.name, self.unit)
-
-
-class Sector(object):
-    def __init__(self, name='', code='', location='US'):
-        self.name = name
-        self.code = code
-        self.location = location
-        self.uid = util.uuid_of_process(name, code, location)
-
-    @property
-    def key(self):
-        return '%s - %s - %s' % (self.code, self.name, self.location)
 
 
 class Table(object):
@@ -50,10 +25,10 @@ class Table(object):
         util.each_csv_row(csv_file, handle_row, skip_header=True)
 
     def _read_flow(self, row) -> int:
-        flow = Flow(name=row[0],
-                    category=row[2],
-                    sub_category=row[3],
-                    unit=row[9])
+        flow = model.ElemFlow(name=row[0],
+                              category=row[2],
+                              sub_category=row[3],
+                              unit=row[9])
         if flow.uid not in self.flow_idx:
             i = len(self.flows)
             self.flows.append(flow)
@@ -61,9 +36,9 @@ class Table(object):
         return self.flow_idx[flow.uid]
 
     def _read_sector(self, row) -> int:
-        sector = Sector(name=row[4],
-                        code=row[5],
-                        location=row[6])
+        sector = model.Sector(name=row[4],
+                              code=row[5],
+                              location=row[6])
         if sector.uid not in self.sector_idx:
             j = len(self.sectors)
             self.sectors.append(sector)
