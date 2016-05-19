@@ -22,3 +22,7 @@ of the respective industry as it is used in the make and use tables.
 ##### commodities.xlsx
 
  
+io_model = iomb.io_matrix(make_table, use_table)
+sat_model = iomb.sat_matrix([tables])
+
+iomb.create_olca_pack(io_model, sat_model, sector_infos, flow_infos)

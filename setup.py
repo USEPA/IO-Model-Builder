@@ -1,10 +1,4 @@
-import os
 from setuptools import setup
-
-
-def read(fname):
-    return open(os.path.join(os.path.dirname(__file__), fname)).read()
-
 
 setup(
     name="iomb",
@@ -17,7 +11,7 @@ setup(
     url="http://packages.python.org/iomb",
     packages=['iomb'],
     install_requires=['numpy', 'pandas', 'matplotlib'],
-    long_description=read('README.md'),
+    long_description=open('README.md').read(),
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Topic :: Utilities",
