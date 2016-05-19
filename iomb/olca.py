@@ -35,6 +35,7 @@ class Export(object):
         self._write_products(pack)
         for _, s in self.sectors.items():
             p = _prepare_process(s)
+            self._add_tech_inputs(s, p)
             dump(p, 'processes', pack)
         pack.close()
 
@@ -74,6 +75,32 @@ class Export(object):
                         }}]
             }
             dump(flow, 'flows', pack)
+
+    def _add_tech_inputs(self, s: model.Sector, p: dict):
+        exchanges = p["exchanges"]
+        col_key = '%s - %s' % (s.code, s.name)
+        for _, row_s in self.sectors.items():
+            row_key = '%s - %s' % (row_s.code, row_s.name)
+            val = self.drc.get_value(row_key, col_key)
+            if val == 0:
+                continue
+            e = {
+                "@type": "Exchange",
+                "avoidedProduct": False,
+                "input": True,
+                "amount": val,
+                "flow": {"@type": "Flow", "@id": row_s.product_uid},
+                "unit": {
+                    "@type": "Unit",
+                    "@id": "3f90ee51-c78b-4b15-a693-e7f320c1e894"
+                },
+                "flowProperty": {
+                    "@type": "FlowProperty",
+                    "@id": "b0682037-e878-4be4-a63a-a7a81053a691"
+                },
+                "quantitativeReference": False
+            }
+            exchanges.append(e)
 
 
 def _prepare_process(s: model.Sector):
