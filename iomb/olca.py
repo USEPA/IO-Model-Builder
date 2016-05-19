@@ -20,9 +20,9 @@ class Export(object):
         self.drc = iomb.read_csv_data_frame(drc_csv)
         self.sat = iomb.read_csv_data_frame(sat_csv)
         self.sectors = {}
-        util.each_csv_row(sector_meta_csv, self.add_sector, skip_header=True)
+        util.each_csv_row(sector_meta_csv, self._add_sector, skip_header=True)
 
-    def add_sector(self, row, i):
+    def _add_sector(self, row, i):
         s = model.Sector(code=row[0], name=row[1], location=row[4])
         s.category = row[2]
         s.sub_category = row[3]
@@ -31,11 +31,14 @@ class Export(object):
     def to(self, zip_file):
         pack = zipf.ZipFile(zip_file, mode='a', compression=zipf.ZIP_DEFLATED)
         _write_economic_units(pack)
-        self.write_categories(pack)
-        self.write_products(pack)
+        self._write_categories(pack)
+        self._write_products(pack)
+        for _, s in self.sectors.items():
+            p = _prepare_process(s)
+            dump(p, 'processes', pack)
         pack.close()
 
-    def write_categories(self, pack):
+    def _write_categories(self, pack):
         handled = []
         for _, s in self.sectors.items():
             cat = s.category
@@ -50,7 +53,7 @@ class Export(object):
                 _write_category('PROCESS', sub, pack, cat)
                 _write_category('FLOW', sub, pack, cat)
 
-    def write_products(self, pack):
+    def _write_products(self, pack):
         for _, s in self.sectors.items():
             cat_id = util.make_uuid('FLOW', s.sub_category, s.category)
             flow = {
@@ -71,6 +74,38 @@ class Export(object):
                         }}]
             }
             dump(flow, 'flows', pack)
+
+
+def _prepare_process(s: model.Sector):
+    cat_id = util.make_uuid('PROCESS', s.sub_category, s.category)
+    p = {
+        "@context": "http://greendelta.github.io/olca-schema/context.jsonld",
+        "@type": "Process",
+        "@id": s.uid,
+        "name": s.name,
+        "processTyp": "UNIT_PROCESS",
+        "category": {"@type": "Category", "@id": cat_id},
+        "processDocumentation": {"copyright": False},
+        "exchanges": [
+            {
+                "@type": "Exchange",
+                "avoidedProduct": False,
+                "input": False,
+                "amount": 1.0,
+                "flow": {"@type": "Flow", "@id": s.product_uid},
+                "unit": {
+                    "@type": "Unit",
+                    "@id": "3f90ee51-c78b-4b15-a693-e7f320c1e894"
+                },
+                "flowProperty": {
+                    "@type": "FlowProperty",
+                    "@id": "b0682037-e878-4be4-a63a-a7a81053a691"
+                },
+                "quantitativeReference": True
+            }
+        ]
+    }
+    return p
 
 
 def _write_category(model_type, name, pack, parent_name=None):
