@@ -1,5 +1,7 @@
 import iomb
 import json
+import iomb.util as util
+import iomb.model as model
 import zipfile as zipf
 
 
@@ -17,11 +19,50 @@ class Export(object):
         """
         self.drc = iomb.read_csv_data_frame(drc_csv)
         self.sat = iomb.read_csv_data_frame(sat_csv)
+        self.sectors = {}
+        util.each_csv_row(sector_meta_csv, self.add_sector, skip_header=True)
+
+    def add_sector(self, row, i):
+        s = model.Sector(code=row[0], name=row[1], location=row[4])
+        s.category = row[2]
+        s.sub_category = row[3]
+        self.sectors[s.key] = s
 
     def to(self, zip_file):
         pack = zipf.ZipFile(zip_file, mode='a', compression=zipf.ZIP_DEFLATED)
         _write_economic_units(pack)
+        self.write_categories(pack)
         pack.close()
+
+    def write_categories(self, pack):
+        handled = []
+        for _, s in self.sectors.items():
+            cat = s.category
+            if cat not in handled:
+                handled.append(cat)
+                _write_category('PROCESS', cat, pack)
+                _write_category('FLOW', cat, pack)
+            sub = s.sub_category
+            sub_path = util.as_path(cat, sub)
+            if sub_path not in handled:
+                handled.append(sub_path)
+                _write_category('PROCESS', sub, pack, cat)
+                _write_category('FLOW', sub, pack, cat)
+
+
+def _write_category(model_type, name, pack, parent_name=None):
+    uid = util.make_uuid(model_type, name, parent_name)
+    c = {
+        "@context": "http://greendelta.github.io/olca-schema/context.jsonld",
+        "@type": "Category",
+        "@id": uid,
+        "name": name,
+        "modelType": model_type
+    }
+    if parent_name is not None:
+        parent_id = util.make_uuid(model_type, parent_name)
+        c["parentCategory"] = {"@type": "Category", "@id": parent_id}
+    dump(c, 'categories', pack)
 
 
 def _write_economic_units(pack):

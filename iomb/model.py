@@ -30,6 +30,8 @@ class Sector(object):
         self.code = code
         self.location = location
         self.uid = util.uuid_of_process(name, code, location)
+        self.category = ''
+        self.sub_category = ''
 
     @property
     def key(self):
