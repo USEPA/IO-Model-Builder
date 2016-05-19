@@ -61,6 +61,7 @@ class Table(object):
 
     def viz_flow(self, name):
         idx = None
+        flow = None
         for i in range(0, len(self.flows)):
             flow = self.flows[i]
             if flow.name == name:
@@ -72,6 +73,8 @@ class Table(object):
         for k, v in self.entries[idx].items():
             values.append(v)
         values.sort()
-        plt.bar(range(0, len(values)), values, 1/1.5, color='blue')
-        plt.gcf()
+        plt.hist(values, 30, color='blue')
+        plt.title(name)
+        plt.xlabel(flow.unit + ' / USD')
+        plt.ylabel('Absolute frequency')
         plt.show()
