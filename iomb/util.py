@@ -3,13 +3,17 @@ import uuid
 
 
 def make_uuid(*args: list) -> str:
+    path = as_path(*args)
+    return str(uuid.uuid3(uuid.NAMESPACE_OID, path))
+
+
+def as_path(*args: list) -> str:
     strings = []
     for arg in args:
         if arg is None:
             continue
         strings.append(str(arg).lower())
-    path = "/".join(strings)
-    return str(uuid.uuid3(uuid.NAMESPACE_OID, path))
+    return "/".join(strings)
 
 
 def uuid_of_process(sector_name: str, sector_code: str, location: str) -> str:

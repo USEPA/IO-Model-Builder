@@ -36,9 +36,9 @@ class Table(object):
         return self.flow_idx[flow.uid]
 
     def _read_sector(self, row) -> int:
-        sector = model.Sector(name=row[4],
-                              code=row[5],
-                              location=row[6])
+        sector = model.Sector(name=row[5],
+                              code=row[6],
+                              location=row[7])
         if sector.uid not in self.sector_idx:
             j = len(self.sectors)
             self.sectors.append(sector)

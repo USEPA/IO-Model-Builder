@@ -19,8 +19,8 @@ class ElemFlow(object):
 
     @property
     def key(self):
-        return '%s / %s / %s [%s]' % (self.category, self.sub_category,
-                                      self.name, self.unit)
+        return util.as_path(self.category, self.sub_category, self.name,
+                            self.unit)
 
 
 class Sector(object):
@@ -32,4 +32,4 @@ class Sector(object):
 
     @property
     def key(self):
-        return '%s - %s - %s' % (self.code, self.name, self.location)
+        return util.as_path(self.code, self.name, self.location)
