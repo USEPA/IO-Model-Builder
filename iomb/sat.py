@@ -1,4 +1,5 @@
 import iomb.util as util
+import matplotlib.pyplot as plt
 
 
 class Flow(object):
@@ -57,3 +58,20 @@ class Table(object):
             self.sectors.append(sector)
             self.sector_idx[sector.id] = j
         return self.sector_idx[sector.id]
+
+    def viz_flow(self, name):
+        idx = None
+        for i in range(0, len(self.flows)):
+            flow = self.flows[i]
+            if flow.name == name:
+                idx = i
+                break
+        if idx is None or idx not in self.entries:
+            return
+        values = []
+        for k, v in self.entries[idx].items():
+            values.append(v)
+        values.sort()
+        plt.bar(range(0, len(values)), values, 1/1.5, color='blue')
+        plt.gcf()
+        plt.show()
