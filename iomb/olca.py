@@ -32,6 +32,7 @@ class Export(object):
         pack = zipf.ZipFile(zip_file, mode='a', compression=zipf.ZIP_DEFLATED)
         _write_economic_units(pack)
         self.write_categories(pack)
+        self.write_products(pack)
         pack.close()
 
     def write_categories(self, pack):
@@ -48,6 +49,28 @@ class Export(object):
                 handled.append(sub_path)
                 _write_category('PROCESS', sub, pack, cat)
                 _write_category('FLOW', sub, pack, cat)
+
+    def write_products(self, pack):
+        for _, s in self.sectors.items():
+            cat_id = util.make_uuid('FLOW', s.sub_category, s.category)
+            flow = {
+                "@context": "http://greendelta.github.io/olca-schema/context.jsonld",
+                "@type": "Flow",
+                "@id": s.product_uid,
+                "name": s.name,
+                "category": {"@type": "Category", "@id": cat_id},
+                "flowType": "PRODUCT_FLOW",
+                "flowProperties": [
+                    {
+                        "@type": "FlowPropertyFactor",
+                        "referenceFlowProperty": True,
+                        "conversionFactor": 1.0,
+                        "flowProperty": {
+                            "@type": "FlowProperty",
+                            "@id": "b0682037-e878-4be4-a63a-a7a81053a691"
+                        }}]
+            }
+            dump(flow, 'flows', pack)
 
 
 def _write_category(model_type, name, pack, parent_name=None):
@@ -70,7 +93,7 @@ def _write_economic_units(pack):
         "@context": "http://greendelta.github.io/olca-schema/context.jsonld",
         "@type": "UnitGroup",
         "@id": "5df2915b-186f-4773-9ef4-04baca5e56a9",
-        "name": "Units of currency 2002",
+        "name": "Units of currency 2007",
         "units": [{"@type": "Unit",
                    "@id": "3f90ee51-c78b-4b15-a693-e7f320c1e894",
                    "name": "USD",
@@ -82,7 +105,7 @@ def _write_economic_units(pack):
         "@context": "http://greendelta.github.io/olca-schema/context.jsonld",
         "@type": "FlowProperty",
         "@id": "b0682037-e878-4be4-a63a-a7a81053a691",
-        "name": "Market value US 2002",
+        "name": "Market value US 2007",
         "flowPropertyType": "ECONOMIC_QUANTITY",
         "unitGroup": {
             "@type": "UnitGroup",

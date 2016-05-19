@@ -30,6 +30,7 @@ class Sector(object):
         self.code = code
         self.location = location
         self.uid = util.uuid_of_process(name, code, location)
+        self.product_uid = util.uuid_of_product(name, code, location)
         self.category = ''
         self.sub_category = ''
 
