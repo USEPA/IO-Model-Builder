@@ -19,29 +19,40 @@ class Export(object):
         """
         self.drc = iomb.read_csv_data_frame(drc_csv)
         self.sat = iomb.read_csv_data_frame(sat_csv)
-        self.sectors = {}
+        self.sectors = []
         util.each_csv_row(sector_meta_csv, self._add_sector, skip_header=True)
+        self.flows = []
+        util.each_csv_row(flow_meta_csv, self._add_flow, skip_header=True)
 
     def _add_sector(self, row, i):
         s = model.Sector(code=row[0], name=row[1], location=row[4])
         s.category = row[2]
         s.sub_category = row[3]
-        self.sectors[s.key] = s
+        self.sectors.append(s)
+
+    def _add_flow(self, row, i):
+        f = model.ElemFlow(name=row[0], category=row[1], sub_category=row[2],
+                           unit=row[3], uid=row[4])
+        f.property_uid = row[5],
+        f.unit_uid = row[6]
+        f.factor = float(row[7])
+        self.flows.append(f)
 
     def to(self, zip_file):
         pack = zipf.ZipFile(zip_file, mode='a', compression=zipf.ZIP_DEFLATED)
         _write_economic_units(pack)
         self._write_categories(pack)
         self._write_products(pack)
-        for _, s in self.sectors.items():
+        for s in self.sectors:
             p = _prepare_process(s)
             self._add_tech_inputs(s, p)
+            self._add_elem_entries(s, p)
             dump(p, 'processes', pack)
         pack.close()
 
     def _write_categories(self, pack):
         handled = []
-        for _, s in self.sectors.items():
+        for s in self.sectors:
             cat = s.category
             if cat not in handled:
                 handled.append(cat)
@@ -55,7 +66,7 @@ class Export(object):
                 _write_category('FLOW', sub, pack, cat)
 
     def _write_products(self, pack):
-        for _, s in self.sectors.items():
+        for s in self.sectors:
             cat_id = util.make_uuid('FLOW', s.sub_category, s.category)
             flow = {
                 "@context": "http://greendelta.github.io/olca-schema/context.jsonld",
@@ -79,7 +90,7 @@ class Export(object):
     def _add_tech_inputs(self, s: model.Sector, p: dict):
         exchanges = p["exchanges"]
         col_key = '%s - %s' % (s.code, s.name)
-        for _, row_s in self.sectors.items():
+        for row_s in self.sectors:
             row_key = '%s - %s' % (row_s.code, row_s.name)
             val = self.drc.get_value(row_key, col_key)
             if val == 0:
@@ -97,6 +108,32 @@ class Export(object):
                 "flowProperty": {
                     "@type": "FlowProperty",
                     "@id": "b0682037-e878-4be4-a63a-a7a81053a691"
+                },
+                "quantitativeReference": False
+            }
+            exchanges.append(e)
+
+    def _add_elem_entries(self, s: model.Sector, p: dict):
+        if s.key not in self.sat.columns:
+            print(s.key, 'is not contained in satellite matrix')
+            return
+        exchanges = p["exchanges"]
+        for flow in self.flows:
+            val = self.sat.get_value(flow.key, s.key)
+            is_input = False  # TODO: take it from flow meta data
+            e = {
+                "@type": "Exchange",
+                "avoidedProduct": False,
+                "input": is_input,
+                "amount": float(val),
+                "flow": {"@type": "Flow", "@id": flow.uid},
+                "unit": {
+                    "@type": "Unit",
+                    "@id": flow.unit_uid
+                },
+                "flowProperty": {
+                    "@type": "FlowProperty",
+                    "@id": flow.property_uid
                 },
                 "quantitativeReference": False
             }
