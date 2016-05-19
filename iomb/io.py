@@ -6,7 +6,7 @@ import numpy as np
 import numpy.linalg as linalg
 
 
-class Module(object):
+class Model(object):
     """
     The economic module contains the input-output data which may are hybridized
     with physical flows.

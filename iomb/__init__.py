@@ -1,8 +1,16 @@
 import os.path as path
 import pandas as pd
-import numpy as np
-import iomb.economic as economic
+import iomb.io as io
 import iomb.sat as sat
+
+
+def make_io_model(supply_table_csv, use_table_csv):
+    """ Constructs the input-output model from the supply and use tables in the
+        given CSV files.
+    """
+    supply_table = read_csv_data_frame(supply_table_csv)
+    use_table = read_csv_data_frame(use_table_csv)
+    return io.Model(use_table, supply_table)
 
 
 def make_sat_table(*args: list) -> sat.Table:
@@ -69,10 +77,10 @@ class DataFolder(object):
         file_path = self.data_dir + '/' + io_file.path
         return read_csv_data_frame(file_path)
 
-    def get_economic_module(self) -> economic.Module:
+    def get_economic_module(self) -> io.Model:
         """ Creates the economic module from the make and use tables in this
             data folder.
         """
         use_table = self.load_data_frame(USE_TABLE)
         make_table = self.load_data_frame(MAKE_TABLE)
-        return economic.Module(use_table, make_table)
+        return io.Model(use_table, make_table)
