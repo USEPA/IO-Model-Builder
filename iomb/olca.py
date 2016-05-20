@@ -32,10 +32,11 @@ class Export(object):
 
     def _add_flow(self, row, i):
         f = model.ElemFlow(name=row[0], category=row[1], sub_category=row[2],
-                           unit=row[3], uid=row[4])
-        f.property_uid = row[5],
-        f.unit_uid = row[6]
-        f.factor = float(row[7])
+                           unit=row[3], uid=row[5])
+        f.direction = row[4].lower()
+        f.property_uid = row[6]
+        f.unit_uid = row[7]
+        f.factor = float(row[8])
         self.flows.append(f)
 
     def to(self, zip_file):
@@ -120,7 +121,7 @@ class Export(object):
         exchanges = p["exchanges"]
         for flow in self.flows:
             val = self.sat.get_value(flow.key, s.key)
-            is_input = False  # TODO: take it from flow meta data
+            is_input = flow.direction == 'input'
             e = {
                 "@type": "Exchange",
                 "avoidedProduct": False,

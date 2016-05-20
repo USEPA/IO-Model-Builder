@@ -14,6 +14,7 @@ class ElemFlow(object):
             self.uid = uid
         else:
             self.uid = util.uuid_of_flow(name, category, sub_category, unit)
+        self.direction = 'output'
         self.factor = 1
         self.property_uid = ''
         self.unit_uid = ''
