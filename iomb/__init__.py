@@ -1,10 +1,11 @@
 import os.path as path
 import pandas as pd
+import iomb.calc as calc
 import iomb.io as io
 import iomb.sat as sat
 
 
-def make_io_model(supply_table_csv, use_table_csv):
+def make_io_model(supply_table_csv, use_table_csv) -> io.Model:
     """ Constructs the input-output model from the supply and use tables in the
         given CSV files.
     """
@@ -19,6 +20,14 @@ def make_sat_table(*args: list) -> sat.Table:
     for csv_file in args:
         table.add_file(csv_file)
     return table
+
+
+def calculate(io_model: io.Model, sat_table: sat.Table, demand: dict) \
+        -> calc.Result:
+    """ Calculates the given input-output model with the given demand. """
+    drc_frame = io_model.get_dr_coefficients()
+    sat_frame = sat_table.as_data_frame()
+    return calc.Calculator(drc_frame, sat_frame, demand).calculate()
 
 
 def read_csv_data_frame(csv_file) -> pd.DataFrame:

@@ -36,6 +36,14 @@ iomb.util module
     :undoc-members:
     :show-inheritance:
 
+iomb.calc module
+----------------
+
+.. automodule:: iomb.calc
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 Module contents
 ---------------
 

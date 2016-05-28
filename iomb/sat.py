@@ -46,6 +46,11 @@ class Table(object):
         return self.sector_idx[sector.uid]
 
     def as_data_frame(self) -> pd.DataFrame:
+        """ Converts the satellite table into a pandas data frame where the
+            row index contains the keys of the elementary flows, the column
+            index the keys of the commodity sectors, and the values the amounts
+            of the elementary flows for the respective sectors.
+        """
         rows, cols = len(self.flows), len(self.sectors)
         data = np.zeros((rows, cols), dtype=np.float64)
         for i, row in self.entries.items():

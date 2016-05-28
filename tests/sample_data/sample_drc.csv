@@ -1,0 +1,10 @@
+"                     ",1/steel parts/us,2/electricity/us-ga,3/electricity/row,4/electricity/us,5/car manufacture/row,6/car manufacture/us,7/steel parts/us-ga,8/steel parts/row,9/car manufacture/us-ga
+1/steel parts/us       ,0.1             ,0                  ,0                ,0               ,0                    ,0.2                 ,0.01               ,0                ,0.09                   
+2/electricity/us-ga    ,0               ,0.09               ,0                ,0               ,0                    ,0                   ,0.27               ,0                ,0.095                  
+3/electricity/row      ,0               ,0                  ,0.1              ,0               ,0.1                  ,0                   ,0                  ,0.3              ,0                      
+4/electricity/us       ,0.3             ,0.01               ,0                ,0.1             ,0                    ,0.1                 ,0.03               ,0                ,0.005                  
+5/car manufacture/row  ,0               ,0                  ,0                ,0               ,0.1                  ,0                   ,0                  ,0                ,0                      
+6/car manufacture/us   ,0               ,0                  ,0                ,0               ,0                    ,0.1                 ,0                  ,0                ,0.05                   
+7/steel parts/us-ga    ,0               ,0                  ,0                ,0               ,0                    ,0                   ,0.09               ,0                ,0.01                   
+8/steel parts/row      ,0               ,0                  ,0                ,0               ,0.2                  ,0                   ,0.1                ,0.1              ,0.1                    
+9/car manufacture/us-ga,0               ,0                  ,0                ,0               ,0                    ,0                   ,0                  ,0                ,0.05                   
