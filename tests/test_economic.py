@@ -13,13 +13,13 @@ class TestEconomicModule(unittest.TestCase):
         self.assertTrue(self.df.has_file(io.MAKE_TABLE))
 
     def test_get_industries(self):
-        industries = self.em.get_industries()
+        industries = self.em.industries
         self.assertEqual(3, len(industries))
         for ind in ['A', 'B', 'C']:
             self.assertTrue(ind in industries)
 
     def test_get_commodities(self):
-        commodities = self.em.get_commodities()
+        commodities = self.em.commodities
         self.assertEqual(4, len(commodities))
         for com in ['A', 'B', 'C', 'Scrap']:
             self.assertTrue(com in commodities)

@@ -1,5 +1,5 @@
 iomb package
-==============
+============
 
 Submodules
 ----------
@@ -21,7 +21,7 @@ iomb.model module
     :show-inheritance:
 
 iomb.sat module
------------------
+---------------
 
 .. automodule:: iomb.sat
     :members:
@@ -29,7 +29,7 @@ iomb.sat module
     :show-inheritance:
 
 iomb.util module
------------------
+----------------
 
 .. automodule:: iomb.util
     :members:

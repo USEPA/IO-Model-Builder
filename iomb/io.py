@@ -111,10 +111,10 @@ class Model(object):
         use_com_totals = self.use_table.sum(axis=1)
         use_ind_totals = self.use_table.sum(axis=0)
         ind_x, ind_y, com_x, com_y = [], [], [], []
-        for com in self.get_commodities():
+        for com in self.commodities:
             com_x.append(make_com_totals[com])
             com_y.append(use_com_totals[com])
-        for ind in self.get_industries():
+        for ind in self.industries:
             ind_x.append(make_ind_totals[ind])
             ind_y.append(use_ind_totals[ind])
         plt.ticklabel_format(style='sci', scilimits=(0, 0))
@@ -162,11 +162,9 @@ class Model(object):
                 added_values.append(com)
         return added_values
 
-    def get_commodities(self) -> list:
-        """
-        Returns a list which contains the commodities from the make and use
-        tables.
-        """
+    @property
+    def commodities(self) -> list:
+        """ Returns the commodities from the make and use tables. """
         if self._commodities is not None:
             return self._commodities
         in_use = {}
@@ -180,7 +178,8 @@ class Model(object):
         self._commodities = commodities
         return commodities
 
-    def get_industries(self) -> list:
+    @property
+    def industries(self) -> list:
         """
         Returns a list with the industry sectors from the make and use tables.
         """
@@ -206,13 +205,12 @@ class Model(object):
 
         # short solution (equivalent to explicit solution below)
         # shares = self.make_table.div(commodity_totals, axis=1)
-        # shares = shares.ix[self.get_industries(), self.get_commodities()]
+        # shares = shares.ix[self.industries, self.commodities]
 
-        shares = self.make_table.ix[self.get_industries(),
-                                    self.get_commodities()]
-        for com in self.get_commodities():
+        shares = self.make_table.ix[self.industries, self.commodities]
+        for com in self.commodities:
             total = commodity_totals[com]
-            for ind in self.get_industries():
+            for ind in self.industries:
                 share = shares.get_value(ind, com) / total
                 shares.set_value(ind, com, share)
         return shares
@@ -225,10 +223,10 @@ class Model(object):
         returns a commodity*industry matrix.
         """
         industry_totals = self.make_table.sum(axis=1)
-        drs = self.use_table.ix[self.get_commodities(), self.get_industries()]
-        for ind in self.get_industries():
+        drs = self.use_table.ix[self.commodities, self.industries]
+        for ind in self.industries:
             total = industry_totals[ind]
-            for com in self.get_commodities():
+            for com in self.commodities:
                 dr = drs.get_value(com, ind) / total
                 drs.set_value(com, ind, dr)
         return drs
