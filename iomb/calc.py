@@ -6,9 +6,27 @@ import iomb.util as util
 class Result(object):
     """ Contains the results of a calculation. """
 
-    def __init__(self, drc: pd.DataFrame, totals: pd.DataFrame):
-        self.drc = drc
-        self.totals = totals
+    def __init__(self):
+        self.flows = None
+        self.sectors = None
+        self.demand = None
+        self.scaling = None
+        self.totals_lci = None
+
+    @property
+    def demand_vector(self) -> pd.DataFrame:
+        return pd.DataFrame(data=self.demand, index=self.sectors,
+                            columns=['final demand'])
+
+    @property
+    def scaling_vector(self):
+        return pd.DataFrame(data=self.scaling, index=self.sectors,
+                            columns=['scaling factor'])
+
+    @property
+    def flow_results(self):
+        return pd.DataFrame(data=self.totals_lci, index=self.flows,
+                            columns=['total result'])
 
 
 class Calculator(object):
@@ -28,15 +46,19 @@ class Calculator(object):
 
     def calculate(self) -> Result:
         """ Runs a new calculation and returns a result object. """
+
+        # prepare the result
+        r = Result()
         drc = self.drc.copy()
         sat = self.sat.copy().reindex(columns=drc.columns)
+        r.sectors = drc.index
+        r.flows = sat.index
+        r.demand = self._demand_vector()
+
         inv = util.leontief(drc)
-        demand = self._demand_vector()
-        scaling = inv.as_matrix().dot(demand)
-        totals = sat.as_matrix().dot(scaling)
-        total_result = pd.DataFrame(data=totals, index=sat.index,
-                                    columns=['total'])
-        return Result(drc, total_result)
+        r.scaling = inv.as_matrix().dot(r.demand)
+        r.totals_lci = sat.as_matrix().dot(r.scaling)
+        return r
 
     def _demand_vector(self) -> np.ndarray:
         d = np.zeros(self.drc.shape[0])
