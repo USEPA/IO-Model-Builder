@@ -55,7 +55,7 @@ def write_columns(sheet, writer, conf):
     for col in range(conf.cols_start, conf.cols_end):
         code = get_code(sheet.cell(5, col).value)
         name = sheet.cell(4, col).value.strip()
-        col_label = "%s - %s" % (code, name)
+        col_label = ("%s/%s/US" % (code, name)).lower()
         labels.append(col_label)
     writer.writerow(labels)
 
@@ -65,7 +65,7 @@ def write_rows(sheet, writer, conf):
         values = []
         r_code = get_code(sheet.cell(row, 0).value)
         r_name = sheet.cell(row, 1).value.strip()
-        row_label = '%s - %s' % (r_code, r_name)
+        row_label = ('%s - %s' % (r_code, r_name)).lower()
         values.append(row_label)
         for col in range(conf.cols_start, conf.cols_end):
             val = sheet.cell(row, col).value

@@ -90,9 +90,9 @@ class Export(object):
 
     def _add_tech_inputs(self, s: model.Sector, p: dict):
         exchanges = p["exchanges"]
-        col_key = '%s - %s' % (s.code, s.name)
+        col_key = s.key
         for row_s in self.sectors:
-            row_key = '%s - %s' % (row_s.code, row_s.name)
+            row_key = row_s.key
             val = self.drc.get_value(row_key, col_key)
             if val == 0:
                 continue
