@@ -1,38 +1,45 @@
-openio package
+iomb package
 ==============
 
 Submodules
 ----------
 
-openio.economic module
-----------------------
+iomb.io module
+--------------
 
-.. automodule:: openio.economic
+.. automodule:: iomb.io
     :members:
     :undoc-members:
     :show-inheritance:
 
-openio.imatrix module
----------------------
-
-.. automodule:: openio.imatrix
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-openio.log module
+iomb.model module
 -----------------
 
-.. automodule:: openio.log
+.. automodule:: iomb.model
     :members:
     :undoc-members:
     :show-inheritance:
 
+iomb.sat module
+-----------------
+
+.. automodule:: iomb.sat
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+iomb.util module
+-----------------
+
+.. automodule:: iomb.util
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 Module contents
 ---------------
 
-.. automodule:: openio
+.. automodule:: iomb
     :members:
     :undoc-members:
     :show-inheritance:

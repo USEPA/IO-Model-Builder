@@ -21,11 +21,21 @@ class ElemFlow(object):
 
     @property
     def key(self):
+        """ The key identifies an elementary flow in the model builder (e.g. in
+            indices of data frames, results etc.). It is just a combination of
+            the following flow attributes with all letters in lower case:
+
+            <category>/<sub_category>/<name>/<unit>
+
+            e.g.: air/unspecified/carbon dioxide/kg
+        """
         return util.as_path(self.category, self.sub_category, self.name,
                             self.unit)
 
 
 class Sector(object):
+    """ Describes an industry or commodity sector in the input-output model. """
+
     def __init__(self, name='', code='', location='US'):
         self.name = name
         self.code = code
@@ -37,4 +47,12 @@ class Sector(object):
 
     @property
     def key(self):
+        """ The key identifies sector in the model builder (e.g. in indices of
+            make and use tables, results etc.). It is just a combination of
+            the following sector attributes with all letters in lower case:
+
+            <sector code>/<sector name>/<location code>/<unit>
+
+            e.g.: 1111a0/oilseed farming/us
+        """
         return util.as_path(self.code, self.name, self.location)

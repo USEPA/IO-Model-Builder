@@ -1,7 +1,7 @@
-openio
-======
+iomb
+====
 
 .. toctree::
    :maxdepth: 4
 
-   openio
+   iomb

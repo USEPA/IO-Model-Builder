@@ -1,9 +1,9 @@
-.. openio documentation master file, created by
+.. iomb documentation master file, created by
    sphinx-quickstart on Wed Apr  6 09:35:37 2016.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to openio's documentation!
+Welcome to iomb's documentation!
 ==================================
 
 Contents:
