@@ -13,7 +13,7 @@ class Model(object):
     """
 
     def __init__(self, use_table: pd.DataFrame, make_table: pd.DataFrame,
-                 scrap=None):
+                 scrap_sector=None):
         """
         Creates a new instance of an economic module with the given data.
 
@@ -22,6 +22,7 @@ class Model(object):
         """
         self.use_table = use_table
         self.make_table = make_table
+        self.scrap_sector = scrap_sector
         self._industries = None
         self._commodities = None
 
@@ -177,7 +178,7 @@ class Model(object):
             in_use[com] = True
         commodities = []
         for com in self.make_table.columns:
-            if com in in_use:
+            if com in in_use and com != self.scrap_sector:
                 commodities.append(com)
         commodities.sort()
         self._commodities = commodities
