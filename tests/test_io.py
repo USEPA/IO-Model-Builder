@@ -1,28 +1,36 @@
-import iomb as io
+import iomb
 import unittest
 
 
-class TestEconomicModule(unittest.TestCase):
-
+class TestIOModel(unittest.TestCase):
     def setUp(self):
-        self.df = io.DataFolder('./sample_data')
-        self.em = self.df.get_economic_module()
+        path = './sample_data/sample_'
+        self.model = iomb.make_io_model(path + 'make.csv', path + 'use.csv',
+                                        scrap='Scrap')
 
-    def test_files_present(self):
-        self.assertTrue(self.df.has_file(io.USE_TABLE))
-        self.assertTrue(self.df.has_file(io.MAKE_TABLE))
+    def test_value_added_sectors(self):
+        va = self.model.value_added_sectors
+        self.assertEqual(1, len(va))
+        self.assertEqual('VA', va[0])
 
-    def test_get_industries(self):
-        industries = self.em.industries
+    def test_final_demand_sectors(self):
+        fd = self.model.final_demand_sectors
+        self.assertEqual(1, len(fd))
+        self.assertEqual('FD', fd[0])
+
+    def test_industries(self):
+        industries = self.model.industries
         self.assertEqual(3, len(industries))
-        for ind in ['A', 'B', 'C']:
-            self.assertTrue(ind in industries)
+        for i in ['A', 'B', 'C']:
+            self.assertTrue(i in industries)
 
-    def test_get_commodities(self):
-        commodities = self.em.commodities
-        self.assertEqual(4, len(commodities))
-        for com in ['A', 'B', 'C', 'Scrap']:
-            self.assertTrue(com in commodities)
+    def test_commodities(self):
+        commodities = self.model.commodities
+        self.assertEqual(3, len(commodities))
+        for i in ['A', 'B', 'C']:
+            self.assertTrue(i in commodities)
+
+"""
 
     def test_get_market_shares(self):
         shares = self.em.get_market_shares()
@@ -45,6 +53,7 @@ class TestEconomicModule(unittest.TestCase):
     def test_get_tr_coefficients(self):
         trc = self.em.get_tr_coefficients()
         print(trc)  # TODO: test something
+"""
 
 if __name__ == '__main__':
     unittest.main()

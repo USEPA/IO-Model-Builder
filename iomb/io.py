@@ -12,7 +12,8 @@ class Model(object):
     with physical flows.
     """
 
-    def __init__(self, use_table: pd.DataFrame, make_table: pd.DataFrame):
+    def __init__(self, use_table: pd.DataFrame, make_table: pd.DataFrame,
+                 scrap=None):
         """
         Creates a new instance of an economic module with the given data.
 
@@ -35,8 +36,8 @@ class Model(object):
         max_size = max(len(ut.index), len(ut.columns))
         size_x = len(ut.columns) / max_size
         size_y = len(ut.index) / max_size
-        fd_share = len(self.get_final_demands()) / len(ut.columns)
-        va_share = len(self.get_added_values()) / len(ut.index)
+        fd_share = len(self.final_demand_sectors) / len(ut.columns)
+        va_share = len(self.value_added_sectors) / len(ut.index)
 
         # industry inputs
         ind_x = 0
@@ -130,8 +131,10 @@ class Model(object):
         plot2.set_ylabel('Use table')
         plt.show()
 
-    def get_final_demands(self) -> list:
-        """
+    @property
+    def final_demand_sectors(self) -> list:
+        """ Returns the list of final demand sectors from the model.
+
         The use table contains in the columns the industry sectors and final
         demand sectors. The make table contains in the rows the industry
         sectors. Thus, the sectors in the use table columns that are not
@@ -140,14 +143,16 @@ class Model(object):
         is_industry = {}
         for ind in self.make_table.index:
             is_industry[ind] = True
-        final_demands = []
+        fds = []
         for ind in self.use_table.columns:
             if ind not in is_industry:
-                final_demands.append(ind)
-        return final_demands
+                fds.append(ind)
+        return fds
 
-    def get_added_values(self) -> list:
-        """
+    @property
+    def value_added_sectors(self) -> list:
+        """ Returns the list of value added sectors from the model.
+
         The use table contains in the rows commodities and value added sectors.
         The make table contains in the columns commodities. Thus, the sectors
         in the use table rows that are not contained in the make table columns
