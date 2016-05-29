@@ -55,18 +55,17 @@ class TestIOModel(unittest.TestCase):
         self.assertAlmostEqual(0.904, tm.get_value('B', 'B'), delta=1e-3)
         self.assertAlmostEqual(0.926, tm.get_value('C', 'C'), delta=1e-3)
 
-"""
-
-
-
     def test_get_dr_coefficients(self):
-        drc = self.em.get_dr_coefficients()
-        print(drc)  # TODO: test something
+        drc = self.model.get_dr_coefficients()
+        self.assertAlmostEqual(0.166, drc.get_value('A', 'A'), delta=1e-3)
+        self.assertAlmostEqual(0.109, drc.get_value('B', 'B'), delta=1e-3)
+        self.assertAlmostEqual(0.202, drc.get_value('C', 'C'), delta=1e-3)
 
     def test_get_tr_coefficients(self):
-        trc = self.em.get_tr_coefficients()
-        print(trc)  # TODO: test something
-"""
+        trc = self.model.get_tr_coefficients()
+        self.assertAlmostEqual(2.487, trc.get_value('A', 'A'), delta=1e-3)
+        self.assertAlmostEqual(2.300, trc.get_value('B', 'B'), delta=1e-3)
+        self.assertAlmostEqual(2.323, trc.get_value('C', 'C'), delta=1e-3)
 
 if __name__ == '__main__':
     unittest.main()

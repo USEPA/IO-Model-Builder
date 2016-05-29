@@ -275,8 +275,8 @@ class Model(object):
         matrix.
         """
         drs = self.get_direct_requirements()
-        ms = self.get_market_shares()
-        return drs.dot(ms)
+        tm = self.get_transformation_matrix()
+        return drs.dot(tm)
 
     def get_tr_coefficients(self) -> pd.DataFrame:
         """
