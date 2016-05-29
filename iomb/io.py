@@ -221,6 +221,24 @@ class Model(object):
                 shares.set_value(ind, com, share)
         return shares
 
+    def get_non_scrap_ratios(self) -> pd.DataFrame:
+        industries = self.industries
+        title = 'Nonscrap Ratio'
+        if self.scrap_sector is None:
+            data = np.ones((len(industries), 1), dtype=float)
+            return pd.DataFrame(data=data, index=industries, columns=[title])
+        totals = self.make_table.sum(axis=1)
+        data = np.zeros(len(industries))
+        ratios = pd.DataFrame(data, index=industries, columns=[title])
+        for industry in industries:
+            total = totals[industry]
+            if total == 0:
+                continue
+            scrap = self.make_table.get_value(industry, self.scrap_sector)
+            ratio = (total - scrap) / total
+            ratios.set_value(industry, title, ratio)
+        return ratios
+
     def get_direct_requirements(self) -> pd.DataFrame:
         """
         Calculates the direct requirements table from the use table but it takes

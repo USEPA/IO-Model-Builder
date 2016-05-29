@@ -30,21 +30,27 @@ class TestIOModel(unittest.TestCase):
         for i in ['A', 'B', 'C']:
             self.assertTrue(i in commodities)
 
-"""
+    def test_get_direct_requirements(self):
+        drs = self.model.get_direct_requirements()
+        self.assertAlmostEqual(0.152, drs.get_value('A', 'A'), delta=1e-3)
+        self.assertAlmostEqual(0.073, drs.get_value('B', 'B'), delta=1e-3)
+        self.assertAlmostEqual(0.189, drs.get_value('C', 'C'), delta=1e-3)
 
     def test_get_market_shares(self):
-        shares = self.em.get_market_shares()
-        # print(shares)
-        self.assertAlmostEqual(0.909090909, shares['A']['A'], delta=1e-8)
-        self.assertAlmostEqual(0.0625, shares['B']['A'], delta=1e-8)
-        self.assertAlmostEqual(0.074074074, shares['C']['B'], delta=1e-8)
+        ms = self.model.get_market_shares()
+        self.assertAlmostEqual(0.909, ms.get_value('A', 'A'), delta=1e-3)
+        self.assertAlmostEqual(0.900, ms.get_value('B', 'B'), delta=1e-3)
+        self.assertAlmostEqual(0.926, ms.get_value('C', 'C'), delta=1e-3)
 
-    def test_get_direct_requirements(self):
-        drs = self.em.get_direct_requirements()
-        # print(drs)
-        self.assertAlmostEqual(50/328, drs['A']['A'], delta=1e-8)
-        self.assertAlmostEqual(150/412, drs['B']['C'], delta=1e-8)
-        self.assertAlmostEqual(1/265, drs['C']['Scrap'], delta=1e-8)
+    def test_get_non_scrap_ratios(self):
+        ratios = self.model.get_non_scrap_ratios()
+        col = ratios.columns[0]
+        self.assertAlmostEqual(0.991, ratios.get_value('A', col), delta=1e-3)
+        self.assertAlmostEqual(0.995, ratios.get_value('B', col), delta=1e-3)
+        self.assertAlmostEqual(1.000, ratios.get_value('C', col), delta=1e-3)
+"""
+
+
 
     def test_get_dr_coefficients(self):
         drc = self.em.get_dr_coefficients()
