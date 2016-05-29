@@ -6,7 +6,7 @@ class TestIOModel(unittest.TestCase):
     def setUp(self):
         path = './sample_data/sample_'
         self.model = iomb.make_io_model(path + 'make.csv', path + 'use.csv',
-                                        scrap_sector='Scrap')
+                                        scrap_sectors=['Scrap'])
 
     def test_value_added_sectors(self):
         va = self.model.value_added_sectors

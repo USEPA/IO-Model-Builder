@@ -13,7 +13,7 @@ class Model(object):
     """
 
     def __init__(self, use_table: pd.DataFrame, make_table: pd.DataFrame,
-                 scrap_sector=None):
+                 scrap_sectors=None):
         """
         Creates a new instance of an economic module with the given data.
 
@@ -22,7 +22,7 @@ class Model(object):
         """
         self.use_table = use_table
         self.make_table = make_table
-        self.scrap_sector = scrap_sector
+        self.scrap_sectors = scrap_sectors
         self._industries = None
         self._commodities = None
 
@@ -177,8 +177,9 @@ class Model(object):
         for com in self.use_table.index:
             in_use[com] = True
         commodities = []
+        scraps = [] if self.scrap_sectors is None else self.scrap_sectors
         for com in self.make_table.columns:
-            if com in in_use and com != self.scrap_sector:
+            if com in in_use and com not in scraps:
                 commodities.append(com)
         commodities.sort()
         self._commodities = commodities
@@ -224,7 +225,7 @@ class Model(object):
     def get_non_scrap_ratios(self) -> pd.DataFrame:
         industries = self.industries
         title = 'Nonscrap Ratio'
-        if self.scrap_sector is None:
+        if self.scrap_sectors is None or len(self.scrap_sectors) == 0:
             data = np.ones((len(industries), 1), dtype=float)
             return pd.DataFrame(data=data, index=industries, columns=[title])
         totals = self.make_table.sum(axis=1)
@@ -234,14 +235,16 @@ class Model(object):
             total = totals[industry]
             if total == 0:
                 continue
-            scrap = self.make_table.get_value(industry, self.scrap_sector)
+            scrap = 0
+            for s in self.scrap_sectors:
+                scrap += self.make_table.get_value(industry, s)
             ratio = (total - scrap) / total
             ratios.set_value(industry, title, ratio)
         return ratios
 
     def get_transformation_matrix(self) -> pd.DataFrame:
         shares = self.get_market_shares()
-        if self.scrap_sector is None:
+        if self.scrap_sectors is None or len(self.scrap_sectors) == 0:
             return shares
         ratios = self.get_non_scrap_ratios()
         col = ratios.columns[0]

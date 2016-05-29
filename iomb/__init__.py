@@ -5,14 +5,14 @@ import iomb.io as io
 import iomb.sat as sat
 
 
-def make_io_model(supply_table_csv, use_table_csv, scrap_sector=None) \
+def make_io_model(supply_table_csv, use_table_csv, scrap_sectors=None) \
         -> io.Model:
     """ Constructs the input-output model from the supply and use tables in the
         given CSV files.
     """
     supply_table = read_csv_data_frame(supply_table_csv)
     use_table = read_csv_data_frame(use_table_csv)
-    return io.Model(use_table, supply_table, scrap_sector)
+    return io.Model(use_table, supply_table, scrap_sectors)
 
 
 def make_sat_table(*args: list) -> sat.Table:
