@@ -239,6 +239,19 @@ class Model(object):
             ratios.set_value(industry, title, ratio)
         return ratios
 
+    def get_transformation_matrix(self) -> pd.DataFrame:
+        shares = self.get_market_shares()
+        if self.scrap_sector is None:
+            return shares
+        ratios = self.get_non_scrap_ratios()
+        col = ratios.columns[0]
+        for industry in shares.index:
+            ratio = ratios.get_value(industry, col)
+            for commodity in shares.columns:
+                share = shares.get_value(industry, commodity)
+                shares.set_value(industry, commodity, share/ratio)
+        return shares
+
     def get_direct_requirements(self) -> pd.DataFrame:
         """
         Calculates the direct requirements table from the use table but it takes

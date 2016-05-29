@@ -48,6 +48,13 @@ class TestIOModel(unittest.TestCase):
         self.assertAlmostEqual(0.991, ratios.get_value('A', col), delta=1e-3)
         self.assertAlmostEqual(0.995, ratios.get_value('B', col), delta=1e-3)
         self.assertAlmostEqual(1.000, ratios.get_value('C', col), delta=1e-3)
+
+    def test_get_transformation_matrix(self):
+        tm = self.model.get_transformation_matrix()
+        self.assertAlmostEqual(0.917, tm.get_value('A', 'A'), delta=1e-3)
+        self.assertAlmostEqual(0.904, tm.get_value('B', 'B'), delta=1e-3)
+        self.assertAlmostEqual(0.926, tm.get_value('C', 'C'), delta=1e-3)
+
 """
 
 
