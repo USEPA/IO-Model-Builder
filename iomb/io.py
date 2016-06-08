@@ -217,6 +217,8 @@ class Model(object):
         shares = self.make_table.ix[self.industries, self.commodities]
         for com in self.commodities:
             total = commodity_totals[com]
+            if total == 0:
+                total = 1  # avoid NaN values
             for ind in self.industries:
                 share = shares.get_value(ind, com) / total
                 shares.set_value(ind, com, share)
@@ -266,6 +268,8 @@ class Model(object):
         drs = self.use_table.ix[self.commodities, self.industries]
         for ind in self.industries:
             total = industry_totals[ind]
+            if total == 0:
+                total = 1  # avoid NaN values
             for com in self.commodities:
                 dr = drs.get_value(com, ind) / total
                 drs.set_value(com, ind, dr)

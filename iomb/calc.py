@@ -50,7 +50,7 @@ class Calculator(object):
         # prepare the result
         r = Result()
         drc = self.drc.copy()
-        sat = self.sat.copy().reindex(columns=drc.columns)
+        sat = self.sat.copy().reindex(columns=drc.columns, fill_value=0.0)
         r.sectors = drc.index
         r.flows = sat.index
         r.demand = self._demand_vector()
