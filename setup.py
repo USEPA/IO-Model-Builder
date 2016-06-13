@@ -7,14 +7,17 @@ setup(
     author_email="michael.srocka@greendelta.com",
     description="iomb is a package for creating environmentally extended input-output models",
     license="MIT",
-    keywords="example documentation tutorial",
+    keywords="converter lca",
     url="http://packages.python.org/iomb",
     packages=['iomb'],
     install_requires=['numpy', 'pandas', 'matplotlib'],
-    long_description=open('README.md').read(),
+    long_description=open('README.rst').read(),
     classifiers=[
         "Development Status :: 3 - Alpha",
-        "Topic :: Utilities",
+        "Environment :: Console",
+        "Intended Audience :: Science/Research",
         "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 3.5",
+        "Topic :: Utilities",
     ]
 )
