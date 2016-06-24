@@ -34,7 +34,31 @@ To uninstall the package run
 
 Usage
 -----
+If you have Python and the iomb package installed as described above you can use
+at in plain Python scripts on your computer and execute it with the python command:
+
+```bash
+    python <your_script.py>
+```
+
+In the following examples the main functions of the `iomb` package are shown.
 
 
+### Calculating the coefficients matrix from supply and use tables
+The `iomb` package can calculate a direct requirements coefficient matrix from
+a given supply and use table as described in the 
+[Concepts and Methods of the U.S. Input-Output Accounts][1] (see Chapter 12).
 
+[1]:http://www.bea.gov/papers/pdf/IOmanual_092906.pdf "Karen J. Horowitz, Mark A. Planting: Concepts and Methods of the U.S. Input-Output Accounts. 2006"
 
+The following example shows how this works:
+
+```python
+# drc_example.py
+import iomb
+
+io_model = iomb.make_io_model('make_table.csv',
+                              'use_table.csv')
+drc = io_model.get_dr_coefficients()
+drc.to_csv('drc.csv')
+```
