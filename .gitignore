@@ -4,6 +4,7 @@ __pycache__/
 data/
 notebooks/.ipynb_checkpoints
 notebooks/sample_notebook.ipynb
-doc/build
+
+doc/*.pdf
 
 iomb.egg-info

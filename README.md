@@ -28,7 +28,7 @@ have to install Jupyter too (via `pip install jupyter`).
 
 To uninstall the package run
 
-```
+```bash
     pip uninstall iomb
 ```
 
