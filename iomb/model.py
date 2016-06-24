@@ -36,12 +36,11 @@ class ElemFlow(object):
 class Sector(object):
     """ Describes an industry or commodity sector in the input-output model. """
 
-    def __init__(self, name='', code='', location='US'):
+    def __init__(self, name='', code='', location='US', unit='USD'):
         self.name = name
         self.code = code
         self.location = location
-        self.uid = util.uuid_of_process(name, code, location)
-        self.product_uid = util.uuid_of_product(name, code, location)
+        self.unit = unit
         self.category = ''
         self.sub_category = ''
 
@@ -53,6 +52,14 @@ class Sector(object):
 
             <sector code>/<sector name>/<location code>/<unit>
 
-            e.g.: 1111a0/oilseed farming/us
+            e.g.: 1111a0/oilseed farming/us/usd
         """
-        return util.as_path(self.code, self.name, self.location)
+        return util.as_path(self.code, self.name, self.location, self.unit)
+
+    @property
+    def uid(self):
+        return util.make_uuid('Process', self.key)
+
+    @property
+    def product_uid(self):
+        return util.make_uuid('Flow', self.key)

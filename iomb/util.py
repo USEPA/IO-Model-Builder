@@ -19,14 +19,6 @@ def as_path(*args: list) -> str:
     return "/".join(strings)
 
 
-def uuid_of_process(sector_name: str, sector_code: str, location: str) -> str:
-    return make_uuid('Process', sector_name, sector_code, location)
-
-
-def uuid_of_product(sector_name: str, sector_code: str, location: str) -> str:
-    return make_uuid('Flow', sector_name, sector_code, location)
-
-
 def uuid_of_flow(name: str, category: str, sub_category: str, unit: str) -> str:
     return make_uuid('Flow', name, category, sub_category, unit)
 
