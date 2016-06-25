@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import iomb.model as model
 import pandas as pd
 import numpy as np
-from .refmap import map_unit
+from .refmap import map_location, map_unit
 
 
 class Table(object):
@@ -64,6 +64,21 @@ class Table(object):
                 row = [flow.name, flow.category, flow.sub_category, flow.unit,
                        '<input | output>', flow.uid, um.property_uid,
                        um.unit_uid, um.factor]
+                writer.writerow(row)
+
+    def prepare_sector_meta_data(self, to_file: str):
+        """ Prepares a sector meta data file for the conversion to openLCA with
+            the sector/process information from this table. The file is written
+            to the given location.
+        """
+        with open(to_file, 'w', encoding='utf-8', newline='\n') as f:
+            writer = csv.writer(f)
+            writer.writerow(['Code', 'Name', 'Category', 'Sub-category',
+                             'Location-Code', 'Location-UUID'])
+            for sector in self.sectors:
+                lm = map_location(sector.location)
+                row = [sector.code, sector.name, sector.category,
+                       sector.sub_category, lm.code, lm.uid]
                 writer.writerow(row)
 
     def as_data_frame(self) -> pd.DataFrame:

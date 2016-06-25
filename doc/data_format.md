@@ -118,7 +118,7 @@ mappings to reference data like flow properties, locations, etc. Like all other
 files, the meta data files are stored in a simple CSV format which is described
 in the following.
 
-## Meta-data file for elementary flows
+## Meta-data files for elementary flows
 A meta data file for elementary flows contains the following fields:
 
 0. Name of the flow
@@ -130,3 +130,12 @@ A meta data file for elementary flows contains the following fields:
 6. UUID of the flow property (e.g. UUID for mass)
 7. UUID of the flows unit
 8. Conversion factor ...
+
+## Meta-data files for sectors/processes
+
+0. Code
+1. Name
+2. Category
+3. Sub-category
+4. Location-Code
+5. Location-UUID
