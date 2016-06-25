@@ -1,8 +1,10 @@
+import csv
 import iomb.util as util
 import matplotlib.pyplot as plt
 import iomb.model as model
 import pandas as pd
 import numpy as np
+from .refmap import map_unit
 
 
 class Table(object):
@@ -46,6 +48,23 @@ class Table(object):
             self.sectors.append(sector)
             self.sector_idx[sector.uid] = j
         return self.sector_idx[sector.uid]
+
+    def prepare_flow_meta_data(self, to_file: str):
+        """ Prepares a flow meta data file for the conversion to openLCA with
+            the elementary flow information from this table and writes it to
+            the given location
+        """
+        with open(to_file, 'w', encoding='utf-8', newline='\n') as f:
+            writer = csv.writer(f)
+            writer.writerow(['Name', 'Category', 'Subcategory', 'Unit',
+                             'Direction', 'Flow-UUID', 'Property-UUID',
+                             'Unit-UUID', 'Factor'])
+            for flow in self.flows:
+                um = map_unit(flow.unit)
+                row = [flow.name, flow.category, flow.sub_category, flow.unit,
+                       '<input | output>', flow.uid, um.property_uid,
+                       um.unit_uid, um.factor]
+                writer.writerow(row)
 
     def as_data_frame(self) -> pd.DataFrame:
         """ Converts the satellite table into a pandas data frame where the
