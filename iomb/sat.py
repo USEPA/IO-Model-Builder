@@ -13,7 +13,11 @@ class Table(object):
         self.sector_idx = {}
         self.entries = {}
 
-    def add_file(self, csv_file):
+    def add_file(self, csv_file: str):
+        """ Reads the given CSV file and adds the entries to this satellite
+            table.
+        """
+
         def handle_row(row, i):
             i = self._read_flow(row)
             j = self._read_sector(row)
@@ -25,10 +29,8 @@ class Table(object):
         util.each_csv_row(csv_file, handle_row, skip_header=True)
 
     def _read_flow(self, row) -> int:
-        flow = model.ElemFlow(name=row[0],
-                              category=row[2],
-                              sub_category=row[3],
-                              unit=row[9])
+        flow = model.ElemFlow(name=row[0], category=row[2], sub_category=row[3],
+                              uid=row[4], unit=row[9])
         if flow.uid not in self.flow_idx:
             i = len(self.flows)
             self.flows.append(flow)

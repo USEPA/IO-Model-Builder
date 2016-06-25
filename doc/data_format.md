@@ -93,3 +93,40 @@ it is used in the other data tables, e.g.:
     sector ID , process name  , process uuid , ...
     sector A  , Grain farming , 764c14f3-... , ...
     sector B  , Fruit farming , 11a531e6-... , ...
+
+
+## Format of satellite tables
+Satellite tables are saved in a CSV file with the following columns:
+
+0. Elementary flow name
+1. CAS number of the flow
+2. Flow category
+3. Flow sub-category
+4. Flow UUID
+5. Process/Sector name
+6. Process/Sector code
+7. Process/Sector location
+8. Amount
+9. Unit
+...
+
+## Meta data files
+Meta data files are used when the input-output model is converted to an JSON-LD
+data package that can be imported into openLCA or the LCA Harmonization tool.
+These files contain additional information about flows, processes, etc. and 
+mappings to reference data like flow properties, locations, etc. Like all other
+files, the meta data files are stored in a simple CSV format which is described
+in the following.
+
+## Meta-data file for elementary flows
+A meta data file for elementary flows contains the following fields:
+
+0. Name of the flow
+1. Category of the flow
+2. Sub-category of the flow
+3. Unit of the flow
+4. Flow direction (input/output)
+5. UUID of the (mapped) flow
+6. UUID of the flow property (e.g. UUID for mass)
+7. UUID of the flows unit
+8. Conversion factor ...

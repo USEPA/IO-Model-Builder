@@ -51,7 +51,8 @@ a given supply and use table as described in the
 
 [1]:http://www.bea.gov/papers/pdf/IOmanual_092906.pdf "Karen J. Horowitz, Mark A. Planting: Concepts and Methods of the U.S. Input-Output Accounts. 2006"
 
-The following example shows how this works:
+The following example shows how to calculate such a coefficients matrix and save
+it in a CSV file:
 
 ```python
 # drc_example.py
@@ -62,3 +63,5 @@ io_model = iomb.make_io_model('make_table.csv',
 drc = io_model.get_dr_coefficients()
 drc.to_csv('drc.csv')
 ```
+
+### Reading satellite tables

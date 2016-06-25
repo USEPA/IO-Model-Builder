@@ -10,8 +10,8 @@ files.
 
 Industry and commodity sectors are identified by the following attributes:
 
-    <sector code>/<sector name>/<location code>/<unit>
+    <sector code>/<sector name>/<location code>
 
-    e.g. 1111a0/oilseed farming/us/usd
+    e.g. 1111a0/oilseed farming/us
 
 

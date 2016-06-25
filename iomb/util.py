@@ -23,7 +23,7 @@ def uuid_of_flow(name: str, category: str, sub_category: str, unit: str) -> str:
     return make_uuid('Flow', name, category, sub_category, unit)
 
 
-def each_csv_row(csv_file, func, skip_header=False):
+def each_csv_row(csv_file: str, func, skip_header=False):
     """ Iterates over each row in the given CSV file. It skips the first row if
         specified and removes leading and trailing whitespaces.
     """

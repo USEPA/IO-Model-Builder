@@ -3,6 +3,19 @@ import pandas as pd
 import iomb.calc as calc
 import iomb.io as io
 import iomb.sat as sat
+import logging as log
+import sys
+
+log.basicConfig(level=log.WARNING, format='%(levelname)s %(message)s',
+                stream=sys.stdout)
+
+
+def log_all():
+    """ By default we only log warnings. This function sets the log-level to
+        DEBUG so that all logs of the iomb package are written to the standard
+        output.
+    """
+    log.getLogger().setLevel(level=log.DEBUG)
 
 
 def make_io_model(supply_table_csv, use_table_csv, scrap_sectors=None) \
@@ -17,6 +30,7 @@ def make_io_model(supply_table_csv, use_table_csv, scrap_sectors=None) \
 
 def make_sat_table(*args: list) -> sat.Table:
     """ Constructs the satellite table from the given CSV files. """
+    log.info('Create satellite table')
     table = sat.Table()
     for csv_file in args:
         table.add_file(csv_file)

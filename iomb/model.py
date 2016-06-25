@@ -50,11 +50,11 @@ class Sector(object):
             make and use tables, results etc.). It is just a combination of
             the following sector attributes with all letters in lower case:
 
-            <sector code>/<sector name>/<location code>/<unit>
+            <sector code>/<sector name>/<location code>
 
-            e.g.: 1111a0/oilseed farming/us/usd
+            e.g.: 1111a0/oilseed farming/us
         """
-        return util.as_path(self.code, self.name, self.location, self.unit)
+        return util.as_path(self.code, self.name, self.location)
 
     @property
     def uid(self):
