@@ -43,6 +43,7 @@ class Sector(object):
         self.unit = unit
         self.category = ''
         self.sub_category = ''
+        self.location_uid = ''
 
     @property
     def key(self):

@@ -29,6 +29,7 @@ class Export(object):
         s = model.Sector(code=row[0], name=row[1], location=row[4])
         s.category = row[2]
         s.sub_category = row[3]
+        s.location_uid = row[5]
         key = s.key
         if key in self.drc.index:
             self.sectors.append(s)
@@ -70,8 +71,8 @@ class Export(object):
             sub_path = util.as_path(cat, sub)
             if sub_path not in handled:
                 handled.append(sub_path)
-                _write_category('PROCESS', sub, pack, cat)
-                _write_category('FLOW', sub, pack, cat)
+                _write_category('PROCESS', sub, pack, parent_name=cat)
+                _write_category('FLOW', sub, pack, parent_name=cat)
 
     def _write_products(self, pack):
         for s in self.sectors:
@@ -83,6 +84,7 @@ class Export(object):
                 "name": s.name,
                 "category": {"@type": "Category", "@id": cat_id},
                 "flowType": "PRODUCT_FLOW",
+                "location": {"@type": "Location", "@id": s.location_uid},
                 "flowProperties": [
                     {
                         "@type": "FlowPropertyFactor",
@@ -158,6 +160,7 @@ def _prepare_process(s: model.Sector):
         "processTyp": "UNIT_PROCESS",
         "category": {"@type": "Category", "@id": cat_id},
         "processDocumentation": {"copyright": False},
+        "location": {"@type": "Location", "@id": s.location_uid},
         "exchanges": [
             {
                 "@type": "Exchange",
