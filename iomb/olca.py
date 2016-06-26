@@ -194,6 +194,9 @@ def _write_category(model_type, name, pack, parent_name=None):
     }
     if parent_name is not None:
         parent_id = util.make_uuid(model_type, parent_name)
+        # to be compatible with openLCA 1.4 and 1.5 we use 'category' and
+        # 'parentCategory'
+        c["category"] = {"@type": "Category", "@id": parent_id}
         c["parentCategory"] = {"@type": "Category", "@id": parent_id}
     dump(c, 'categories', pack)
 
