@@ -1,4 +1,5 @@
 import pandas as pd
+import logging as log
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import iomb.validation as validation
@@ -208,6 +209,7 @@ class Model(object):
         Calculates the market shares from the make table. This method returns
         an industry*commodity matrix.
         """
+        log.info('calculate market shares')
         commodity_totals = self.make_table.sum(axis=0)
 
         # short solution (equivalent to explicit solution below)
@@ -245,6 +247,7 @@ class Model(object):
         return ratios
 
     def get_transformation_matrix(self) -> pd.DataFrame:
+        log.info('calculate transformation matrix')
         shares = self.get_market_shares()
         if self.scrap_sectors is None or len(self.scrap_sectors) == 0:
             return shares
@@ -264,6 +267,7 @@ class Model(object):
         with different units correctly (TODO: link to documentation. This method
         returns a commodity*industry matrix.
         """
+        log.info('calculate direct requirements')
         industry_totals = self.make_table.sum(axis=1)
         drs = self.use_table.ix[self.commodities, self.industries]
         for ind in self.industries:
@@ -281,6 +285,7 @@ class Model(object):
         and direct requirements table. This method returns a commodity*commodity
         matrix.
         """
+        log.info('calculate direct requirements coefficients A')
         drs = self.get_direct_requirements()
         tm = self.get_transformation_matrix()
         return drs.dot(tm)
@@ -289,6 +294,7 @@ class Model(object):
         """
         Calculates the total requirements coefficients.
         """
+        log.info('calculate total requirements coefficients')
         drc = self.get_dr_coefficients()
         eye = np.eye(drc.shape[0], dtype=np.float64)
         data = linalg.inv(eye - drc.as_matrix())

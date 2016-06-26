@@ -2,6 +2,7 @@ import iomb
 import json
 import iomb.util as util
 import iomb.model as model
+import logging as log
 import zipfile as zipf
 
 
@@ -28,7 +29,13 @@ class Export(object):
         s = model.Sector(code=row[0], name=row[1], location=row[4])
         s.category = row[2]
         s.sub_category = row[3]
-        self.sectors.append(s)
+        key = s.key
+        if key in self.drc.index:
+            self.sectors.append(s)
+            log.info("registered sector '%s' for export", key)
+        else:
+            log.warning("sector '%s' from meta-data is not contained in the DRC"
+                        " table and will be ignored", key)
 
     def _add_flow(self, row, i):
         f = model.ElemFlow(name=row[0], category=row[1], sub_category=row[2],
@@ -116,7 +123,7 @@ class Export(object):
 
     def _add_elem_entries(self, s: model.Sector, p: dict):
         if s.key not in self.sat.columns:
-            print(s.key, 'is not contained in satellite matrix')
+            log.warning('%s is not contained in satellite matrix', s.key)
             return
         exchanges = p["exchanges"]
         for flow in self.flows:

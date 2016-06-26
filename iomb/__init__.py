@@ -23,6 +23,7 @@ def make_io_model(supply_table_csv, use_table_csv, scrap_sectors=None) \
     """ Constructs the input-output model from the supply and use tables in the
         given CSV files.
     """
+    log.info('Create IO model')
     supply_table = read_csv_data_frame(supply_table_csv)
     use_table = read_csv_data_frame(use_table_csv)
     return io.Model(use_table, supply_table, scrap_sectors)
@@ -47,6 +48,7 @@ def calculate(io_model: io.Model, sat_table: sat.Table, demand: dict) \
 
 def read_csv_data_frame(csv_file) -> pd.DataFrame:
     """ Loads a pandas DataFrame from the given CSV file. """
+    log.info('read data frame from %s', csv_file)
     df = pd.read_csv(csv_file, index_col=0, header=0)
     df.fillna(0.0, inplace=True)
 

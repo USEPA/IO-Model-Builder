@@ -1,5 +1,6 @@
 import csv
 import iomb.util as util
+import logging as log
 import matplotlib.pyplot as plt
 import iomb.model as model
 import pandas as pd
@@ -28,6 +29,7 @@ class Table(object):
                 self.entries[i] = {}
             self.entries[i][j] = val
 
+        log.info('append entries from %s to satellite table', csv_file)
         util.each_csv_row(csv_file, handle_row, skip_header=True)
 
     def _read_flow(self, row) -> int:
@@ -37,6 +39,7 @@ class Table(object):
             i = len(self.flows)
             self.flows.append(flow)
             self.flow_idx[flow.uid] = i
+            log.info('flow[%s]: %s', i, flow.key)
         return self.flow_idx[flow.uid]
 
     def _read_sector(self, row) -> int:
@@ -87,6 +90,7 @@ class Table(object):
             index the keys of the commodity sectors, and the values the amounts
             of the elementary flows for the respective sectors.
         """
+        log.info('convert satellite table to data frame')
         rows, cols = len(self.flows), len(self.sectors)
         data = np.zeros((rows, cols), dtype=np.float64)
         for i, row in self.entries.items():
