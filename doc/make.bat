@@ -1,1 +1,1 @@
-pandoc ..\README.md -o iodb_readme.pdf
+pandoc ..\README.md --variable=linkcolor:blue -o iomb_readme.pdf
