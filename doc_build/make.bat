@@ -1,1 +1,0 @@
-pandoc ..\README.md --variable=linkcolor:blue -o iomb_readme.pdf
