@@ -5,6 +5,7 @@ data/
 notebooks/.ipynb_checkpoints
 notebooks/sample_notebook.ipynb
 
-doc/*.pdf
+doc_build/
 
 iomb.egg-info
+notebooks/
