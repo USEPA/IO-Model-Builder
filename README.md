@@ -21,7 +21,24 @@ Then you can install it and its dependencies by creating an egg-link with pip:
 
 After this you should be able to use the `iomb` package in your Python scripts.
 If you want to use it in [Jupyter notebooks](http://jupyter.org/) you have to 
-install Jupyter too (via `pip install jupyter`). 
+install Jupyter too (via `pip install jupyter`).
+
+----------------------------------------------------------------------------------------
+**Note** that `iomb` uses [NumPy](http://www.numpy.org/) for matrix computations
+and there is currently no precompiled standard package available for 
+[Windows 64 bit](https://pypi.python.org/pypi/numpy) which results in an error when
+installing iomb. An easy solution is to download and install the precompiled NumPy 
+package for Windows from http://www.lfd.uci.edu/~gohlke/pythonlibs/#numpy as described 
+[here](http://stackoverflow.com/questions/28413824/installing-numpy-on-windows)
+and run the installation of iomb after this:
+
+```bash
+    pip install "numpy-...-win_amd64.whl"
+```
+
+However, this seems not to work on all 
+[Windows platforms](http://stackoverflow.com/questions/31025322/install-numpy-windows-8-64-with-python-3-5).
+----------------------------------------------------------------------------------------
 
 > (We plan to also publish this package on [PyPI](https://pypi.python.org/pypi)
 >  when this is ready you will be able to install the package via

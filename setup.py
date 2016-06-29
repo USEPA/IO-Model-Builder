@@ -11,7 +11,7 @@ setup(
     url="http://packages.python.org/iomb",
     packages=['iomb'],
     install_requires=['numpy', 'pandas', 'matplotlib'],
-    long_description=open('README.rst').read(),
+    long_description=open('README.md').read(),
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Environment :: Console",
