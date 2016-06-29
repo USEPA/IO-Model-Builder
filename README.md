@@ -1,7 +1,9 @@
 iomb - input-output model builder
 =================================
 iomb is a package for creating, calculating, and converting environmentally 
-extended input-output models. 
+extended input-output models. It processes [simple CSV files](#Data-format) and can
+create [JSON-LD data packages](https://github.com/GreenDelta/olca-schema) that can
+be imported into [openLCA](http://openlca.org).
 
 Installation
 ------------
@@ -54,6 +56,8 @@ To uninstall the package run
 
 Usage
 -----
+The following examples show what you can do with the `iomb` package. For detailed
+information of the data format see the section [below](#Data-format). 
 
 ### Logging
 By default `iomb` logs only warnings and errors to the standard output. You can
@@ -65,25 +69,13 @@ configure the logging so that all logs are written:
 ```
 
 ### Reading an input-output model
-`iomb` currently supports the creation of input-output models from supply and
-use tables. These tables are read as [pandas data frames](http://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html)
-where sectors are identified by a combination of the following attributes in
-lower case:
-
-```
-    <sector code>/<sector name>/<location code>
-    e.g. 1111a0/oilseed farming/us
-```
-
-The `make_io_model` function creates an input-output model:
-
 ```python
     import iomb
     io_model = iomb.make_io_model('make_table.csv',
                                   'use_table.csv')
 ```
 
-### Calculating the coefficients matrix
+### Calculating a coefficients matrix
 The `iomb` package can calculate a direct requirements coefficient matrix from
 a given supply and use table as described in the 
 [Concepts and Methods of the U.S. Input-Output Accounts, Chapter 12][1]:
@@ -94,16 +86,7 @@ a given supply and use table as described in the
     drc = io_model.get_dr_coefficients()
 ```
 
-The intermediate tables for this calculation can be also directly retrieved 
-from the IO model (e.g. via `get_market_shares`, `get_transformation_matrix`, 
-`get_direct_requirements`, etc.).
-
-The `iomb` package directly uses the [DataFrame](http://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html)
-class of the [pandas framework](http://pandas.pydata.org/) for the input-output
-tables and calculation results. Thus, it is possible to directly write result
-tables to a CSV file or to create a chart using the 
-[pandas visualization functions](http://pandas.pydata.org/pandas-docs/stable/visualization.html)
-
+### Using result data frames
 ```python
     # save as CSV file
     drc.to_csv('drc.csv') 
@@ -131,8 +114,8 @@ start with a prefix `viz_`:
 ```
 
 ### Reading satellite tables
-A satellite table can be created from a set of CSV files with a defined format (
-TODO: link to format spec.).
+A satellite table can be created from a set of CSV files (see the format
+specification [below](#Satellite-tables):
 
 ```python
     sat_table = iomb.make_sat_table('sat_file1.csv', 
@@ -156,19 +139,101 @@ TODO: doc
 
 Data format
 -----------
-`iomb` processes simple CSV files in a specific format. The format of these 
-files is described in the following sections. All CSV files should have the 
-following properties:
+iomb processes simple CSV files in a defined format that is described in the 
+following sections. In principle there are two types of files:
+ 
+1. **Data files** mainly contain input and output amounts of economic 
+   and environmental flows and information directly associated with these 
+   amounts (like uncertainty or data quality). Entities in these files, like 
+   sectors of flows, are identified by a combination of key attributes as
+   described below. 
+2. **Metadata files** contain additional information that further describes 
+   the entities in the data files and provide mappings to reference data. Meta
+   data files are not required when calculating and analyzing models with iomb
+   but are used when creating JSON-LD data packages.
+ 
+In addition to the format specifications below, all CSV files that are processed
+with iomb should have the following properties:
 
-* Commas (`,`) are used as column separators
+* Commas (`,`) are used as column separators.
 * Character strings have to be enclosed in double quotes (`"`) if they contain 
   a comma or multiple lines. In other cases the quoting is optional.
-* Numbers or boolean values (true, false) are never enclosed in quotes. The
+* Numbers or Boolean values (true, false) are never enclosed in quotes. The
   decimal separator is a point (`.`).
-* Leading and trailing whitespaces are ignored
-* The file encoding is UTF-8
+* Leading and trailing whitespaces are ignored.
+* The file encoding is UTF-8.
 
-### Format of satellite tables
+### Identifiers
+Entities like sectors, flows, impact categories etc. are not identified by 
+artificial keys like [UUIDs](https://en.wikipedia.org/wiki/Universally_unique_identifier) 
+in the CSV files but by a combination of key attributes of the respective 
+entity as they are human readable. However, UUIDs are used in metadata files 
+as they are required for generating JSON-LD packages. The key attributes are 
+combined in a single string by removing leading and trailing whitespaces, 
+setting the attributes to lower case, and joining them with a slash `/` as 
+separator:
+
+    [" Some key", "Attributes "] => "some key/attributes"
+
+The `iomb.util` package provides a function `as_path` which exactly does this.
+It also contains a function `make_uuid` which generates a hash-based UUID from
+a set of attributes which are used in the JSON-LD packages when there is no
+mapping to a UUID in a metadata file.
+
+#### Sector identifiers
+Input-output sectors are identified by the following attributes:
+
+0. The sector code, e.g. `1111A0`
+1. The sector name, e.g. `Oilseed farming`
+2. The location code, e.g. `US`
+
+The sector key of the example values would be:
+
+    1111a0/oilseed farming/us
+
+#### Flow indentifiers
+Flows in the satellite tables are identified by the following
+attributes:
+
+0. The category / compartment, e.g. `air`
+1. The sub-category / sub-compartment, e.g. `unspecified`
+2. The name of the flow, e.g. `Carbon dioxide`
+3. The unit of the flow, e.g. `kg`
+
+Thus, the key of the example would be
+
+    air/unspecified/carbon dioxide/kg
+
+#### Impact category identifiers
+Impact categories are identified by the following attributes
+
+0. The name, e.g. `Climate change GWP 100`
+1. The reference unit, e.g. `kg CO2 eq.`
+
+The key of the example would be:
+
+    climate change gwp 100/kg co2 eq.
+
+### Data frames
+The `iomb` package directly uses the [DataFrame](http://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html)
+class of the [pandas framework](http://pandas.pydata.org/) for the input-output
+tables and calculation results. The identifiers of input-output sectors, flows,
+and impact categories as described above are directly used in the row and column
+indices of the data frames. Thus the selection of a process contribution to an
+impact category result could look like this:
+
+```python
+    result = ...
+    result['climate change gwp 100/kg co2 eq.']['1111a0/oilseed farming/us']
+``` 
+
+The data frame class also directly provides a method for storing it as a CSV
+file (`to_csv`) and 
+[visualization functions](http://pandas.pydata.org/pandas-docs/stable/visualization.html).
+
+### Data files
+
+### Satellite tables
 Satellite tables are saved in a CSV file with the following columns:
 
 0. Elementary flow name
