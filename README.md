@@ -24,6 +24,7 @@ If you want to use it in [Jupyter notebooks](http://jupyter.org/) you have to
 install Jupyter too (via `pip install jupyter`).
 
 ----------------------------------------------------------------------------------------
+
 **Note** that `iomb` uses [NumPy](http://www.numpy.org/) for matrix computations
 and there is currently no precompiled standard package available for 
 [Windows 64 bit](https://pypi.python.org/pypi/numpy) which results in an error when
@@ -38,6 +39,7 @@ and run the installation of iomb after this:
 
 However, this seems not to work on all 
 [Windows platforms](http://stackoverflow.com/questions/31025322/install-numpy-windows-8-64-with-python-3-5).
+
 ----------------------------------------------------------------------------------------
 
 > (We plan to also publish this package on [PyPI](https://pypi.python.org/pypi)
