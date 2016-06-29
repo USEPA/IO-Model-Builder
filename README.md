@@ -1,7 +1,7 @@
 iomb - input-output model builder
 =================================
 iomb is a package for creating, calculating, and converting environmentally 
-extended input-output models. It processes [simple CSV files](#Data-format) and can
+extended input-output models. It processes [simple CSV files](#data-format) and can
 create [JSON-LD data packages](https://github.com/GreenDelta/olca-schema) that can
 be imported into [openLCA](http://openlca.org).
 
@@ -57,7 +57,7 @@ To uninstall the package run
 Usage
 -----
 The following examples show what you can do with the `iomb` package. For detailed
-information of the data format see the section [below](#Data-format). 
+information of the data format see the section [below](#data-format). 
 
 ### Logging
 By default `iomb` logs only warnings and errors to the standard output. You can
@@ -115,7 +115,7 @@ start with a prefix `viz_`:
 
 ### Reading satellite tables
 A satellite table can be created from a set of CSV files (see the format
-specification [below](#Satellite-tables):
+specification [below](#satellite-tables):
 
 ```python
     sat_table = iomb.make_sat_table('sat_file1.csv', 
@@ -233,7 +233,24 @@ file (`to_csv`) and
 
 ### Data files
 
-### Satellite tables
+#### Input-output tables
+The calculations in `iomb` as based on the direct requirements coefficients
+matrix `A` of an input-output model but it also provides a method for 
+calculating this coefficients matrix from raw supply and use tables as
+provided by the [BEA](http://www.bea.gov/industry/io_annual.htm).
+
+The format of these tables that `iomb` expects is just a table with numbers
+with the industry and commodity [sector identifiers](#sector-identifiers) 
+as row and column headers, e.g.:
+
+```csv
+                            1111a0/oilseed farming/us , 1111b0/grain farming/us , ...
+1111a0/oilseed farming/us , 21.073                    , 0.0                     , ...
+1111b0/grain farming/us   , 0.0                       , 54.738                  , ...
+...                       , ...                       , ...                     , ...
+```
+
+#### Satellite tables
 Satellite tables are saved in a CSV file with the following columns:
 
 0. Elementary flow name
