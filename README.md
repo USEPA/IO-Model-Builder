@@ -295,3 +295,21 @@ A meta data file for elementary flows contains the following fields:
 4. Location-Code
 5. Location-UUID
 ...
+
+#### Metadata files for units
+iomb directly contains a file for mapping unit names to a unit and quantity
+UUID that is used in the JSON-LD package. However, in the JSON-LD export this
+mapping can be changed ... TODO: example
+
+A metadata file for units should have the following columns with the first row
+containing the column headers:
+
+0. Unit name, e.g. `kg`
+1. UUID of the unit
+2. Quantity / Flow property name, e.g. `Mass`
+3. UUID of the quantity
+
+```csv
+Unit , Unit-UUID         , Quantity , Quantity-UUID
+kg   , 20aadc24-a391-... , Mass     , 93a60a56-a3c8-...
+```

@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import iomb.model as model
 import pandas as pd
 import numpy as np
-from .refmap import map_location, map_unit
+import iomb.refmap as refmap
 
 
 class Table(object):
@@ -62,11 +62,12 @@ class Table(object):
             writer.writerow(['Name', 'Category', 'Subcategory', 'Unit',
                              'Direction', 'Flow-UUID', 'Property-UUID',
                              'Unit-UUID', 'Factor'])
+            units = refmap.UnitMap.create_default()
             for flow in self.flows:
-                um = map_unit(flow.unit)
+                unit = units.get(flow.unit)
                 row = [flow.name, flow.category, flow.sub_category, flow.unit,
-                       '<input | output>', flow.uid, um.property_uid,
-                       um.unit_uid, um.factor]
+                       '<input | output>', flow.uid, unit.quantity_uid,
+                       unit.unit_uid]
                 writer.writerow(row)
 
     def prepare_sector_meta_data(self, to_file: str):
@@ -79,7 +80,7 @@ class Table(object):
             writer.writerow(['Code', 'Name', 'Category', 'Sub-category',
                              'Location-Code', 'Location-UUID'])
             for sector in self.sectors:
-                lm = map_location(sector.location)
+                lm = refmap.map_location(sector.location)
                 row = [sector.code, sector.name, sector.category,
                        sector.sub_category, lm.code, lm.uid]
                 writer.writerow(row)

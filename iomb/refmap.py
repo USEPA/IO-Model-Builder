@@ -2,21 +2,56 @@
 This module contains functions that map entities like units, locations,
 compartments, etc. to reference data with UUIDs.
 """
-
+from .data import data_dir
+from .util import each_csv_row
 import logging as log
 
-__locations = None
-__units = None
+
+class UnitEntry(object):
+    """ Describes an entry in a unit-mapping file. In iomb units are mapped by
+        name. """
+
+    def __init__(self):
+        self.unit_name = ''
+        self.unit_uid = ''
+        self.quantity_name = ''
+        self.quantity_uid = ''
+
+    @staticmethod
+    def from_csv(csv_row):
+        e = UnitEntry()
+        e.unit_name = csv_row[0]
+        e.unit_uid = csv_row[1]
+        e.quantity_name = csv_row[2]
+        e.quantity_uid = csv_row[3]
+        return e
 
 
-class UnitMapping(object):
-    def __init__(self, name: str, unit_uid: str, property_name: str,
-                 property_uid: str, factor: float):
-        self.name = name
-        self.unit_uid = unit_uid
-        self.property_name = property_name
-        self.property_uid = property_uid
-        self.factor = factor
+class UnitMap(object):
+    def __init__(self):
+        self.mappings = {}
+
+    @staticmethod
+    def read(file_path):
+        m = UnitMap()
+
+        def row_handler(row, i):
+            e = UnitEntry.from_csv(row)
+            m.mappings[e.unit_name] = e
+
+        each_csv_row(file_path, row_handler, skip_header=True)
+        return m
+
+    @staticmethod
+    def create_default():
+        """ Creates the unit map with default data. """
+        path = data_dir + '/unit_meta_data.csv'
+        return UnitMap.read(path)
+
+    def get(self, unit_name: str) -> UnitEntry:
+        if unit_name in self.mappings:
+            return self.mappings[unit_name]
+        return None
 
 
 class LocationMapping(object):
@@ -24,31 +59,6 @@ class LocationMapping(object):
         self.code = code
         self.name = name
         self.uid = uid
-
-
-def __init_units():
-    """
-    Adding mappings from openLCA:
-
-    SQL:
-    select u.name as unit_name, u.ref_id as unit_uid, p.name as property_name,
-    p.ref_id as property_uid from tbl_unit_groups g inner join
-    tbl_flow_properties p on g.f_default_flow_property = p.id
-    inner join tbl_units u on u.f_unit_group = g.id where u.name = 'kg'
-
-    Excel:
-    = "'" & LOWER(A198) & "':" & "UnitMapping('" &A198& "','" & B198 & "','"
-        & C198 & "','" & D198& ", 1.0'),"
-
-    """
-    global __units
-    __units = {
-        'kg': UnitMapping('kg', '20aadc24-a391-41cf-b340-3e4529f44bde', 'Mass',
-                          '93a60a56-a3c8-11da-a746-0800200b9a66', 1.0),
-        'm2*a': UnitMapping('m2*a', 'c7266b67-4ea2-457f-b391-9b94e26e195a',
-                            'Area*time',
-                            '93a60a56-a3c8-21da-a746-0800200c9a66', 1.0)
-    }
 
 
 def __init_locations():
@@ -59,17 +69,6 @@ def __init_locations():
         'us-ga': LocationMapping('US-GA', 'United States, Georgia',
                                  '2b701fc6-ef0e-3b9a-9f4d-631863e904f6')
     }
-
-
-def map_unit(unit_name: str) -> UnitMapping:
-    if __units is None:
-        __init_units()
-    unit = unit_name.strip().lower()
-    if unit in __units:
-        return __units[unit]
-    else:
-        log.error('Could not map unknown unit: %s' % unit)
-        return UnitMapping(unit_name, '', '', '', 1.0)
 
 
 def map_location(location_code: str) -> LocationMapping:
