@@ -2,12 +2,15 @@
 This script exports the default physical units from openLCA to a file that can
 be directly used as unit mapping file in the iomb package. When preparing the
 file for iomb also have a look on possible logging warnings for duplicates.
+
+Note that this script should be executed within openLCA.
 """
 
 import codecs
 import csv
 import org.openlca.core.model.FlowPropertyType as FT
 
+# set this path to the file where the locations should be written
 EXPORT_PATH = 'C:/Users/Besitzer/Desktop/unit_meta_data.csv'
 
 

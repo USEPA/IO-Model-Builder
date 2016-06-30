@@ -4,7 +4,6 @@ compartments, etc. to reference data with UUIDs.
 """
 from .data import data_dir
 from .util import each_csv_row
-import logging as log
 
 
 class UnitEntry(object):
@@ -35,7 +34,7 @@ class UnitMap(object):
     def read(file_path):
         m = UnitMap()
 
-        def row_handler(row, i):
+        def row_handler(row, _):
             e = UnitEntry.from_csv(row)
             m.mappings[e.unit_name] = e
 
@@ -54,29 +53,47 @@ class UnitMap(object):
         return None
 
 
-class LocationMapping(object):
-    def __init__(self, code, name, uid):
-        self.code = code
-        self.name = name
-        self.uid = uid
+class LocationEntry(object):
+    """ Describes an entry in a location-mapping file. In iomb locations are
+        mapped by location code. """
+
+    def __init__(self):
+        self.code = ''
+        self.name = ''
+        self.uid = ''
+
+    @staticmethod
+    def from_csv(csv_row):
+        e = LocationEntry()
+        e.code = csv_row[0]
+        e.name = csv_row[1]
+        e.uid = csv_row[2]
+        return e
 
 
-def __init_locations():
-    global __locations
-    __locations = {
-        'us': LocationMapping('US', 'United States',
-                              '0b3b97fa-6688-3c56-88ee-4ae80ec0c3c2'),
-        'us-ga': LocationMapping('US-GA', 'United States, Georgia',
-                                 '2b701fc6-ef0e-3b9a-9f4d-631863e904f6')
-    }
+class LocationMap(object):
+    def __init__(self):
+        self.mappings = {}
 
+    @staticmethod
+    def read(file_path):
+        m = LocationMap()
 
-def map_location(location_code: str) -> LocationMapping:
-    if __locations is None:
-        __init_locations()
-    code = location_code.strip().lower()
-    if code in __locations:
-        return __locations[code]
-    else:
-        log.error('Could not map unknown location: %s' % code)
-        return LocationMapping(location_code, '', '')
+        def row_handler(row, _):
+            e = LocationEntry.from_csv(row)
+            m.mappings[e.code.lower()] = e
+
+        each_csv_row(file_path, row_handler, skip_header=True)
+        return m
+
+    @staticmethod
+    def create_default():
+        """ Creates the location map with default data. """
+        path = data_dir + '/location_meta_data.csv'
+        return LocationMap.read(path)
+
+    def get(self, location_code: str) -> LocationEntry:
+        key = location_code.strip().lower()
+        if key in self.mappings:
+            return self.mappings[key]
+        return None

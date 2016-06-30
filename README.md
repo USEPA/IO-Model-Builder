@@ -313,3 +313,14 @@ containing the column headers:
 Unit , Unit-UUID         , Quantity , Quantity-UUID
 kg   , 20aadc24-a391-... , Mass     , 93a60a56-a3c8-...
 ```
+
+#### Metadata files for locations
+As for units, iomb directly contains a file for mapping location codes to 
+location information. When creating a JSON-LD package this also can be changed
+ ... TODO: example
+
+A metadata file for locations should have the following columns:
+
+0. Location code, e.g. `US`
+1. Location name, e.g. `United States`
+2. Location UUID

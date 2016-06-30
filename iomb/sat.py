@@ -1,11 +1,9 @@
-import csv
 import iomb.util as util
 import logging as log
 import matplotlib.pyplot as plt
 import iomb.model as model
 import pandas as pd
 import numpy as np
-import iomb.refmap as refmap
 
 
 class Table(object):
@@ -21,7 +19,7 @@ class Table(object):
             table.
         """
 
-        def handle_row(row, i):
+        def handle_row(row, _):
             i = self._read_flow(row)
             j = self._read_sector(row)
             val = float(row[8])
@@ -51,39 +49,6 @@ class Table(object):
             self.sectors.append(sector)
             self.sector_idx[sector.uid] = j
         return self.sector_idx[sector.uid]
-
-    def prepare_flow_meta_data(self, to_file: str):
-        """ Prepares a flow meta data file for the conversion to openLCA with
-            the elementary flow information from this table and writes it to
-            the given location
-        """
-        with open(to_file, 'w', encoding='utf-8', newline='\n') as f:
-            writer = csv.writer(f)
-            writer.writerow(['Name', 'Category', 'Subcategory', 'Unit',
-                             'Direction', 'Flow-UUID', 'Property-UUID',
-                             'Unit-UUID', 'Factor'])
-            units = refmap.UnitMap.create_default()
-            for flow in self.flows:
-                unit = units.get(flow.unit)
-                row = [flow.name, flow.category, flow.sub_category, flow.unit,
-                       '<input | output>', flow.uid, unit.quantity_uid,
-                       unit.unit_uid]
-                writer.writerow(row)
-
-    def prepare_sector_meta_data(self, to_file: str):
-        """ Prepares a sector meta data file for the conversion to openLCA with
-            the sector/process information from this table. The file is written
-            to the given location.
-        """
-        with open(to_file, 'w', encoding='utf-8', newline='\n') as f:
-            writer = csv.writer(f)
-            writer.writerow(['Code', 'Name', 'Category', 'Sub-category',
-                             'Location-Code', 'Location-UUID'])
-            for sector in self.sectors:
-                lm = refmap.map_location(sector.location)
-                row = [sector.code, sector.name, sector.category,
-                       sector.sub_category, lm.code, lm.uid]
-                writer.writerow(row)
 
     def as_data_frame(self) -> pd.DataFrame:
         """ Converts the satellite table into a pandas data frame where the
