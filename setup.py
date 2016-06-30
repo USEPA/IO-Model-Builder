@@ -10,6 +10,7 @@ setup(
     keywords="converter lca",
     url="http://packages.python.org/iomb",
     packages=['iomb'],
+    package_data={'iomb': ["data/*.*"]},
     install_requires=['numpy', 'pandas', 'matplotlib'],
     long_description=open('README.md').read(),
     classifiers=[
