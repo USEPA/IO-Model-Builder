@@ -265,28 +265,38 @@ Satellite tables are saved in a CSV file with the following columns:
 9. Unit
 ...
 
-### Meta data files
-Meta data files are used when the input-output model is converted to an JSON-LD
+### Metadata files
+Metadata files are used when the input-output model is converted to an JSON-LD
 data package that can be imported into openLCA or the LCA Harmonization tool.
 These files contain additional information about flows, processes, etc. and 
-mappings to reference data like flow properties, locations, etc. Like all other
-files, the meta data files are stored in a simple CSV format which is described
-in the following.
+mappings to reference data like flow properties, locations, etc. 
 
-### Meta-data files for elementary flows
-A meta data file for elementary flows contains the following fields:
+Metadata files are stored in CSV files with a defined column order as described
+below. The first row of a metadata file are the column headers which are ignored
+by iomb. For some of the metadata files (like for units, locations, 
+compartments) the iomb package contains a default file which can be replaced by
+a more specific version in the JSON-LD export TODO: example
+
+#### Metadata of elementary flows
+
+> TODO: Metadata files of elementary flows are currently not used as all
+> information about a flow is currently also available in the satellite tables.
+> However, it could be useful to extract fields like CAS number, flow UUID,
+> chemical formula, description, etc. from the satellite tables and add them to
+> a metadata file.
+
+A metadata file for elementary flows contains the following columns:
 
 0. Name of the flow
-1. Category of the flow
-2. Sub-category of the flow
+1. Compartment of the flow
+2. Sub-compartment of the flow
 3. Unit of the flow
-4. Flow direction (input/output)
-5. UUID of the (mapped) flow
-6. UUID of the flow property (e.g. UUID for mass)
-7. UUID of the flows unit
-8. Conversion factor ...
+4. UUID of the flow
+5. CAS number
+6. Chemical formula
+7. Description
 
-### Meta-data files for sectors/processes
+#### Metadata of sectors/processes
 
 0. Code
 1. Name
