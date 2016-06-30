@@ -191,7 +191,7 @@ The sector key of the example values would be:
 
     1111a0/oilseed farming/us
 
-#### Flow indentifiers
+#### Flow identifiers
 Flows in the satellite tables are identified by the following
 attributes:
 
@@ -324,3 +324,7 @@ A metadata file for locations should have the following columns:
 0. Location code, e.g. `US`
 1. Location name, e.g. `United States`
 2. Location UUID
+
+
+#### Metadata files for compartments
+TODO: add doc

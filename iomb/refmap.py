@@ -3,7 +3,59 @@ This module contains functions that map entities like units, locations,
 compartments, etc. to reference data with UUIDs.
 """
 from .data import data_dir
-from .util import each_csv_row
+from .util import each_csv_row, as_path
+
+
+class CompartmentEntry(object):
+    """ Describes an entry in a compartment-mapping file. In iomb compartments
+        are mapped by the compartment and sub-compartment name. """
+
+    def __init__(self):
+        self.compartment = ''
+        self.sub_compartment = ''
+        self.uid = ''
+        self.direction = ''
+
+    @staticmethod
+    def from_csv(csv_row):
+        e = CompartmentEntry()
+        e.compartment = csv_row[0]
+        e.sub_compartment = csv_row[1]
+        e.uid = csv_row[2]
+        e.direction = csv_row[3].lower()
+        return e
+
+    @property
+    def key(self):
+        return as_path(self.compartment, self.sub_compartment)
+
+
+class CompartmentMap(object):
+    def __init__(self):
+        self.mappings = {}
+
+    @staticmethod
+    def read(file_path):
+        m = CompartmentMap()
+
+        def row_handler(row, _):
+            e = CompartmentEntry.from_csv(row)
+            m.mappings[e.key] = e
+
+        each_csv_row(file_path, row_handler, skip_header=True)
+        return m
+
+    @staticmethod
+    def create_default():
+        """ Creates the compartment map with default data. """
+        path = data_dir + '/compartment_meta_data.csv'
+        return CompartmentMap.read(path)
+
+    def get(self, compartment_key: str) -> CompartmentEntry:
+        key = compartment_key.strip().lower()
+        if key in self.mappings:
+            return self.mappings[key]
+        return None
 
 
 class UnitEntry(object):
@@ -11,19 +63,23 @@ class UnitEntry(object):
         name. """
 
     def __init__(self):
-        self.unit_name = ''
+        self.unit = ''
         self.unit_uid = ''
-        self.quantity_name = ''
+        self.quantity = ''
         self.quantity_uid = ''
 
     @staticmethod
     def from_csv(csv_row):
         e = UnitEntry()
-        e.unit_name = csv_row[0]
+        e.unit = csv_row[0]
         e.unit_uid = csv_row[1]
-        e.quantity_name = csv_row[2]
+        e.quantity = csv_row[2]
         e.quantity_uid = csv_row[3]
         return e
+
+    @property
+    def key(self):
+        return self.unit
 
 
 class UnitMap(object):
@@ -36,7 +92,7 @@ class UnitMap(object):
 
         def row_handler(row, _):
             e = UnitEntry.from_csv(row)
-            m.mappings[e.unit_name] = e
+            m.mappings[e.key] = e
 
         each_csv_row(file_path, row_handler, skip_header=True)
         return m
@@ -48,8 +104,9 @@ class UnitMap(object):
         return UnitMap.read(path)
 
     def get(self, unit_name: str) -> UnitEntry:
-        if unit_name in self.mappings:
-            return self.mappings[unit_name]
+        name = unit_name.strip()
+        if name in self.mappings:
+            return self.mappings[name]
         return None
 
 
@@ -70,6 +127,10 @@ class LocationEntry(object):
         e.uid = csv_row[2]
         return e
 
+    @property
+    def key(self):
+        return self.code.lower()
+
 
 class LocationMap(object):
     def __init__(self):
@@ -81,7 +142,7 @@ class LocationMap(object):
 
         def row_handler(row, _):
             e = LocationEntry.from_csv(row)
-            m.mappings[e.code.lower()] = e
+            m.mappings[e.key] = e
 
         each_csv_row(file_path, row_handler, skip_header=True)
         return m
