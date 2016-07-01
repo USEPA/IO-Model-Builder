@@ -1,6 +1,7 @@
 import json
 import iomb.util as util
 import iomb.model as mod
+import iomb.refmap as ref
 import logging as log
 import zipfile as zipf
 
@@ -11,21 +12,29 @@ class Export(object):
     def __init__(self, model: mod.Model):
         self.model = model
 
+    def __sectors(self):
+        for sector_key in self.model.drc_matrix.columns:
+            sector = self.model.sectors.get(sector_key)
+            if sector is None:
+                log.warning('No metadata for sector: %s', sector_key)
+            else:
+                yield sector
+
     def to(self, zip_file):
         pack = zipf.ZipFile(zip_file, mode='a', compression=zipf.ZIP_DEFLATED)
         _write_economic_units(pack)
-        self._write_categories(pack)
-        self._write_products(pack)
-        for sector_key in self.model.drc_matrix.columns:
-            p = _prepare_process(s)
-            self._add_tech_inputs(s, p)
-            self._add_elem_entries(s, p)
+        self.__write_sector_categories(pack)
+        self.__write_products(pack)
+        for s in self.__sectors():
+            p = self.__prepare_process(s)
+            self.__add_tech_inputs(s, p)
+            self.__add_elem_entries(s, p)
             dump(p, 'processes', pack)
         pack.close()
 
-    def _write_categories(self, pack):
+    def __write_sector_categories(self, pack):
         handled = []
-        for s in self.sectors:
+        for s in self.__sectors():
             cat = s.category
             if cat not in handled:
                 handled.append(cat)
@@ -38,8 +47,8 @@ class Export(object):
                 _write_category('PROCESS', sub, pack, parent_name=cat)
                 _write_category('FLOW', sub, pack, parent_name=cat)
 
-    def _write_products(self, pack):
-        for s in self.sectors:
+    def __write_products(self, pack):
+        for s in self.__sectors():
             cat_id = util.make_uuid('FLOW', s.sub_category, s.category)
             flow = {
                 "@context": "http://greendelta.github.io/olca-schema/context.jsonld",
@@ -61,12 +70,12 @@ class Export(object):
             }
             dump(flow, 'flows', pack)
 
-    def _add_tech_inputs(self, s: model.Sector, p: dict):
+    def __add_tech_inputs(self, s: ref.Sector, p: dict):
         exchanges = p["exchanges"]
         col_key = s.key
-        for row_s in self.sectors:
+        for row_s in self.__sectors():
             row_key = row_s.key
-            val = self.drc.get_value(row_key, col_key)
+            val = self.model.drc_matrix.get_value(row_key, col_key)
             if val == 0:
                 continue
             e = {
@@ -87,64 +96,55 @@ class Export(object):
             }
             exchanges.append(e)
 
-    def _add_elem_entries(self, s: model.Sector, p: dict):
-        if s.key not in self.sat.columns:
+    def __add_elem_entries(self, s: ref.Sector, p: dict):
+        sat = self.model.sat_table
+        if s.key not in sat.sector_idx:
             log.warning('%s is not contained in satellite matrix', s.key)
             return
         exchanges = p["exchanges"]
-        for flow in self.sat.:
-            val = self.sat.get_value(flow.key, s.key)
+        for flow in sat.flows:
+            entry = sat.get_entry(flow.key, s.key)
             is_input = flow.direction == 'input'
             e = {
                 "@type": "Exchange",
                 "avoidedProduct": False,
                 "input": is_input,
-                "amount": float(val),
+                "amount": entry.value,
                 "flow": {"@type": "Flow", "@id": flow.uid},
-                "unit": {
-                    "@type": "Unit",
-                    "@id": flow.unit_uid
-                },
-                "flowProperty": {
-                    "@type": "FlowProperty",
-                    "@id": flow.property_uid
-                },
+                "unit": {"@type": "Unit",
+                         "@id": flow.unit_uid},
+                "flowProperty": {"@type": "FlowProperty",
+                                 "@id": flow.property_uid},
                 "quantitativeReference": False
             }
             exchanges.append(e)
 
-
-def _prepare_process(s: model.Sector):
-    cat_id = util.make_uuid('PROCESS', s.sub_category, s.category)
-    p = {
-        "@context": "http://greendelta.github.io/olca-schema/context.jsonld",
-        "@type": "Process",
-        "@id": s.uid,
-        "name": s.name,
-        "processTyp": "UNIT_PROCESS",
-        "category": {"@type": "Category", "@id": cat_id},
-        "processDocumentation": {"copyright": False},
-        "location": {"@type": "Location", "@id": s.location_uid},
-        "exchanges": [
-            {
+    def __prepare_process(self, s: ref.Sector):
+        cat_id = util.make_uuid('PROCESS', s.sub_category, s.category)
+        p = {
+            "@context": "http://greendelta.github.io/olca-schema/context.jsonld",
+            "@type": "Process",
+            "@id": s.uid,
+            "name": s.name,
+            "processTyp": "UNIT_PROCESS",
+            "category": {"@type": "Category", "@id": cat_id},
+            "processDocumentation": {"copyright": False},
+            "exchanges": [{
                 "@type": "Exchange",
                 "avoidedProduct": False,
                 "input": False,
                 "amount": 1.0,
                 "flow": {"@type": "Flow", "@id": s.product_uid},
-                "unit": {
-                    "@type": "Unit",
-                    "@id": "3f90ee51-c78b-4b15-a693-e7f320c1e894"
-                },
-                "flowProperty": {
-                    "@type": "FlowProperty",
-                    "@id": "b0682037-e878-4be4-a63a-a7a81053a691"
-                },
-                "quantitativeReference": True
-            }
-        ]
-    }
-    return p
+                "unit": {"@type": "Unit",
+                         "@id": "3f90ee51-c78b-4b15-a693-e7f320c1e894"},
+                "flowProperty": {"@type": "FlowProperty",
+                                 "@id": "b0682037-e878-4be4-a63a-a7a81053a691"},
+                "quantitativeReference": True}]
+        }
+        loc = self.model.locations.get(s.location)
+        if loc is not None:
+            p["location"] = {"@type": "Location", "@id": loc.uid}
+        return p
 
 
 def _write_category(model_type, name, pack, parent_name=None):
