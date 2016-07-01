@@ -27,7 +27,10 @@ def make_io_model(supply_table_csv, use_table_csv, scrap_sectors=None) \
     log.info('Create IO model')
     supply_table = read_csv_data_frame(supply_table_csv)
     use_table = read_csv_data_frame(use_table_csv)
-    return io.Model(use_table, supply_table, scrap_sectors)
+    scraps = scrap_sectors
+    if scraps is not None:
+        scraps = [s.strip().lower() for s in scraps]
+    return io.Model(use_table, supply_table, scraps)
 
 
 def coefficients_from_sut(supply_table_csv: str, use_table_csv: str,

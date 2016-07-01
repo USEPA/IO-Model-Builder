@@ -1,19 +1,25 @@
-import iomb.model as model
+import iomb.refmap as ref
 import unittest
 
 
 class TestModel(unittest.TestCase):
     def test_flow_key(self):
-        flow = model.ElemFlow(name='Carbon dioxide', category='air',
-                              sub_category='unspecified', unit='kg')
+        f = ref.ElemFlow()
+        f.name = 'Carbon dioxide'
+        f.category = 'air'
+        f.sub_category = 'unspecified'
+        f.unit = 'kg'
         expected = 'air/unspecified/carbon dioxide/kg'
-        self.assertEqual(expected, flow.key)
+        self.assertEqual(expected, f.key)
 
     def test_sector_key(self):
-        sector = model.Sector(code='1111A0', name='Oilseed farming',
-                              location='US')
+        s = ref.Sector()
+        s.code = '1111A0'
+        s.name = 'Oilseed farming'
+        s.location = 'US'
         expected = '1111a0/oilseed farming/us'
-        self.assertEqual(expected, sector.key)
+        self.assertEqual(expected, s.key)
+
 
 if __name__ == '__main__':
     unittest.main()
