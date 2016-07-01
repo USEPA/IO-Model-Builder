@@ -20,7 +20,7 @@ class Model(object):
         self.compartments = compartments
         self.locations = locations
 
-    def sectors(self):
+    def each_sector(self):
         for sector_key in self.drc_matrix.columns:
             sector = self.sectors.get(sector_key)
             if sector is None:

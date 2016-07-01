@@ -30,6 +30,14 @@ def make_io_model(supply_table_csv, use_table_csv, scrap_sectors=None) \
     return io.Model(use_table, supply_table, scrap_sectors)
 
 
+def coefficients_from_sut(supply_table_csv: str, use_table_csv: str,
+                          scrap_sectors=None) -> pd.DataFrame:
+    """ Calculates the direct requirements coefficients matrix A from
+        the given supply and use tables. """
+    io_model = make_io_model(supply_table_csv, use_table_csv, scrap_sectors)
+    return io_model.get_dr_coefficients()
+
+
 def make_sat_table(*args: list) -> sat.Table:
     """ Constructs the satellite table from the given CSV files. """
     log.info('Create satellite table')

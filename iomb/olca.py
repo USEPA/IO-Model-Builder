@@ -19,7 +19,7 @@ class Export(object):
         _write_locations(self.model, pack)
         self.__write_sector_categories(pack)
         self.__write_products(pack)
-        for s in self.model.sectors():
+        for s in self.model.each_sector():
             p = self.__prepare_process(s)
             self.__add_tech_inputs(s, p)
             self.__add_elem_entries(s, p)
@@ -28,7 +28,7 @@ class Export(object):
 
     def __write_sector_categories(self, pack):
         handled = []
-        for s in self.model.sectors():
+        for s in self.model.each_sector():
             cat = s.category
             if cat not in handled:
                 handled.append(cat)
@@ -42,7 +42,7 @@ class Export(object):
                 _write_category('FLOW', sub, pack, parent_name=cat)
 
     def __write_products(self, pack):
-        for s in self.model.sectors():
+        for s in self.model.each_sector():
             cat_id = util.make_uuid('FLOW', s.sub_category, s.category)
             flow = {
                 "@context": "http://greendelta.github.io/olca-schema/context.jsonld",
@@ -51,7 +51,6 @@ class Export(object):
                 "name": s.name,
                 "category": {"@type": "Category", "@id": cat_id},
                 "flowType": "PRODUCT_FLOW",
-                "location": {"@type": "Location", "@id": s.location_uid},
                 "flowProperties": [{
                     "@type": "FlowPropertyFactor",
                     "referenceFlowProperty": True,
@@ -59,14 +58,16 @@ class Export(object):
                     "flowProperty": {
                         "@type": "FlowProperty",
                         "@id": "b0682037-e878-4be4-a63a-a7a81053a691"
-                    }}]
-            }
+                    }}]}
+            loc = self.model.locations.get(s.location)
+            if loc is not None:
+                flow["location"] = {"@type": "Location", "@id": loc.uid}
             dump(flow, 'flows', pack)
 
     def __add_tech_inputs(self, s: ref.Sector, p: dict):
         exchanges = p["exchanges"]
         col_key = s.key
-        for row_s in self.model.sectors():
+        for row_s in self.model.each_sector():
             row_key = row_s.key
             val = self.model.drc_matrix.get_value(row_key, col_key)
             if val == 0:
@@ -191,7 +192,7 @@ def _write_satellite_flows(model: mod.Model, pack: zipf.ZipFile):
 
 def _write_locations(model: mod.Model, pack: zipf.ZipFile):
     used_codes = []
-    for sector in model.sectors():
+    for sector in model.each_sector():
         if sector.location not in used_codes:
             used_codes.append(sector.location)
     for code in used_codes:
@@ -236,6 +237,10 @@ def _write_economic_units(pack):
 
 
 def dump(obj: dict, folder: str, pack: zipf.ZipFile):
+    uid = obj.get('@id')
+    if uid is None or uid == '':
+        log.error('No @id for object %s in %s', obj, folder)
+        return
     path = '%s/%s.json' % (folder, obj['@id'])
     s = json.dumps(obj)
     pack.writestr(path, s)

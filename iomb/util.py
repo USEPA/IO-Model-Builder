@@ -3,6 +3,7 @@ import numpy.linalg as linalg
 import numpy as np
 import pandas as pd
 import uuid
+import logging as log
 
 
 def make_uuid(*args: list) -> str:
@@ -17,6 +18,16 @@ def as_path(*args: list) -> str:
             continue
         strings.append(str(arg).strip().lower())
     return "/".join(strings)
+
+
+def is_empty_str(s: str) -> bool:
+    if s is None:
+        return True
+    if isinstance(s, str):
+        return s.strip() == ''
+    else:
+        log.error('expected string but got %s', s)
+        return False
 
 
 def each_csv_row(csv_file: str, func, skip_header=False, encoding='utf-8'):

@@ -3,7 +3,7 @@ This module contains types and functions that map entities like units, locations
 compartments, flows etc. to reference data with UUIDs.
 """
 from .data import data_dir
-from .util import each_csv_row, as_path, make_uuid
+from .util import each_csv_row, as_path, make_uuid, is_empty_str
 import logging as log
 
 
@@ -186,6 +186,8 @@ class ElemFlow(object):
         f.sub_category = csv_row[3]
         f.uid = csv_row[4]
         f.unit = csv_row[9]
+        if is_empty_str(f.uid):
+            f.uid = make_uuid(f.key)
         return f
 
     @property

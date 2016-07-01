@@ -35,11 +35,8 @@ class Table(object):
         """ Reads the given CSV file and adds the entries to this satellite
             table.
         """
-        count = 0
 
         def handle_row(row, k):
-            global count
-            count += k
             i = self.__read_flow(row)
             j = self.__read_sector(row)
             entry = Entry.from_csv(row)
@@ -48,8 +45,7 @@ class Table(object):
             self.entries[i][j] = entry
 
         util.each_csv_row(csv_file, handle_row, skip_header=True)
-        log.info('appended %s entries from %s to satellite table', count,
-                 csv_file)
+        log.info('appended entries from %s to satellite table', csv_file)
 
     def __read_flow(self, row) -> int:
         flow = ref.ElemFlow.from_satellite_row(row)
