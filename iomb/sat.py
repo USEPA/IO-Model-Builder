@@ -2,7 +2,6 @@ import iomb.util as util
 import iomb.refmap as ref
 import logging as log
 import matplotlib.pyplot as plt
-import iomb.model as model
 import pandas as pd
 import numpy as np
 
@@ -41,14 +40,12 @@ class Table(object):
         return self.flow_idx[flow.key]
 
     def _read_sector(self, row) -> int:
-        sector = model.Sector(name=row[5],
-                              code=row[6],
-                              location=row[7])
-        if sector.uid not in self.sector_idx:
+        sector = ref.Sector.from_satellite_row(row)
+        if sector.key not in self.sector_idx:
             j = len(self.sectors)
             self.sectors.append(sector)
-            self.sector_idx[sector.uid] = j
-        return self.sector_idx[sector.uid]
+            self.sector_idx[sector.key] = j
+        return self.sector_idx[sector.key]
 
     def as_data_frame(self) -> pd.DataFrame:
         """ Converts the satellite table into a pandas data frame where the

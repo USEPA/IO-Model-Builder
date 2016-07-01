@@ -204,14 +204,37 @@ class ElemFlow(object):
 class Sector(object):
     """ Describes an industry or commodity sector in the input-output model. """
 
-    def __init__(self, name='', code='', location='US', unit='USD'):
-        self.name = name
-        self.code = code
-        self.location = location
-        self.unit = unit
+    def __init__(self):
+        self.name = ''
+        self.code = ''
+        self.location = ''
+        self.unit = ''
         self.category = ''
         self.sub_category = ''
-        self.location_uid = ''
+
+    @staticmethod
+    def from_satellite_row(csv_row):
+        """ Creates an sector instance from the information in a CSV row of a
+            satellite table. This is just enough information to generate the
+            unique sector key."""
+        s = Sector()
+        s.name = csv_row[5]
+        s.code = csv_row[6]
+        s.location = csv_row[7]
+        return s
+
+    @staticmethod
+    def from_info_row(csv_row):
+        """ Creates an sector instance from the information in a CSV row of a
+            sector metadata file."""
+        s = Sector()
+        s.code = csv_row[0]
+        s.name = csv_row[1]
+        s.category = csv_row[2]
+        s.sub_category = csv_row[3]
+        s.location = csv_row[4]
+        # TODO: read all other fields as specified in the metadata format
+        return s
 
     @property
     def key(self):
@@ -232,3 +255,26 @@ class Sector(object):
     @property
     def product_uid(self):
         return make_uuid('Flow', self.key)
+
+
+class SectorMap(object):
+    def __init__(self):
+        self.mappings = {}
+
+    @staticmethod
+    def read(file_path: str):
+        """ Creates a sector map from a sector metadata file. """
+        m = SectorMap()
+
+        def row_handler(row, _):
+            s = Sector.from_info_row(row)
+            m.mappings[s.key] = s
+
+        each_csv_row(file_path, row_handler, skip_header=True)
+        return m
+
+    def get(self, sector_key: str) -> Sector:
+        key = sector_key.strip().lower()
+        if key in self.mappings:
+            return self.mappings[key]
+        return None

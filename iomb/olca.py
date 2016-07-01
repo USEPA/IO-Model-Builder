@@ -28,11 +28,8 @@ class Export(object):
         else:
             self.compartments = ref.CompartmentMap.read(compartment_meta_csv)
 
-    def _add_sector(self, row, i):
-        s = model.Sector(code=row[0], name=row[1], location=row[4])
-        s.category = row[2]
-        s.sub_category = row[3]
-        s.location_uid = row[5]
+    def _add_sector(self, row, _):
+        s = ref.Sector.from_info_row(row)
         key = s.key
         if key in self.drc.index:
             self.sectors.append(s)
