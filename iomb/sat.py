@@ -6,6 +6,23 @@ import pandas as pd
 import numpy as np
 
 
+class Entry(object):
+    """ Contains the information of an entry in a satellite table. """
+    def __init__(self, value: float):
+        self.value = value
+        # TODO: add data quality and uncertainty information
+
+    @staticmethod
+    def from_csv(csv_row):
+        val = float(csv_row[8])
+        e = Entry(val)
+        return e
+
+    @staticmethod
+    def empty():
+        return Entry(0.0)
+
+
 class Table(object):
     def __init__(self):
         self.flows = []
@@ -18,19 +35,23 @@ class Table(object):
         """ Reads the given CSV file and adds the entries to this satellite
             table.
         """
+        count = 0
 
-        def handle_row(row, _):
-            i = self._read_flow(row)
-            j = self._read_sector(row)
-            val = float(row[8])
+        def handle_row(row, k):
+            global count
+            count += k
+            i = self.__read_flow(row)
+            j = self.__read_sector(row)
+            entry = Entry.from_csv(row)
             if i not in self.entries:
                 self.entries[i] = {}
-            self.entries[i][j] = val
+            self.entries[i][j] = entry
 
-        log.info('append entries from %s to satellite table', csv_file)
         util.each_csv_row(csv_file, handle_row, skip_header=True)
+        log.info('appended %s entries from %s to satellite table', count,
+                 csv_file)
 
-    def _read_flow(self, row) -> int:
+    def __read_flow(self, row) -> int:
         flow = ref.ElemFlow.from_satellite_row(row)
         if flow.key not in self.flow_idx:
             i = len(self.flows)
@@ -39,13 +60,27 @@ class Table(object):
             log.info('flow[%s]: %s', i, flow.key)
         return self.flow_idx[flow.key]
 
-    def _read_sector(self, row) -> int:
+    def __read_sector(self, row) -> int:
         sector = ref.Sector.from_satellite_row(row)
         if sector.key not in self.sector_idx:
             j = len(self.sectors)
             self.sectors.append(sector)
             self.sector_idx[sector.key] = j
         return self.sector_idx[sector.key]
+
+    def get_entry(self, flow_key: str, sector_key: str) -> Entry:
+        row = self.flow_idx.get(flow_key, -1)
+        if row == -1:
+            log.warning('flow %s is not in the satellite table', flow_key)
+            return Entry.empty()
+        col = self.sector_idx.get(sector_key, -1)
+        if col == -1:
+            log.warning('sector %s is not in the satellite table', sector_key)
+            return Entry.empty()
+        row_entries = self.entries.get(row, None)
+        if row_entries is None:
+            return Entry.empty()
+        return row_entries.get(col, Entry.empty())
 
     def as_data_frame(self) -> pd.DataFrame:
         """ Converts the satellite table into a pandas data frame where the
@@ -57,8 +92,8 @@ class Table(object):
         rows, cols = len(self.flows), len(self.sectors)
         data = np.zeros((rows, cols), dtype=np.float64)
         for i, row in self.entries.items():
-            for j, val in row.items():
-                data[i, j] = val
+            for j, entry in row.items():
+                data[i, j] = entry.value
         index = [f.key for f in self.flows]
         columns = [s.key for s in self.sectors]
         return pd.DataFrame(data=data, index=index, columns=columns)
@@ -74,8 +109,8 @@ class Table(object):
         if idx is None or idx not in self.entries:
             return
         values = []
-        for k, v in self.entries[idx].items():
-            values.append(v)
+        for k, e in self.entries[idx].items():
+            values.append(e.value)
         values.sort()
         plt.hist(values, 30, color='blue')
         plt.title(name)

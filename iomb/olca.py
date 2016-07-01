@@ -1,8 +1,6 @@
-import iomb
 import json
 import iomb.util as util
-import iomb.model as model
-import iomb.refmap as ref
+import iomb.model as mod
 import logging as log
 import zipfile as zipf
 
@@ -10,40 +8,15 @@ import zipfile as zipf
 class Export(object):
     """ Exports data into a JSON-LD package for openLCA. """
 
-    def __init__(self, drc_csv: str, sat_csv: str, sector_meta_csv: str,
-                 unit_meta_csv=None, compartment_meta_csv=None):
-
-        self.drc = iomb.read_csv_data_frame(drc_csv)
-        self.sat = iomb.read_csv_data_frame(sat_csv)
-        self.sectors = []
-        util.each_csv_row(sector_meta_csv, self._add_sector, skip_header=True)
-
-        # init mappings
-        if unit_meta_csv is None:
-            self.units = ref.UnitMap.create_default()
-        else:
-            self.units = ref.UnitMap.read(unit_meta_csv)
-        if compartment_meta_csv is None:
-            self.compartments = ref.CompartmentMap.create_default()
-        else:
-            self.compartments = ref.CompartmentMap.read(compartment_meta_csv)
-
-    def _add_sector(self, row, _):
-        s = ref.Sector.from_info_row(row)
-        key = s.key
-        if key in self.drc.index:
-            self.sectors.append(s)
-            log.info("registered sector '%s' for export", key)
-        else:
-            log.warning("sector '%s' from meta-data is not contained in the DRC"
-                        " table and will be ignored", key)
+    def __init__(self, model: mod.Model):
+        self.model = model
 
     def to(self, zip_file):
         pack = zipf.ZipFile(zip_file, mode='a', compression=zipf.ZIP_DEFLATED)
         _write_economic_units(pack)
         self._write_categories(pack)
         self._write_products(pack)
-        for s in self.sectors:
+        for sector_key in self.model.drc_matrix.columns:
             p = _prepare_process(s)
             self._add_tech_inputs(s, p)
             self._add_elem_entries(s, p)
