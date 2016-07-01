@@ -2,6 +2,7 @@ import iomb
 import json
 import iomb.util as util
 import iomb.model as model
+import iomb.refmap as ref
 import logging as log
 import zipfile as zipf
 
@@ -9,21 +10,23 @@ import zipfile as zipf
 class Export(object):
     """ Exports data into a JSON-LD package for openLCA. """
 
-    def __init__(self, drc_csv='', sat_csv='', sector_meta_csv='',
-                 flow_meta_csv=''):
-        """ Initializes the export with 4 CSV files:
+    def __init__(self, drc_csv: str, sat_csv: str, sector_meta_csv: str,
+                 unit_meta_csv=None, compartment_meta_csv=None):
 
-            :param drc_csv the direct requirement coefficients
-            :param sat_csv the satellite matrix
-            :param sector_meta_csv meta data of the sectors
-            :param flow_meta_csv meta data of the elementary flows
-        """
         self.drc = iomb.read_csv_data_frame(drc_csv)
         self.sat = iomb.read_csv_data_frame(sat_csv)
         self.sectors = []
         util.each_csv_row(sector_meta_csv, self._add_sector, skip_header=True)
-        self.flows = []
-        util.each_csv_row(flow_meta_csv, self._add_flow, skip_header=True)
+
+        # init mappings
+        if unit_meta_csv is None:
+            self.units = ref.UnitMap.create_default()
+        else:
+            self.units = ref.UnitMap.read(unit_meta_csv)
+        if compartment_meta_csv is None:
+            self.compartments = ref.CompartmentMap.create_default()
+        else:
+            self.compartments = ref.CompartmentMap.read(compartment_meta_csv)
 
     def _add_sector(self, row, i):
         s = model.Sector(code=row[0], name=row[1], location=row[4])
@@ -37,15 +40,6 @@ class Export(object):
         else:
             log.warning("sector '%s' from meta-data is not contained in the DRC"
                         " table and will be ignored", key)
-
-    def _add_flow(self, row, i):
-        f = model.ElemFlow(name=row[0], category=row[1], sub_category=row[2],
-                           unit=row[3], uid=row[5])
-        f.direction = row[4].lower()
-        f.property_uid = row[6]
-        f.unit_uid = row[7]
-        f.factor = float(row[8])
-        self.flows.append(f)
 
     def to(self, zip_file):
         pack = zipf.ZipFile(zip_file, mode='a', compression=zipf.ZIP_DEFLATED)
@@ -128,7 +122,7 @@ class Export(object):
             log.warning('%s is not contained in satellite matrix', s.key)
             return
         exchanges = p["exchanges"]
-        for flow in self.flows:
+        for flow in self.sat.:
             val = self.sat.get_value(flow.key, s.key)
             is_input = flow.direction == 'input'
             e = {

@@ -1,9 +1,9 @@
 """
-This module contains functions that map entities like units, locations,
-compartments, etc. to reference data with UUIDs.
+This module contains types and functions that map entities like units, locations,
+compartments, flows etc. to reference data with UUIDs.
 """
 from .data import data_dir
-from .util import each_csv_row, as_path
+from .util import each_csv_row, as_path, make_uuid
 
 
 class CompartmentEntry(object):
@@ -158,3 +158,77 @@ class LocationMap(object):
         if key in self.mappings:
             return self.mappings[key]
         return None
+
+
+class ElemFlow(object):
+    """ Describes an elementary flow in the satellite table. """
+
+    def __init__(self):
+        self.name = ''
+        self.category = ''
+        self.sub_category = ''
+        self.unit = ''
+        self.uid = ''
+        self.cas_number = ''
+
+    @staticmethod
+    def from_satellite_row(csv_row):
+        """ Creates an flow instance from the information in a CSV row of a
+            satellite table. """
+        f = ElemFlow()
+        f.name = csv_row[0]
+        f.cas_number = csv_row[1]
+        f.category = csv_row[2]
+        f.sub_category = csv_row[3]
+        f.uid = csv_row[4]
+        f.unit = csv_row[9]
+        return f
+
+    @property
+    def key(self):
+        """ The key identifies an elementary flow in the model builder (e.g. in
+            indices of data frames, results etc.). It is just a combination of
+            the following flow attributes with all letters in lower case:
+
+            <category>/<sub_category>/<name>/<unit>
+
+            e.g.: air/unspecified/carbon dioxide/kg
+        """
+        return as_path(self.category, self.sub_category, self.name, self.unit)
+
+    @property
+    def compartment_key(self):
+        return as_path(self.category, self.sub_category)
+
+
+class Sector(object):
+    """ Describes an industry or commodity sector in the input-output model. """
+
+    def __init__(self, name='', code='', location='US', unit='USD'):
+        self.name = name
+        self.code = code
+        self.location = location
+        self.unit = unit
+        self.category = ''
+        self.sub_category = ''
+        self.location_uid = ''
+
+    @property
+    def key(self):
+        """ The key identifies sector in the model builder (e.g. in indices of
+            make and use tables, results etc.). It is just a combination of
+            the following sector attributes with all letters in lower case:
+
+            <sector code>/<sector name>/<location code>
+
+            e.g.: 1111a0/oilseed farming/us
+        """
+        return as_path(self.code, self.name, self.location)
+
+    @property
+    def uid(self):
+        return make_uuid('Process', self.key)
+
+    @property
+    def product_uid(self):
+        return make_uuid('Flow', self.key)

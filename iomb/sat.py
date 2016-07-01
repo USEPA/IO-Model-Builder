@@ -1,4 +1,5 @@
 import iomb.util as util
+import iomb.refmap as ref
 import logging as log
 import matplotlib.pyplot as plt
 import iomb.model as model
@@ -31,14 +32,13 @@ class Table(object):
         util.each_csv_row(csv_file, handle_row, skip_header=True)
 
     def _read_flow(self, row) -> int:
-        flow = model.ElemFlow(name=row[0], category=row[2], sub_category=row[3],
-                              uid=row[4], unit=row[9])
-        if flow.uid not in self.flow_idx:
+        flow = ref.ElemFlow.from_satellite_row(row)
+        if flow.key not in self.flow_idx:
             i = len(self.flows)
             self.flows.append(flow)
-            self.flow_idx[flow.uid] = i
+            self.flow_idx[flow.key] = i
             log.info('flow[%s]: %s', i, flow.key)
-        return self.flow_idx[flow.uid]
+        return self.flow_idx[flow.key]
 
     def _read_sector(self, row) -> int:
         sector = model.Sector(name=row[5],
