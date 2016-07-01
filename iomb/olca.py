@@ -12,20 +12,14 @@ class Export(object):
     def __init__(self, model: mod.Model):
         self.model = model
 
-    def __sectors(self):
-        for sector_key in self.model.drc_matrix.columns:
-            sector = self.model.sectors.get(sector_key)
-            if sector is None:
-                log.warning('No metadata for sector: %s', sector_key)
-            else:
-                yield sector
-
     def to(self, zip_file):
         pack = zipf.ZipFile(zip_file, mode='a', compression=zipf.ZIP_DEFLATED)
         _write_economic_units(pack)
+        _write_satellite_flows(self.model, pack)
+        _write_locations(self.model, pack)
         self.__write_sector_categories(pack)
         self.__write_products(pack)
-        for s in self.__sectors():
+        for s in self.model.sectors():
             p = self.__prepare_process(s)
             self.__add_tech_inputs(s, p)
             self.__add_elem_entries(s, p)
@@ -34,7 +28,7 @@ class Export(object):
 
     def __write_sector_categories(self, pack):
         handled = []
-        for s in self.__sectors():
+        for s in self.model.sectors():
             cat = s.category
             if cat not in handled:
                 handled.append(cat)
@@ -48,7 +42,7 @@ class Export(object):
                 _write_category('FLOW', sub, pack, parent_name=cat)
 
     def __write_products(self, pack):
-        for s in self.__sectors():
+        for s in self.model.sectors():
             cat_id = util.make_uuid('FLOW', s.sub_category, s.category)
             flow = {
                 "@context": "http://greendelta.github.io/olca-schema/context.jsonld",
@@ -58,22 +52,21 @@ class Export(object):
                 "category": {"@type": "Category", "@id": cat_id},
                 "flowType": "PRODUCT_FLOW",
                 "location": {"@type": "Location", "@id": s.location_uid},
-                "flowProperties": [
-                    {
-                        "@type": "FlowPropertyFactor",
-                        "referenceFlowProperty": True,
-                        "conversionFactor": 1.0,
-                        "flowProperty": {
-                            "@type": "FlowProperty",
-                            "@id": "b0682037-e878-4be4-a63a-a7a81053a691"
-                        }}]
+                "flowProperties": [{
+                    "@type": "FlowPropertyFactor",
+                    "referenceFlowProperty": True,
+                    "conversionFactor": 1.0,
+                    "flowProperty": {
+                        "@type": "FlowProperty",
+                        "@id": "b0682037-e878-4be4-a63a-a7a81053a691"
+                    }}]
             }
             dump(flow, 'flows', pack)
 
     def __add_tech_inputs(self, s: ref.Sector, p: dict):
         exchanges = p["exchanges"]
         col_key = s.key
-        for row_s in self.__sectors():
+        for row_s in self.model.sectors():
             row_key = row_s.key
             val = self.model.drc_matrix.get_value(row_key, col_key)
             if val == 0:
@@ -104,7 +97,11 @@ class Export(object):
         exchanges = p["exchanges"]
         for flow in sat.flows:
             entry = sat.get_entry(flow.key, s.key)
-            is_input = flow.direction == 'input'
+            compartment = flow.get_compartment(self.model.compartments)
+            unit = flow.get_unit(self.model.units)
+            if compartment is None or unit is None:
+                continue
+            is_input = compartment.direction == 'input'
             e = {
                 "@type": "Exchange",
                 "avoidedProduct": False,
@@ -112,9 +109,9 @@ class Export(object):
                 "amount": entry.value,
                 "flow": {"@type": "Flow", "@id": flow.uid},
                 "unit": {"@type": "Unit",
-                         "@id": flow.unit_uid},
+                         "@id": unit.unit_uid},
                 "flowProperty": {"@type": "FlowProperty",
-                                 "@id": flow.property_uid},
+                                 "@id": unit.quantity_uid},
                 "quantitativeReference": False
             }
             exchanges.append(e)
@@ -165,6 +162,53 @@ def _write_category(model_type, name, pack, parent_name=None):
     dump(c, 'categories', pack)
 
 
+def _write_satellite_flows(model: mod.Model, pack: zipf.ZipFile):
+    for flow in model.sat_table.flows:
+        unit = flow.get_unit(model.units)
+        if unit is None:
+            log.error('unknown unit %s in flow %s', flow.unit, flow.key)
+            continue
+        f = {
+            "@context": "http://greendelta.github.io/olca-schema/context.jsonld",
+            "@type": "Flow",
+            "@id": flow.uid,
+            "name": flow.name,
+            "flowType": "ELEMENTARY_FLOW",
+            "flowProperties": [{
+                "@type": "FlowPropertyFactor",
+                "referenceFlowProperty": True,
+                "conversionFactor": 1.0,
+                "flowProperty": {
+                    "@type": "FlowProperty",
+                    "name": unit.quantity,
+                    "@id": unit.quantity_uid
+                }}]}
+        compartment = flow.get_compartment(model.compartments)
+        if compartment is not None:
+            f["category"] = {"@type": "Category", "@id": compartment.uid}
+        dump(f, 'flows', pack)
+
+
+def _write_locations(model: mod.Model, pack: zipf.ZipFile):
+    used_codes = []
+    for sector in model.sectors():
+        if sector.location not in used_codes:
+            used_codes.append(sector.location)
+    for code in used_codes:
+        loc = model.locations.get(code)
+        if loc is None:
+            log.error('unknown location %s', code)
+            continue
+        l = {
+            "@context": "http://greendelta.github.io/olca-schema/context.jsonld",
+            "@type": "Location",
+            "@id": loc.uid,
+            "name": loc.name,
+            "code": loc.code
+        }
+        dump(l, 'locations', pack)
+
+
 def _write_economic_units(pack):
     ug = {
         "@context": "http://greendelta.github.io/olca-schema/context.jsonld",
@@ -191,7 +235,7 @@ def _write_economic_units(pack):
     dump(fp, 'flow_properties', pack)
 
 
-def dump(obj, folder, pack):
+def dump(obj: dict, folder: str, pack: zipf.ZipFile):
     path = '%s/%s.json' % (folder, obj['@id'])
     s = json.dumps(obj)
     pack.writestr(path, s)

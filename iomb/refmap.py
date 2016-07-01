@@ -7,7 +7,7 @@ from .util import each_csv_row, as_path, make_uuid
 import logging as log
 
 
-class CompartmentEntry(object):
+class Compartment(object):
     """ Describes an entry in a compartment-mapping file. In iomb compartments
         are mapped by the compartment and sub-compartment name. """
 
@@ -19,7 +19,7 @@ class CompartmentEntry(object):
 
     @staticmethod
     def from_csv(csv_row):
-        e = CompartmentEntry()
+        e = Compartment()
         e.compartment = csv_row[0]
         e.sub_compartment = csv_row[1]
         e.uid = csv_row[2]
@@ -41,7 +41,7 @@ class CompartmentMap(object):
         m = CompartmentMap()
 
         def row_handler(row, _):
-            e = CompartmentEntry.from_csv(row)
+            e = Compartment.from_csv(row)
             m.mappings[e.key] = e
 
         each_csv_row(file_path, row_handler, skip_header=True)
@@ -53,14 +53,14 @@ class CompartmentMap(object):
         path = data_dir + '/compartment_meta_data.csv'
         return CompartmentMap.read(path)
 
-    def get(self, compartment_key: str) -> CompartmentEntry:
+    def get(self, compartment_key: str) -> Compartment:
         key = compartment_key.strip().lower()
         if key in self.mappings:
             return self.mappings[key]
         return None
 
 
-class UnitEntry(object):
+class Unit(object):
     """ Describes an entry in a unit-mapping file. In iomb units are mapped by
         name. """
 
@@ -72,7 +72,7 @@ class UnitEntry(object):
 
     @staticmethod
     def from_csv(csv_row):
-        e = UnitEntry()
+        e = Unit()
         e.unit = csv_row[0]
         e.unit_uid = csv_row[1]
         e.quantity = csv_row[2]
@@ -94,7 +94,7 @@ class UnitMap(object):
         m = UnitMap()
 
         def row_handler(row, _):
-            e = UnitEntry.from_csv(row)
+            e = Unit.from_csv(row)
             m.mappings[e.key] = e
 
         each_csv_row(file_path, row_handler, skip_header=True)
@@ -106,7 +106,7 @@ class UnitMap(object):
         path = data_dir + '/unit_meta_data.csv'
         return UnitMap.read(path)
 
-    def get(self, unit_name: str) -> UnitEntry:
+    def get(self, unit_name: str) -> Unit:
         name = unit_name.strip()
         if name in self.mappings:
             return self.mappings[name]
@@ -203,6 +203,18 @@ class ElemFlow(object):
     @property
     def compartment_key(self):
         return as_path(self.category, self.sub_category)
+
+    def get_compartment(self, cm: CompartmentMap) -> Compartment:
+        """ Get the compartment entry from the given compartment map. """
+        if cm is None:
+            return None
+        return cm.get(self.compartment_key)
+
+    def get_unit(self, um: UnitMap) -> Unit:
+        """ Get the unit entry from the given unit map. """
+        if um is None:
+            return None
+        return um.get(self.unit)
 
 
 class Sector(object):
