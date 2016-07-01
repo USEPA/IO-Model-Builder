@@ -4,6 +4,7 @@ compartments, flows etc. to reference data with UUIDs.
 """
 from .data import data_dir
 from .util import each_csv_row, as_path, make_uuid
+import logging as log
 
 
 class CompartmentEntry(object):
@@ -36,6 +37,7 @@ class CompartmentMap(object):
 
     @staticmethod
     def read(file_path):
+        log.info('read compartment file %s', file_path)
         m = CompartmentMap()
 
         def row_handler(row, _):
@@ -88,6 +90,7 @@ class UnitMap(object):
 
     @staticmethod
     def read(file_path):
+        log.info('read unit file %s', file_path)
         m = UnitMap()
 
         def row_handler(row, _):
@@ -138,6 +141,7 @@ class LocationMap(object):
 
     @staticmethod
     def read(file_path):
+        log.info('read location file %s', file_path)
         m = LocationMap()
 
         def row_handler(row, _):
@@ -264,6 +268,7 @@ class SectorMap(object):
     @staticmethod
     def read(file_path: str):
         """ Creates a sector map from a sector metadata file. """
+        log.info('read sector file %s', file_path)
         m = SectorMap()
 
         def row_handler(row, _):
