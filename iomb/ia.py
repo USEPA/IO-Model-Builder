@@ -10,7 +10,7 @@ class Table(object):
         impact assessment categories in the rows and elementary flows in the columns. """
 
     def __init__(self):
-        self.method_categories = {}
+        self.method = ''
         self.categories = []
         self.category_idx = {}
         self.flows = []
@@ -20,7 +20,9 @@ class Table(object):
     def add_file(self, csv_file: str):
         """ Reads the given file and adds the entries to this table. """
 
-        def handle_row(row, _):
+        def handle_row(row: list, k: int):
+            if k == 1:
+                self.method = row[0]
             i = self.__read_category(row)
             j = self.__read_flow(row)
             val = float(row[7])
