@@ -34,6 +34,7 @@ def each_csv_row(csv_file: str, func, skip_header=False, encoding='utf-8'):
     """ Iterates over each row in the given CSV file. It skips the first row if
         specified and removes leading and trailing whitespaces.
     """
+    log.info('parse CSV file %s', csv_file)
     with open(csv_file, 'r', encoding=encoding, newline='\n') as f:
         reader = csv.reader(f)
         i = 0

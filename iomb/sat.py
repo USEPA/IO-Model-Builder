@@ -36,7 +36,7 @@ class Table(object):
             table.
         """
 
-        def handle_row(row, k):
+        def handle_row(row, _):
             i = self.__read_flow(row)
             j = self.__read_sector(row)
             entry = Entry.from_csv(row)
@@ -49,20 +49,22 @@ class Table(object):
 
     def __read_flow(self, row) -> int:
         flow = ref.ElemFlow.from_satellite_row(row)
-        if flow.key not in self.flow_idx:
+        key = flow.key
+        if key not in self.flow_idx:
             i = len(self.flows)
             self.flows.append(flow)
-            self.flow_idx[flow.key] = i
-            log.info('flow[%s]: %s', i, flow.key)
-        return self.flow_idx[flow.key]
+            self.flow_idx[key] = i
+            log.info('flow[%s]: %s', i, key)
+        return self.flow_idx[key]
 
     def __read_sector(self, row) -> int:
         sector = ref.Sector.from_satellite_row(row)
-        if sector.key not in self.sector_idx:
+        key = sector.key
+        if key not in self.sector_idx:
             j = len(self.sectors)
             self.sectors.append(sector)
-            self.sector_idx[sector.key] = j
-        return self.sector_idx[sector.key]
+            self.sector_idx[key] = j
+        return self.sector_idx[key]
 
     def get_entry(self, flow_key: str, sector_key: str) -> Entry:
         row = self.flow_idx.get(flow_key, -1)
@@ -84,8 +86,8 @@ class Table(object):
             index the keys of the commodity sectors, and the values the amounts
             of the elementary flows for the respective sectors.
         """
-        log.info('convert satellite table to data frame')
         rows, cols = len(self.flows), len(self.sectors)
+        log.info('convert satellite table to a %sx%s data frame', rows, cols)
         data = np.zeros((rows, cols), dtype=np.float64)
         for i, row in self.entries.items():
             for j, entry in row.items():

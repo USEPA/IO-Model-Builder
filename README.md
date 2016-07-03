@@ -64,15 +64,15 @@ By default `iomb` logs only warnings and errors to the standard output. You can
 configure the logging so that all logs are written:
 
 ```python
-    import iomb
-    iomb.log_all()
+import iomb
+iomb.log_all()
 ```
 
 ### Reading an input-output model
 ```python
-    import iomb
-    io_model = iomb.make_io_model('make_table.csv',
-                                  'use_table.csv')
+import iomb
+io_model = iomb.make_io_model('make_table.csv',
+                              'use_table.csv')
 ```
 
 ### Calculating a coefficients matrix
@@ -83,18 +83,18 @@ a given supply and use table as described in the
 [1]:http://www.bea.gov/papers/pdf/IOmanual_092906.pdf "Karen J. Horowitz, Mark A. Planting: Concepts and Methods of the U.S. Input-Output Accounts. 2006"
 
 ```python
-    drc = io_model.get_dr_coefficients()
+drc = io_model.get_dr_coefficients()
 ```
 
 ### Using result data frames
 ```python
-    # save as CSV file
-    drc.to_csv('drc.csv') 
+# save as CSV file
+drc.to_csv('drc.csv')
     
-    # creating a histogram
-    import matplotlib.pyplot as plt
-    drc['1111a0/oilseed farming/us-ga'].plot.hist()
-    plt.show()    
+# creating a histogram
+import matplotlib.pyplot as plt
+drc['1111a0/oilseed farming/us-ga'].plot.hist()
+plt.show()
 ```
 
 ### More visualization functions
@@ -103,14 +103,14 @@ start with a prefix `viz_`:
 
 
 ```python
-    io_model = iomb.make_io_model('make_table.csv',
-                                  'use_table.csv')
-    
-    # visual check of the totals in the make and use tables
-    io_model.viz_totals()
-    # visual shape of the make and use tables
-    io_model.viz_make_table()
-    io_model.viz_use_table()
+import iomb
+io_model = iomb.make_io_model('make_table.csv',
+                              'use_table.csv')
+# visual check of the totals in the make and use tables
+io_model.viz_totals()
+# visual shape of the make and use tables
+io_model.viz_make_table()
+io_model.viz_use_table()
 ```
 
 ### Reading satellite tables
@@ -118,19 +118,19 @@ A satellite table can be created from a set of CSV files (see the format
 specification [below](#satellite-tables):
 
 ```python
-    sat_table = iomb.make_sat_table('sat_file1.csv', 
-                                    'sat_file2.csv', 
-                                    'sat_file3.csv')
+import iomb
+sat_table = iomb.make_sat_table('sat_file1.csv',
+                                'sat_file2.csv',
+                                'sat_file3.csv')
 ```
 
 ### Calculation
 TODO: doc
 
 ```python
-
-    demand = {'1111a0/oilseed farming/us': 42.0,
-              '112300/poultry and egg production/us': 24.0}
-    iomb.calculate(io_model, sat_table, demand)    
+demand = {'1111a0/oilseed farming/us': 42.0,
+          '112300/poultry and egg production/us': 24.0}
+iomb.calculate(io_model, sat_table, demand)
 ```
 
 ### Creating a JSON-LD data package
@@ -207,12 +207,13 @@ Thus, the key of the example would be
 #### Impact category identifiers
 Impact categories are identified by the following attributes
 
-0. The name, e.g. `Climate change GWP 100`
-1. The reference unit, e.g. `kg CO2 eq.`
+0. The name of the impact assessment method, e.g. `TRACI`
+1. The name of the impact assessment category, e.g. `Climate change`
+2. The reference unit, e.g. `kg CO2 eq.`
 
 The key of the example would be:
 
-    climate change gwp 100/kg co2 eq.
+    traci/climate change/kg co2 eq.
 
 ### Data frames
 The `iomb` package directly uses the [DataFrame](http://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html)
@@ -223,8 +224,8 @@ indices of the data frames. Thus the selection of a process contribution to an
 impact category result could look like this:
 
 ```python
-    result = ...
-    result['climate change gwp 100/kg co2 eq.']['1111a0/oilseed farming/us']
+result = ...
+v = result['climate change gwp 100/kg co2 eq.']['1111a0/oilseed farming/us']
 ``` 
 
 The data frame class also directly provides a method for storing it as a CSV
@@ -264,6 +265,19 @@ Satellite tables are saved in a CSV file with the following columns:
 8. Amount
 9. Unit
 ...
+
+#### Characterization factors
+Characterization factors for impact assessments are stored in CSV files with the
+following columns:
+
+0. Name of the impact assessment method, e.g. `TRACI`
+1. Name of the impact assessment category, e.g. `Climate change`
+2. Reference unit of the impact assessment category, e.g. `kg CO2 eq.`
+3. Elementary flow name, e.g. `Methane`
+4. Flow category / compartment, e.g. `Air`
+5. Flow sub-category / sub-compartment, e.g. `Unspecified`
+6. Flow unit, e.g. `kg`
+7. The value of the characterization factor
 
 ### Metadata files
 Metadata files are used when the input-output model is converted to an JSON-LD

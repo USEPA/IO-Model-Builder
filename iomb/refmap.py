@@ -176,8 +176,8 @@ class ElemFlow(object):
         self.cas_number = ''
 
     @staticmethod
-    def from_satellite_row(csv_row):
-        """ Creates an flow instance from the information in a CSV row of a
+    def from_satellite_row(csv_row: list):
+        """ Creates a flow instance from the information in a CSV row of a
             satellite table. """
         f = ElemFlow()
         f.name = csv_row[0]
@@ -188,6 +188,18 @@ class ElemFlow(object):
         f.unit = csv_row[9]
         if is_empty_str(f.uid):
             f.uid = make_uuid(f.key)
+        return f
+
+    @staticmethod
+    def from_ia_row(csv_row: list):
+        """ Creates a flow instance from the information of a CSV row in an
+            impact assessment table with characterization factors. It just
+            contains the information to identify a flow uniquely. """
+        f = ElemFlow()
+        f.name = csv_row[3]
+        f.category = csv_row[4]
+        f.sub_category = csv_row[5]
+        f.unit = csv_row[6]
         return f
 
     @property
@@ -219,6 +231,31 @@ class ElemFlow(object):
         return um.get(self.unit)
 
 
+class ImpactCategory(object):
+    """ Describes an impact assessment category. """
+
+    def __init__(self):
+        self.method = ''
+        self.name = ''
+        self.ref_unit = ''
+
+    @staticmethod
+    def from_ia_row(csv_row: list):
+        ic = ImpactCategory()
+        ic.method = csv_row[0]
+        ic.name = csv_row[1]
+        ic.ref_unit = csv_row[2]
+        return ic
+
+    @property
+    def key(self):
+        return as_path(self.method, self.name, self.ref_unit)
+
+    @property
+    def uid(self):
+        return make_uuid(self.key)
+
+
 class Sector(object):
     """ Describes an industry or commodity sector in the input-output model. """
 
@@ -231,7 +268,7 @@ class Sector(object):
         self.sub_category = ''
 
     @staticmethod
-    def from_satellite_row(csv_row):
+    def from_satellite_row(csv_row: list):
         """ Creates an sector instance from the information in a CSV row of a
             satellite table. This is just enough information to generate the
             unique sector key."""
