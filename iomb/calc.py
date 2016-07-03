@@ -1,69 +1,105 @@
 import pandas as pd
 import numpy as np
-import iomb.util as util
+import numpy.linalg as linalg
+import logging as log
 
 
 class Result(object):
     """ Contains the results of a calculation. """
 
     def __init__(self):
-        self.flows = None
-        self.sectors = None
-        self.demand = None
-        self.scaling = None
-        self.totals_lci = None
+        # inventory result
+        self.direct_contributions = None
+        self.total_result = None
 
-    @property
-    def demand_vector(self) -> pd.DataFrame:
-        return pd.DataFrame(data=self.demand, index=self.sectors,
-                            columns=['final demand'])
-
-    @property
-    def scaling_vector(self):
-        return pd.DataFrame(data=self.scaling, index=self.sectors,
-                            columns=['scaling factor'])
-
-    @property
-    def flow_results(self):
-        return pd.DataFrame(data=self.totals_lci, index=self.flows,
-                            columns=['total result'])
+        # impact assessment result
+        self.direct_ia_contributions = None
+        self.total_ia_result = None
 
 
-class Calculator(object):
+def calculate(demand: dict, drc: pd.DataFrame, sat: pd.DataFrame, iaf=None) -> Result:
     """
-    Calculates results from an input-output model for a given demand vector. It
-    gets the direct requirements coefficients (drc) and satellite accounts as
-    pandas data frames. The demand vector is a simple dictionary that contains
-    the sector keys with the respective amounts, e.g.:
+    Calculates a result for the given demand.
 
-    demand = {'1111a0/oilseed farming/us': 1.0}
+    :param demand: A dictionary containing the demand values of input-output sectors
+    :param drc: A data frame (sector x sector) with the direct requirements coefficients.
+    :param sat: A data frame (flow x sector) with the satellite table data.
+    :param iaf: An optional data frame (ia-category x flow) with characterization factors
+                for impact assessment.
     """
+    dev = demand_vector(drc, demand)
+    inv = leontief_inverse(drc)
+    sca = scaling_vector(inv, dev)
+    del inv  # later we may also want to calculate upstream totals
 
-    def __init__(self, drc: pd.DataFrame, sat: pd.DataFrame, demand: dict):
-        self.drc = drc
-        self.sat = sat
-        self.demand = demand
+    r = Result()
+    # flow results
+    sat_ = sat.reindex(columns=drc.columns, fill_value=0.0)  # align columns with DRC matrix
+    r.direct_contributions = scale_columns(sat_, sca)
+    del sat_
+    r.total_result = column_totals(r.direct_contributions)
 
-    def calculate(self) -> Result:
-        """ Runs a new calculation and returns a result object. """
+    # impact assessment result
+    if iaf is not None:
+        iaf_ = iaf.reindex(columns=sat.index, fill_value=0.0)  # align columns with SAT matrix rows
+        r.direct_ia_contributions = iaf_.dot(r.direct_contributions)
+        del iaf_
+        r.total_ia_result = column_totals(r.direct_ia_contributions)
 
-        # prepare the result
-        r = Result()
-        drc = self.drc.copy()
-        sat = self.sat.copy().reindex(columns=drc.columns, fill_value=0.0)
-        r.sectors = drc.index
-        r.flows = sat.index
-        r.demand = self._demand_vector()
+    return r
 
-        inv = util.leontief(drc)
-        r.scaling = inv.as_matrix().dot(r.demand)
-        r.totals_lci = sat.as_matrix().dot(r.scaling)
-        return r
+def leontief_inverse(a: pd.DataFrame) -> pd.DataFrame:
+    """ Calculates the Leontief-inverse (I-A)^-1 for the given matrix A. """
+    eye = np.eye(a.shape[0], dtype=np.float64)
+    inv = linalg.inv(eye - a.values)
+    return pd.DataFrame(inv, index=a.index, columns=a.columns)
 
-    def _demand_vector(self) -> np.ndarray:
-        d = np.zeros(self.drc.shape[0])
-        index = self.drc.index
-        for key, val in self.demand.items():
-            loc = index.get_loc(key)
-            d[loc] = val
-        return d
+
+def demand_vector(a: pd.DataFrame, demand: dict) -> np.ndarray:
+    """ Creates numeric vector from the demand map and the matrix A. """
+    v = np.zeros(a.shape[0], dtype=np.float64)
+    idx = a.index
+    for key, val in demand.items():
+        if val == 0:
+            continue
+        k = key.lower()
+        if k not in idx:
+            log.error('demand %s is not contained in A', k)
+            continue
+        i = idx.get_loc(k)
+        v[i] = val
+    return v
+
+
+def scaling_vector(inv: pd.DataFrame, dev: np.ndarray) -> np.ndarray:
+    """ Calculates the scaling vector from the given leontief inverse
+        and demand vector. """
+    s = np.zeros(dev.shape[0], dtype=np.float64)
+    inv_data = inv.values
+    for i in range(0, dev.shape[0]):
+        d = dev[i]
+        if d == 0:
+            continue
+        col = inv_data[:, i]
+        s += d * col
+    return s
+
+
+def scale_columns(m: pd.DataFrame, v: np.ndarray) -> pd.DataFrame:
+    """ Creates a new data frame from the given matrix M where
+        each column is scaled with the value of the given vector v:
+        M * diag(v) """
+    values = m.values
+    result = np.zeros(values.shape, dtype=np.float64)
+    for i in range(0, v.shape[0]):
+        s = v[i]
+        if s == 0:
+            continue
+        result[:, i] = s * values[:, i]
+    return pd.DataFrame(result, index=m.index, columns=m.columns)
+
+
+def column_totals(m: pd.DataFrame) -> pd.DataFrame:
+    """ Calculates the column totals of the given data frame. """
+    totals = np.sum(m.values, axis=1, dtype=np.float64)
+    return pd.DataFrame(totals, index=m.index, columns=['total'])

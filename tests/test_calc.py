@@ -11,10 +11,10 @@ class TestCalc(unittest.TestCase):
         sat = iomb.read_csv_data_frame(pref + "sat.csv")
         demand = {'4/electricity/us': 2, '7/steel parts/us-ga': 2,
                   '9/car manufacture/us-ga': 1}
-        self.r = calc.Calculator(drc, sat, demand).calculate()
+        self.r = calc.calculate(demand, drc, sat)
 
     def test_totals(self):
-        print(self.r.flow_results)
+        print(self.r.direct_contributions)
 
 if __name__ == '__main__':
     unittest.main()

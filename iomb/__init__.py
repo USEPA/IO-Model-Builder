@@ -88,12 +88,14 @@ def make_model(drc_csv: str, sat_tables: list, sector_info_csv: str,
     return model.Model(drc, sat_table, sectors, ia_table, units, compartments, locations)
 
 
-def calculate(io_model: io.Model, sat_table: sat.Table, demand: dict) \
-        -> calc.Result:
+def calculate(full_model: model.Model, demand: dict) -> calc.Result:
     """ Calculates the given input-output model with the given demand. """
-    drc_frame = io_model.get_dr_coefficients()
-    sat_frame = sat_table.as_data_frame()
-    return calc.Calculator(drc_frame, sat_frame, demand).calculate()
+    drc_ = full_model.drc_matrix
+    sat_ = full_model.sat_table.as_data_frame()
+    iaf_ = None
+    if full_model.ia_table is not None:
+        iaf_ = full_model.ia_table.as_data_frame()
+    return calc.calculate(demand, drc_, sat_, iaf_)
 
 
 def read_csv_data_frame(csv_file, keys_to_lower=True) -> pd.DataFrame:
