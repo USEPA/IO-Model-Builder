@@ -1,5 +1,6 @@
 import pandas as pd
 import iomb.calc as calc
+import iomb.ia as ia
 import iomb.io as io
 import iomb.sat as sat
 import iomb.model as model
@@ -51,7 +52,7 @@ def make_sat_table(*args: list) -> sat.Table:
 
 
 def make_model(drc_csv: str, sat_tables: list, sector_info_csv: str,
-               units_csv='', compartments_csv='',
+               ia_tables=None, units_csv='', compartments_csv='',
                locations_csv='') -> model.Model:
     """
     Creates a full EE-IO model with all information required for calculations,
@@ -60,32 +61,41 @@ def make_model(drc_csv: str, sat_tables: list, sector_info_csv: str,
     :param drc_csv: CSV file with the direct requirements matrix A
     :param sat_tables: a list of CSV files with satellite tables
     :param sector_info_csv: CSV file with sector metadata
+    :param ia_tables: an optional list of CSV files with impact assessment factors.
     :param units_csv: optional file with unit metadata
     :param compartments_csv: optional file with compartment metadata
     :param locations_csv: optional file with location metadata
     """
     drc = read_csv_data_frame(drc_csv)
-    sat = make_sat_table(*sat_tables)
+    sat_table = make_sat_table(*sat_tables)
     sectors = ref.SectorMap.read(sector_info_csv)
 
-    def read_optional(name, clazz):
+    ia_table = None
+    if ia_tables is not None and len(ia_tables) > 0:
+        ia_table = ia.Table()
+        for iat in ia_tables:
+            ia_table.add_file(iat)
+
+    def read_map(name, clazz):
         if name is None or name == '':
             return clazz.create_default()
         else:
             return clazz.read(name)
 
-    units = read_optional(units_csv, ref.UnitMap)
-    compartments = read_optional(compartments_csv, ref.CompartmentMap)
-    locations = read_optional(locations_csv, ref.LocationMap)
-    return model.Model(drc, sat, sectors, units, compartments, locations)
+    units = read_map(units_csv, ref.UnitMap)
+    compartments = read_map(compartments_csv, ref.CompartmentMap)
+    locations = read_map(locations_csv, ref.LocationMap)
+    return model.Model(drc, sat_table, sectors, ia_table, units, compartments, locations)
 
 
-def calculate(io_model: io.Model, sat_table: sat.Table, demand: dict) \
-        -> calc.Result:
+def calculate(full_model: model.Model, demand: dict) -> calc.Result:
     """ Calculates the given input-output model with the given demand. """
-    drc_frame = io_model.get_dr_coefficients()
-    sat_frame = sat_table.as_data_frame()
-    return calc.Calculator(drc_frame, sat_frame, demand).calculate()
+    drc_ = full_model.drc_matrix
+    sat_ = full_model.sat_table.as_data_frame()
+    iaf_ = None
+    if full_model.ia_table is not None:
+        iaf_ = full_model.ia_table.as_data_frame()
+    return calc.calculate(demand, drc_, sat_, iaf_)
 
 
 def read_csv_data_frame(csv_file, keys_to_lower=True) -> pd.DataFrame:
