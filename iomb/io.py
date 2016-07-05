@@ -262,13 +262,11 @@ class Model(object):
 
     def get_direct_requirements(self) -> pd.DataFrame:
         """
-        Calculates the direct requirements table from the use table but it takes
-        the industry totals from the make table in order to handle commodities
-        with different units correctly (TODO: link to documentation. This method
+        Calculates the direct requirements table from the use table. This method
         returns a commodity*industry matrix.
         """
         log.info('calculate direct requirements')
-        industry_totals = self.make_table.sum(axis=1)
+        industry_totals = self.use_table.sum(axis=0)
         drs = self.use_table.ix[self.commodities, self.industries]
         for ind in self.industries:
             total = industry_totals[ind]
