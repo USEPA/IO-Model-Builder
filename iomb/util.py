@@ -2,6 +2,8 @@ import csv
 import uuid
 import logging as log
 
+import pandas as pd
+
 
 def make_uuid(*args: list) -> str:
     path = as_path(*args)
@@ -42,3 +44,19 @@ def each_csv_row(csv_file: str, func, skip_header=False, encoding='utf-8'):
             r = [v.strip() for v in row]
             func(r, i)
             i += 1
+
+
+def read_csv_data_frame(csv_file, keys_to_lower=True) -> pd.DataFrame:
+    """ Loads a pandas DataFrame from the given CSV file. """
+    log.info('read data frame from %s', csv_file)
+    df = pd.read_csv(csv_file, index_col=0, header=0)
+    df.fillna(0.0, inplace=True)
+
+    def strip(x: str):
+        r = x.strip()
+        if keys_to_lower:
+            r = r.lower()
+        return r
+
+    df.rename(index=strip, columns=strip, inplace=True)
+    return df

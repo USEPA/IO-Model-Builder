@@ -1,12 +1,15 @@
+import logging as log
+import sys
+
 import pandas as pd
+
 import iomb.calc as calc
 import iomb.ia as ia
 import iomb.io as io
-import iomb.sat as sat
 import iomb.model as model
 import iomb.refmap as ref
-import logging as log
-import sys
+import iomb.sat as sat
+from .util import read_csv_data_frame
 
 log.basicConfig(level=log.WARNING, format='%(levelname)s %(message)s',
                 stream=sys.stdout)
@@ -85,7 +88,8 @@ def make_model(drc_csv: str, sat_tables: list, sector_info_csv: str,
     units = read_map(units_csv, ref.UnitMap)
     compartments = read_map(compartments_csv, ref.CompartmentMap)
     locations = read_map(locations_csv, ref.LocationMap)
-    return model.Model(drc, sat_table, sectors, ia_table, units, compartments, locations)
+    return model.Model(drc, sat_table, sectors, ia_table, units, compartments,
+                       locations)
 
 
 def calculate(full_model: model.Model, demand: dict) -> calc.Result:
@@ -96,19 +100,3 @@ def calculate(full_model: model.Model, demand: dict) -> calc.Result:
     if full_model.ia_table is not None:
         iaf_ = full_model.ia_table.as_data_frame()
     return calc.calculate(demand, drc_, sat_, iaf_)
-
-
-def read_csv_data_frame(csv_file, keys_to_lower=True) -> pd.DataFrame:
-    """ Loads a pandas DataFrame from the given CSV file. """
-    log.info('read data frame from %s', csv_file)
-    df = pd.read_csv(csv_file, index_col=0, header=0)
-    df.fillna(0.0, inplace=True)
-
-    def strip(x: str):
-        r = x.strip()
-        if keys_to_lower:
-            r = r.lower()
-        return r
-
-    df.rename(index=strip, columns=strip, inplace=True)
-    return df
