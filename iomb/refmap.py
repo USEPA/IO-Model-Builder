@@ -266,6 +266,7 @@ class Sector(object):
         self.unit = ''
         self.category = ''
         self.sub_category = ''
+        self.data_quality_entry = None
 
     @staticmethod
     def from_satellite_row(csv_row: list):
@@ -288,8 +289,27 @@ class Sector(object):
         s.category = csv_row[2]
         s.sub_category = csv_row[3]
         s.location = csv_row[4]
+        s.data_quality_entry = Sector.__read_dq_values(csv_row)
         # TODO: read all other fields as specified in the metadata format
         return s
+
+    @staticmethod
+    def __read_dq_values(info_row: list):
+        if len(info_row) < 26:
+            return None
+        raw = info_row[24:26]
+
+        def dqs(val):
+            if val is None or val == '':
+                return 'n.a.'
+            else:
+                return val
+
+        v1, v2 = dqs(raw[0]), dqs(raw[1])
+        if v1 == 'n.a.' and v2 == 'n.a.':
+            return None
+        else:
+            return '(%s;%s)' % (v1, v2)
 
     @property
     def key(self):

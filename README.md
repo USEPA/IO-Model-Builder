@@ -330,13 +330,39 @@ A metadata file for elementary flows contains the following columns:
 
 #### Metadata of sectors/processes
 
-0. Code
-1. Name
-2. Category
-3. Sub-category
-4. Location-Code
-5. Location-UUID
-...
+```
+Index  Field
+0      Sector code
+1      Name
+2      Category
+3      Sub-category
+4      Location code
+
+optional columns:
+
+5      Description
+6      Start date 
+7      End date 
+8      Geography description
+9      Technology description
+10     Intended application
+11     Data set owner
+12     Data generator
+13     Data documentor
+14     Access use restrictions
+15     Project description
+16     LCI method
+17     Modeling constants
+18     Data completeness
+19     Data treatment
+20     Sampling procedure
+21     Data collection period
+22     Reviewer
+23     Data set other evaluation
+24     Data quality: process review score
+25     Data quality: process completness score
+26..35 Sources
+```
 
 #### Metadata files for units
 iomb directly contains a file for mapping unit names to a unit and quantity

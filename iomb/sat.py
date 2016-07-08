@@ -10,14 +10,14 @@ class Entry(object):
     """ Contains the information of an entry in a satellite table. """
     def __init__(self, value: float):
         self.value = value
-        self.data_quality = None
+        self.data_quality_entry = None
         # TODO: add uncertainty information
 
     @staticmethod
     def from_csv(csv_row):
         val = float(csv_row[8])
         e = Entry(val)
-        e.data_quality = Entry.__read_dq_values(csv_row)
+        e.data_quality_entry = Entry.__read_dq_values(csv_row)
         return e
 
     @staticmethod

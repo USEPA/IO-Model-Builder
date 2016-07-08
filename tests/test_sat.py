@@ -7,7 +7,7 @@ class TestSat(unittest.TestCase):
         row = ['CO2', '', 'air', 'unspecified', '123', 'agriculture', 'abc',
                'US', 42.42, 'kg']
         entry = sat.Entry.from_csv(row)
-        self.assertIsNone(entry.data_quality)
+        self.assertIsNone(entry.data_quality_entry)
         self.assertAlmostEqual(42.42, entry.value)
 
     def test_entry_data_quality(self):
@@ -15,7 +15,7 @@ class TestSat(unittest.TestCase):
                'US', 42.42, 'kg', '', '', '', '', '', '5', '3', '', 'n.a.', '1',
                '2007']
         entry = sat.Entry.from_csv(row)
-        self.assertEqual('(5;3;n.a.;n.a.;1)', entry.data_quality)
+        self.assertEqual('(5;3;n.a.;n.a.;1)', entry.data_quality_entry)
         self.assertAlmostEqual(42.42, entry.value)
 
 
