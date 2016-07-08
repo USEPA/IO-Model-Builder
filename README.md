@@ -12,13 +12,13 @@ is installed on your system. Unzip the source code and navigate via the command
 line to the source code folder:
 
 ```bash
-    cd iomb
+cd iomb
 ```
 
 Then you can install it and its dependencies by creating an egg-link with pip:    
  
 ```bash
-    pip install -e .
+pip install -e .
 ```
 
 After this you should be able to use the `iomb` package in your Python scripts.
@@ -36,11 +36,13 @@ package for Windows from http://www.lfd.uci.edu/~gohlke/pythonlibs/#numpy as des
 and run the installation of iomb after this:
 
 ```bash
-    pip install "numpy-...-win_amd64.whl"
+pip install "numpy-...-win_amd64.whl"
 ```
 
 However, this seems not to work on all 
 [Windows platforms](http://stackoverflow.com/questions/31025322/install-numpy-windows-8-64-with-python-3-5).
+In this case, on option would be to just use the 32bit version of Python 
+(because for this a pre-compiled version of NumPy is available).
 
 ----------------------------------------------------------------------------------------
 
@@ -51,13 +53,13 @@ However, this seems not to work on all
 To uninstall the package run
 
 ```bash
-    pip uninstall iomb
+pip uninstall iomb
 ```
 
 Usage
 -----
 The following examples show what you can do with the `iomb` package. For detailed
-information of the data format see the section [below](#data-format). 
+information of the data format see the sections [below](#data-format). 
 
 ### Logging
 By default `iomb` logs only warnings and errors to the standard output. You can
@@ -68,11 +70,14 @@ import iomb
 iomb.log_all()
 ```
 
-### Reading an input-output model
+### Reading a model and calculate results
 ```python
 import iomb
-io_model = iomb.make_io_model('make_table.csv',
-                              'use_table.csv')
+model = iomb.make_model('drc.csv',  # the coefficients matrix
+                        ['sat_table1.csv', 'sat_table1.csv'],  # satellite tables
+                        'sector_meta_data.csv')  # sector meta data
+result = iomb.calculate(model, {'1111a0/oilseed farming/us': 1})
+print(result.total_result)
 ```
 
 ### Calculating a coefficients matrix
@@ -83,7 +88,9 @@ a given supply and use table as described in the
 [1]:http://www.bea.gov/papers/pdf/IOmanual_092906.pdf "Karen J. Horowitz, Mark A. Planting: Concepts and Methods of the U.S. Input-Output Accounts. 2006"
 
 ```python
-drc = io_model.get_dr_coefficients()
+import iomb
+drc = iomb.coefficients_from_sut('supply_table.csv', 'use_table_2007.csv')
+drc.to_csv('drc.csv')
 ```
 
 ### Using result data frames
@@ -122,15 +129,6 @@ import iomb
 sat_table = iomb.make_sat_table('sat_file1.csv',
                                 'sat_file2.csv',
                                 'sat_file3.csv')
-```
-
-### Calculation
-TODO: doc
-
-```python
-demand = {'1111a0/oilseed farming/us': 42.0,
-          '112300/poultry and egg production/us': 24.0}
-iomb.calculate(io_model, sat_table, demand)
 ```
 
 ### Creating a JSON-LD data package
@@ -254,17 +252,37 @@ as row and column headers, e.g.:
 #### Satellite tables
 Satellite tables are saved in a CSV file with the following columns:
 
-0. Elementary flow name
-1. CAS number of the flow
-2. Flow category
-3. Flow sub-category
-4. Flow UUID
-5. Process/Sector name
-6. Process/Sector code
-7. Process/Sector location
-8. Amount
-9. Unit
-...
+```
+Index  Field                                    Type
+---------------------------------------------------------------
+0      Flow name                                string
+1      CAS number                               string
+2      Category                                 string
+3      Sub-category                             string
+4      Flow UUID                                UUID
+5      Process/Sector name                      string
+6      Process/Sector code                      string
+7      Process/Sector location                  string
+8      Amount                                   float
+9      Unit                                     string
+
+optional columns: 
+
+10     Uncertainty: distribution type           enumeration
+11     Uncertainty: expected value              float 
+12     Uncertainty: dispersion                  float
+13     Uncertainty: minimum                     float
+14     Uncertainty: maximum                     float
+15     Data quality: reliability                'n.a.', [1..5]
+16     Data quality: temporal correlation       'n.a.', [1..5]
+17     Data quality: geographical correlation   'n.a.', [1..5]
+18     Data quality: technological correlation  'n.a.', [1..5]
+19     Data quality: data collection            'n.a.', [1..5]
+20     Year of data                             
+21     Tags
+22     Sources
+23     Other
+```
 
 #### Characterization factors
 Characterization factors for impact assessments are stored in CSV files with the

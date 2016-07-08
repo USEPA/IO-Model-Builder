@@ -60,3 +60,10 @@ def read_csv_data_frame(csv_file, keys_to_lower=True) -> pd.DataFrame:
 
     df.rename(index=strip, columns=strip, inplace=True)
     return df
+
+
+def csv_val(row: list, idx: int, default=None):
+    if idx >= len(row):
+        return default
+    else:
+        return row[idx]
