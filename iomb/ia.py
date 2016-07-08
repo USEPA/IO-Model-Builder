@@ -25,7 +25,7 @@ class Table(object):
                 self.method = row[0]
             i = self.__read_category(row)
             j = self.__read_flow(row)
-            val = float(row[7])
+            val = float(row[8])
             if i not in self.entries:
                 self.entries[i] = {}
             self.entries[i][j] = val
@@ -51,6 +51,18 @@ class Table(object):
             self.flows.append(flow)
             self.flow_idx[key] = j
         return self.flow_idx[key]
+
+    def get_factor(self, category: ref.ImpactCategory,
+                   flow: ref.ElemFlow) -> float:
+        row_idx = self.category_idx.get(category.key)
+        col_idx = self.flow_idx.get(flow.key)
+        if row_idx is None or col_idx is None:
+            return 0.0
+        row = self.entries.get(row_idx)
+        if row is None:
+            return 0.0
+        val = row.get(col_idx)
+        return 0.0 if val is None else val
 
     def as_data_frame(self) -> pd.DataFrame:
         rows, cols = len(self.categories), len(self.flows)

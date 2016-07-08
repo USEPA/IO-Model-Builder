@@ -295,7 +295,8 @@ following columns:
 4. Flow category / compartment, e.g. `Air`
 5. Flow sub-category / sub-compartment, e.g. `Unspecified`
 6. Flow unit, e.g. `kg`
-7. The value of the characterization factor
+7. Flow UUID
+8. The value of the characterization factor
 
 ### Metadata files
 Metadata files are used when the input-output model is converted to an JSON-LD

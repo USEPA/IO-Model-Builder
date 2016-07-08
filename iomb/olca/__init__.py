@@ -2,7 +2,7 @@ import json
 import iomb.util as util
 import iomb.model as mod
 import iomb.refmap as ref
-from .dq import dq_exchanges_system, dq_process_system, append_data_quality
+from .dqx import dq_exchanges_system, dq_process_system, append_data_quality
 import logging as log
 import zipfile as zipf
 

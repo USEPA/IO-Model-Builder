@@ -200,6 +200,7 @@ class ElemFlow(object):
         f.category = csv_row[4]
         f.sub_category = csv_row[5]
         f.unit = csv_row[6]
+        f.uid = csv_row[7]
         return f
 
     @property
@@ -230,6 +231,9 @@ class ElemFlow(object):
             return None
         return um.get(self.unit)
 
+    def __str__(self):
+        return self.key
+
 
 class ImpactCategory(object):
     """ Describes an impact assessment category. """
@@ -254,6 +258,9 @@ class ImpactCategory(object):
     @property
     def uid(self):
         return make_uuid(self.key)
+
+    def __str__(self):
+        return self.key
 
 
 class Sector(object):

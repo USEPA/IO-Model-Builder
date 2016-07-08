@@ -1,3 +1,8 @@
+"""
+This module contains methods for writing data quality information to an JSON-LD
+package.
+"""
+
 import iomb.refmap as ref
 
 
