@@ -3,6 +3,7 @@ import iomb.util as util
 import iomb.model as mod
 import iomb.refmap as ref
 from .dqx import dq_exchanges_system, dq_process_system, append_data_quality
+from .iax import check_export_lcia_method
 import logging as log
 import zipfile as zipf
 
@@ -32,6 +33,7 @@ class Export(object):
             self.__add_tech_inputs(s, p)
             self.__add_elem_entries(s, p)
             dump(p, 'processes', pack)
+        check_export_lcia_method(self.model, pack, dump)
         pack.close()
 
     def __write_sector_categories(self, pack):
@@ -101,7 +103,7 @@ class Export(object):
     def __add_elem_entries(self, s: ref.Sector, p: dict):
         sat = self.model.sat_table
         if s.key not in sat.sector_idx:
-            log.warning('%s is not contained in satellite matrix', s.key)
+            # log.warning('%s is not contained in satellite matrix', s.key)
             return
         exchanges = p["exchanges"]
         for flow in sat.flows:
