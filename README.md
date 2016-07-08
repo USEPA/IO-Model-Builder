@@ -360,7 +360,7 @@ optional columns:
 22     Reviewer
 23     Data set other evaluation
 24     Data quality: process review score
-25     Data quality: process completness score
+25     Data quality: process completeness score
 26..35 Sources
 ```
 

@@ -2,6 +2,7 @@ import json
 import iomb.util as util
 import iomb.model as mod
 import iomb.refmap as ref
+from .dq import dq_exchanges_system, dq_process_system, append_data_quality
 import logging as log
 import zipfile as zipf
 
@@ -9,17 +10,23 @@ import zipfile as zipf
 class Export(object):
     """ Exports data into a JSON-LD package for openLCA. """
 
-    def __init__(self, model: mod.Model):
+    def __init__(self, model: mod.Model, with_data_quality=False):
         self.model = model
+        self.with_data_quality = with_data_quality
 
     def to(self, zip_file):
         pack = zipf.ZipFile(zip_file, mode='a', compression=zipf.ZIP_DEFLATED)
         _write_economic_units(pack)
         _write_satellite_flows(self.model, pack)
         _write_locations(self.model, pack)
+        if self.with_data_quality:
+            dump(dq_process_system(), 'dq_systems', pack)
+            dump(dq_exchanges_system(), 'dq_systems', pack)
+
         self.__write_sector_categories(pack)
         self.__write_products(pack)
         for s in self.model.each_sector():
+            log.info('Create process %s', s.key)
             p = self.__prepare_process(s)
             self.__add_tech_inputs(s, p)
             self.__add_elem_entries(s, p)
@@ -115,6 +122,8 @@ class Export(object):
                                  "@id": unit.quantity_uid},
                 "quantitativeReference": False
             }
+            if self.with_data_quality and entry.data_quality_entry is not None:
+                e['dqEntry'] = entry.data_quality_entry
             exchanges.append(e)
 
     def __prepare_process(self, s: ref.Sector):
@@ -142,6 +151,8 @@ class Export(object):
         loc = self.model.locations.get(s.location)
         if loc is not None:
             p["location"] = {"@type": "Location", "@id": loc.uid}
+        if self.with_data_quality:
+            append_data_quality(p, s)
         return p
 
 
