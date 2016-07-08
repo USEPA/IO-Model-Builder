@@ -10,9 +10,10 @@ import zipfile as zipf
 class Export(object):
     """ Exports data into a JSON-LD package for openLCA. """
 
-    def __init__(self, model: mod.Model, with_data_quality=False):
+    def __init__(self, model: mod.Model, with_data_quality=False, cutoff=0.0):
         self.model = model
         self.with_data_quality = with_data_quality
+        self.cutoff = cutoff
 
     def to(self, zip_file):
         pack = zipf.ZipFile(zip_file, mode='a', compression=zipf.ZIP_DEFLATED)
@@ -77,7 +78,7 @@ class Export(object):
         for row_s in self.model.each_sector():
             row_key = row_s.key
             val = self.model.drc_matrix.get_value(row_key, col_key)
-            if val == 0:
+            if abs(val) <= self.cutoff:
                 continue
             e = {
                 "@type": "Exchange",
