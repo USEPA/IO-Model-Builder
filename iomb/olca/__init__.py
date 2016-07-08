@@ -106,6 +106,8 @@ class Export(object):
         exchanges = p["exchanges"]
         for flow in sat.flows:
             entry = sat.get_entry(flow.key, s.key)
+            if entry.value == 0:
+                continue
             compartment = flow.get_compartment(self.model.compartments)
             unit = flow.get_unit(self.model.units)
             if compartment is None or unit is None:
