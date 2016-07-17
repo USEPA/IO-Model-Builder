@@ -92,11 +92,11 @@ def make_model(drc_csv: str, sat_tables: list, sector_info_csv: str,
                        locations)
 
 
-def calculate(full_model: model.Model, demand: dict) -> calc.Result:
+def calculate(full_model: model.Model, demand: dict, perspective="direct") -> calc.Result:
     """ Calculates the given input-output model with the given demand. """
     drc_ = full_model.drc_matrix
     sat_ = full_model.sat_table.as_data_frame()
     iaf_ = None
     if full_model.ia_table is not None:
         iaf_ = full_model.ia_table.as_data_frame()
-    return calc.calculate(demand, drc_, sat_, iaf_)
+    return calc.calculate(demand, drc_, sat_, iaf_, perspective)
