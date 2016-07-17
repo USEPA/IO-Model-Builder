@@ -17,7 +17,7 @@ class Result(object):
         self.total_ia_result = None
 
 
-def calculate(demand: dict, drc: pd.DataFrame, sat: pd.DataFrame, iaf=None) -> Result:
+def calculate(demand: dict, drc: pd.DataFrame, sat: pd.DataFrame, iaf=None, perspective="direct") -> Result:
     """
     Calculates a result for the given demand.
 
@@ -30,22 +30,41 @@ def calculate(demand: dict, drc: pd.DataFrame, sat: pd.DataFrame, iaf=None) -> R
     dev = demand_vector(drc, demand)
     inv = leontief_inverse(drc)
     sca = scaling_vector(inv, dev)
-    del inv  # later we may also want to calculate upstream totals
 
     r = Result()
     # flow results
     sat_ = sat.reindex(columns=drc.columns, fill_value=0.0)  # align columns with DRC matrix
+		
     r.direct_contributions = scale_columns(sat_, sca)
-    del sat_
     r.total_result = column_totals(r.direct_contributions)
 
-    # impact assessment result
+	# impact assessment result
     if iaf is not None:
-        iaf_ = iaf.reindex(columns=sat.index, fill_value=0.0)  # align columns with SAT matrix rows
-        r.direct_ia_contributions = iaf_.dot(r.direct_contributions)
-        del iaf_
-        r.total_ia_result = column_totals(r.direct_ia_contributions)
-
+        if perspective is "direct":
+            iaf_ = iaf.reindex(columns=sat.index, fill_value=0.0)  # align columns with SAT matrix rows
+            r.direct_ia_contributions = iaf_.dot(r.direct_contributions)
+            del iaf_
+            r.total_ia_result = column_totals(r.direct_ia_contributions)
+        elif perspective is "intermediate":
+            satInv = sat_.dot(inv)
+            satInv_ = scale_columns(satInv, sca)
+            del satInv
+            iaf_ = iaf.reindex(columns=sat.index, fill_value=0.0)  # align columns with SAT matrix rows
+            r.direct_ia_contributions = iaf_.dot(satInv_)
+            del satInv_
+            del iaf_
+            r.total_ia_result = column_totals(r.direct_ia_contributions)
+        elif perspective is "final":
+            satInv = sat_.dot(inv)
+            satInv_ = scale_columns(satInv, dev)
+            del satInv
+            iaf_ = iaf.reindex(columns=sat.index, fill_value=0.0)  # align columns with SAT matrix rows
+            r.direct_ia_contributions = iaf_.dot(satInv_)
+            del satInv_
+            del iaf_
+            r.total_ia_result = column_totals(r.direct_ia_contributions)
+    del sat_
+    del inv
     return r
 
 def leontief_inverse(a: pd.DataFrame) -> pd.DataFrame:
