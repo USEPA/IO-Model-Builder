@@ -201,6 +201,8 @@ class ElemFlow(object):
         f.sub_category = csv_row[5]
         f.unit = csv_row[6]
         f.uid = csv_row[7]
+        if is_empty_str(f.uid):
+            f.uid = make_uuid(f.key)
         return f
 
     @property
