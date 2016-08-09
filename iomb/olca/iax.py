@@ -11,7 +11,7 @@ def check_export_lcia_method(model: mod.Model, pack, dump_fn):
     ia_table = model.ia_table
     if ia_table is None:
         return
-    _write_method(dump_fn, ia_table, pack)
+    _write_methods(dump_fn, ia_table, pack)
     for category in ia_table.categories:
         log.info('Write LCIA category %s', category.name)
         c = {
@@ -40,17 +40,34 @@ def check_export_lcia_method(model: mod.Model, pack, dump_fn):
         dump_fn(c, 'lcia_categories', pack)
 
 
-def _write_method(dump_fn, ia_table, pack):
-    log.info('Write LCIA method %s', ia_table.method)
-    m = {
-        "@context": "http://greendelta.github.io/olca-schema/context.jsonld",
-        "@type": "ImpactMethod",
-        "@id": util.make_uuid(ia_table.method),
-        "name": ia_table.method,
-        "impactCategories": []}
-    for category in ia_table.categories:
-        c = {"@type": "ImpactCategory",
-             "@id": category.uid,
-             "name": category.name}
-        m['impactCategories'].append(c)
-    dump_fn(m, 'lcia_methods', pack)
+def _write_methods(dump_fn, ia_table, pack):
+    for method in _get_methods(ia_table):
+        log.info('Write LCIA method %s', method)
+        m = {
+            "@context": "http://greendelta.github.io/olca-schema/context.jsonld",
+            "@type": "ImpactMethod",
+            "@id": util.make_uuid(method),
+            "name": method,
+            "impactCategories": []}
+        for category in _get_categories(ia_table, method):
+            c = {"@type": "ImpactCategory",
+                 "@id": category.uid,
+                 "name": category.name}
+            m['impactCategories'].append(c)
+        dump_fn(m, 'lcia_methods', pack)
+
+
+def _get_methods(ia_table) -> list:
+    methods = []
+    for cat in ia_table.categories:
+        if cat.method not in methods:
+            methods.append(cat.method)
+    return methods
+
+
+def _get_categories(ia_table, method: str) -> list:
+    categories = []
+    for cat in ia_table.categories:
+        if cat.method == method:
+            categories.append(cat)
+    return categories

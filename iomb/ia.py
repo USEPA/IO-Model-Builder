@@ -6,11 +6,11 @@ from .util import each_csv_row
 
 
 class Table(object):
-    """ A table with characterization factors of an impact assessment method. The factors in the table are index by
-        impact assessment categories in the rows and elementary flows in the columns. """
+    """ A table with characterization factors of an impact assessment method.
+        The factors in the table are index by impact assessment categories in
+        the rows and elementary flows in the columns. """
 
     def __init__(self):
-        self.method = ''
         self.categories = []
         self.category_idx = {}
         self.flows = []
@@ -21,8 +21,6 @@ class Table(object):
         """ Reads the given file and adds the entries to this table. """
 
         def handle_row(row: list, k: int):
-            if k == 1:
-                self.method = row[0]
             i = self.__read_category(row)
             j = self.__read_flow(row)
             val = float(row[8])
