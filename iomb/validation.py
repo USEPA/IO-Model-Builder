@@ -3,11 +3,12 @@ import iomb.refmap as ref
 import iomb.sat as sat
 import iomb.ia as ia
 import pandas as pd
+import logging as log
 
 
 class ValidationResult(object):
     def __init__(self):
-        self.display_message_count = 10
+        self.display_message_count = 5
         self.failed = False
         self.errors = []
         self.warnings = []
@@ -18,8 +19,35 @@ class ValidationResult(object):
         self.failed = True
         return self
 
+    def __str__(self):
+        t = 'Validation result:\n\n'
+        c_errors, c_warnings = len(self.errors), len(self.warnings)
+        if c_errors == 0 and c_warnings == 0:
+            t += ' no errors or warnings, everything seems to be fine\n\n'
+        else:
+            t += ' there are %s errors and %s warnings\n\n' % (c_errors,
+                                                               c_warnings)
+        t += self._list_str('errors', self.errors)
+        t += self._list_str('warnings', self.warnings)
+        t += self._list_str('information', self.information)
+        return t
+
+    def _list_str(self, title: str, messages: list) -> str:
+        if len(messages) == 0:
+            return ''
+        t = " %s:\n" % title
+        for i in range(0, len(messages)):
+            if i >= self.display_message_count:
+                r = len(messages) - self.display_message_count
+                t += '  * %s more\n' % r
+                break
+            t += '  * %s\n' % messages[i]
+        t += '\n'
+        return t
+
 
 def validate(m: model.Model) -> ValidationResult:
+    log.info('validate model')
     vr = ValidationResult()
     if not isinstance(m, model.Model):
         return vr.fail('not an instance of iomb.model.Model')
@@ -65,9 +93,9 @@ class Message(object):
         workbooks.
         """
         color = '#2E4172'
-        if self.message_type == Message.ERROR:
+        if self.message_type == 'ERROR':
             color = '#AA3939'
-        if self.message_type == Message.WARNING:
+        if self.message_type == 'WARNING':
             color = '#C7C732'
         return '<p style="color:%s;">%s - %s</h1>' % (color, self.message_type,
                                                       self.message)
