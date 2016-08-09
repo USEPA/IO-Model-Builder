@@ -1,8 +1,57 @@
-class Message(object):
-    ERROR = 'ERROR'
-    WARNING = 'WARNING'
-    INFO = 'INFO'
+import iomb.model as model
+import iomb.refmap as ref
+import iomb.sat as sat
+import iomb.ia as ia
+import pandas as pd
 
+
+class ValidationResult(object):
+    def __init__(self):
+        self.display_message_count = 10
+        self.failed = False
+        self.errors = []
+        self.warnings = []
+        self.information = []
+
+    def fail(self, message):
+        self.errors.insert(0, 'invalid model: ' + message)
+        self.failed = True
+        return self
+
+
+def validate(m: model.Model) -> ValidationResult:
+    vr = ValidationResult()
+    if not isinstance(m, model.Model):
+        return vr.fail('not an instance of iomb.model.Model')
+    _check_field_types(m, vr)
+
+    return vr
+
+
+def _check_field_types(m: model.Model, vr: ValidationResult):
+    # field checks: (field value, type, field name, optional)
+    field_checks = [
+        (m.drc_matrix, pd.DataFrame, 'drc_matrix', False),
+        (m.sat_table, sat.Table, 'sat_table', False),
+        (m.sectors, ref.SectorMap, 'sectors', False),
+        (m.ia_table, ia.Table, 'ia_table', True),
+        (m.units, ref.UnitMap, 'units', True),
+        (m.compartments, ref.CompartmentMap, 'compartments', True),
+        (m.locations, ref.LocationMap, 'locations', True)
+    ]
+    for field in field_checks:
+        value = field[0]
+        optional = field[3]
+        if optional and value is None:
+            continue
+        if not isinstance(value, field[1]):
+            vr.fail('field %s is not an instance of %s' % (field[2], field[1]))
+            break
+    if m.ia_table is None:
+        vr.information.append('model without LCIA data')
+
+
+class Message(object):
     def __init__(self, message, message_type):
         self.message = message
         self.message_type = message_type
