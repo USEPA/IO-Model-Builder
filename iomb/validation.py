@@ -8,7 +8,7 @@ import logging as log
 
 class ValidationResult(object):
     def __init__(self):
-        self.display_message_count = 5
+        self.display_count = 5
         self.failed = False
         self.errors = []
         self.warnings = []
@@ -54,8 +54,8 @@ class ValidationResult(object):
             return ''
         t = " %s:\n" % title
         for i in range(0, len(messages)):
-            if i >= self.display_message_count:
-                r = len(messages) - self.display_message_count
+            if self.display_count >= 0 and i >= self.display_count:
+                r = len(messages) - self.display_count
                 t += '  * %s more\n' % r
                 break
             t += '  * %s\n' % messages[i]
@@ -67,8 +67,8 @@ class ValidationResult(object):
             return ''
         t = '<h3 style="color:%s">%s</h3><ul>' % (color, title)
         for i in range(0, len(messages)):
-            if i >= self.display_message_count:
-                r = len(messages) - self.display_message_count
+            if self.display_count >= 0 and i >= self.display_count:
+                r = len(messages) - self.display_count
                 t += '<li style="color:%s">%s more</li>' % (color, r)
                 break
             t += '<li style="color:%s">%s</li>' % (color, messages[i])
@@ -82,7 +82,8 @@ def validate(m: model.Model) -> ValidationResult:
     if not isinstance(m, model.Model):
         return vr.fail('not an instance of iomb.model.Model')
     _check_field_types(m, vr)
-
+    _check_sector_locations(m, vr)
+    _check_ia_coverage(m, vr)
     return vr
 
 
@@ -107,3 +108,39 @@ def _check_field_types(m: model.Model, vr: ValidationResult):
             break
     if m.ia_table is None:
         vr.information.append('model without LCIA data')
+
+
+def _check_sector_locations(m: model.Model, vr: ValidationResult):
+    """ Check if """
+    unknown_codes = []
+    for key in m.sectors.mappings.keys():
+        sector = m.sectors.get(key)
+        code = sector.location
+        if code in unknown_codes:
+            continue
+        location = m.locations.get(code)
+        if location is None:
+            vr.warnings.append('unknown location %s' % code)
+            unknown_codes.append(code)
+    if len(unknown_codes) == 0:
+        vr.information.append('all location codes of sectors are ok')
+
+
+def _check_ia_coverage(m: model.Model, vr: ValidationResult):
+    if m.ia_table is None:
+        return
+    uncovered_count = 0
+    for flow in m.sat_table.flows:
+        covered = False
+        for category in m.ia_table.categories:
+            factor = m.ia_table.get_factor(category, flow)
+            if factor != 0:
+                covered = True
+                break
+        if not covered:
+            uncovered_count += 1
+            vr.warnings.append('flow %s is not covered by the LCIA model' %
+                               flow)
+    if uncovered_count == 0:
+        vr.information.append('all flows covered by LCIA model')
+

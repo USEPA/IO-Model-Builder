@@ -2,7 +2,6 @@ import pandas as pd
 import logging as log
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-import iomb.validation as validation
 import numpy as np
 import numpy.linalg as linalg
 
@@ -297,30 +296,3 @@ class Model(object):
         eye = np.eye(drc.shape[0], dtype=np.float64)
         data = linalg.inv(eye - drc.as_matrix())
         return pd.DataFrame(data=data, index=drc.index, columns=drc.columns)
-
-    def check(self) -> validation.Validation:
-        """
-        Does the following checks and throws an exception if one of these fails:
-
-        * Are all industries and commodities of the make table also contained in
-          the use table? The make table should not contain 'value added' and
-          'final demand' sectors so that each entry of the row and column index
-          of the make table should be in contained in the respective index of
-          the use table.
-        """
-        val = validation.Validation('Validation of economic module')
-        use_com, use_ind = {}, {}
-        for com in self.use_table.index:
-            use_com[com] = True
-        for ind in self.use_table.columns:
-            use_ind[ind] = True
-        for com in self.make_table.columns:
-            if com not in use_com:
-                val.error("Commodity '" + com + "' is contained " +
-                          "in the make table but not in the use" +
-                          " table")
-        for ind in self.make_table.index:
-            if ind not in use_ind:
-                val.error("Industry '" + ind + "' is contained in the " +
-                          "make table but not in the use table")
-        return val
