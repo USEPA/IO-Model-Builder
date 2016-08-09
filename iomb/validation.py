@@ -82,6 +82,8 @@ def validate(m: model.Model) -> ValidationResult:
     if not isinstance(m, model.Model):
         return vr.fail('not an instance of iomb.model.Model')
     _check_field_types(m, vr)
+    _check_sat_units(m, vr)
+    _check_sat_compartments(m, vr)
     _check_sector_locations(m, vr)
     _check_ia_coverage(m, vr)
     return vr
@@ -111,7 +113,6 @@ def _check_field_types(m: model.Model, vr: ValidationResult):
 
 
 def _check_sector_locations(m: model.Model, vr: ValidationResult):
-    """ Check if """
     unknown_codes = []
     for key in m.sectors.mappings.keys():
         sector = m.sectors.get(key)
@@ -144,3 +145,32 @@ def _check_ia_coverage(m: model.Model, vr: ValidationResult):
     if uncovered_count == 0:
         vr.information.append('all flows covered by LCIA model')
 
+
+def _check_sat_units(m: model.Model, vr: ValidationResult):
+    unknown_units = []
+    for flow in m.sat_table.flows:
+        unit_name = flow.unit
+        if unit_name in unknown_units:
+            continue
+        unit = m.units.get(unit_name)
+        if unit is None:
+            unknown_units.append(unit_name)
+            vr.errors.append('Unit %s of flow %s is unknown' % (unit_name,
+                                                                flow))
+    if len(unknown_units) == 0:
+        vr.information.append('all units in satellite table are known')
+
+
+def _check_sat_compartments(m: model.Model, vr: ValidationResult):
+    unknown = []
+    for flow in m.sat_table.flows:
+        ck = flow.compartment_key
+        if ck in unknown:
+            continue
+        c = m.compartments.get(ck)
+        if c is None:
+            unknown.append(ck)
+            vr.errors.append('Compartment %s of flow %s is unknown' % (ck,
+                                                                       flow))
+    if len(unknown) == 0:
+        vr.information.append('all compartments in satellite table are known')
