@@ -3,69 +3,78 @@ import numpy as np
 import numpy.linalg as linalg
 import logging as log
 
+DIRECT_PERSPECTIVE = 'direct'
+INTERMEDIATE_PERSPECTIVE = 'intermediate'
+FINAL_PERSPECTIVE = 'final'
+
 
 class Result(object):
-    """ Contains the results of a calculation. """
+    """ Contains the results of a calculation. The impact assessment results
+        are 'None' if the calculated model did not contain characterization
+        factors. """
 
-    def __init__(self):
-        # inventory result
-        self.direct_contributions = None
-        self.total_result = None
+    def __init__(self, perspective: str):
+        self.perspective = perspective
 
-        # impact assessment result
-        self.direct_ia_contributions = None
-        self.total_ia_result = None
+        # total LCI and LCIA results are equal for all perspectives
+        self.lci_total = None
+        self.lcia_total = None
+
+        # sector contributions for the selected perspective
+        self.lci_contributions = None
+        self.lcia_contributions = None
 
 
-def calculate(demand: dict, drc: pd.DataFrame, sat: pd.DataFrame, iaf=None, perspective="direct") -> Result:
+def calculate(demand: dict, drc: pd.DataFrame, sat: pd.DataFrame, iaf=None,
+              perspective=DIRECT_PERSPECTIVE) -> Result:
     """
     Calculates a result for the given demand.
 
-    :param demand: A dictionary containing the demand values of input-output sectors
-    :param drc: A data frame (sector x sector) with the direct requirements coefficients.
+    :param demand: A dictionary containing the demand values of input-output
+           sectors
+    :param drc: A data frame (sector x sector) with the direct requirements
+           coefficients.
     :param sat: A data frame (flow x sector) with the satellite table data.
-    :param iaf: An optional data frame (ia-category x flow) with characterization factors
-                for impact assessment.
-    """
+    :param iaf: An optional data frame (ia-category x flow) with
+           characterization factors for impact assessment.
+    :param perspective: The perspective of the contribution results. See the
+           documentation for more information about the different result
+           perspectives. """
+
+    # prepare demand vector, inverse and scaling vector
     dev = demand_vector(drc, demand)
     inv = leontief_inverse(drc)
     sca = scaling_vector(inv, dev)
 
-    r = Result()
-    # flow results
-    sat_ = sat.reindex(columns=drc.columns, fill_value=0.0)  # align columns with DRC matrix
-		
-    r.direct_contributions = scale_columns(sat_, sca)
-    r.total_result = column_totals(r.direct_contributions)
+    r = Result(perspective)
 
-	# impact assessment result
-    if iaf is not None:
-        if perspective is "direct":
-            iaf_ = iaf.reindex(columns=sat.index, fill_value=0.0)  # align columns with SAT matrix rows
-            r.direct_ia_contributions = iaf_.dot(r.direct_contributions)
-            del iaf_
-            r.total_ia_result = column_totals(r.direct_ia_contributions)
-        elif perspective is "intermediate":
-            satInv = sat_.dot(inv)
-            satInv_ = scale_columns(satInv, sca)
-            del satInv
-            iaf_ = iaf.reindex(columns=sat.index, fill_value=0.0)  # align columns with SAT matrix rows
-            r.direct_ia_contributions = iaf_.dot(satInv_)
-            del satInv_
-            del iaf_
-            r.total_ia_result = column_totals(r.direct_ia_contributions)
-        elif perspective is "final":
-            satInv = sat_.dot(inv)
-            satInv_ = scale_columns(satInv, dev)
-            del satInv
-            iaf_ = iaf.reindex(columns=sat.index, fill_value=0.0)  # align columns with SAT matrix rows
-            r.direct_ia_contributions = iaf_.dot(satInv_)
-            del satInv_
-            del iaf_
-            r.total_ia_result = column_totals(r.direct_ia_contributions)
-    del sat_
-    del inv
+    # align columns of satellite matrix with DRC matrix (sector index)
+    sat_ = sat.reindex(columns=drc.columns, fill_value=0.0)
+    # align columns of LCIA factors with satellite matrix rows (flow index)
+    iaf_ = None if iaf is None else iaf.reindex(columns=sat.index,
+                                                fill_value=0.0)
+
+    # calculate the total results
+    r.lci_total = sat_.dot(sca)
+    if iaf_ is not None:
+        r.lcia_total = iaf_.dot(r.lci_total)
+
+    # calculate LCI contributions
+    if perspective == DIRECT_PERSPECTIVE:
+        r.lci_contributions = scale_columns(sat_, sca)
+    elif perspective == INTERMEDIATE_PERSPECTIVE:
+        upstream = sat_.dot(inv)
+        r.lci_contributions = scale_columns(upstream, sca)
+    elif perspective == FINAL_PERSPECTIVE:
+        upstream = sat_.dot(inv)
+        r.lci_contributions = scale_columns(upstream, dev)
+
+    # calculate LCIA contributions
+    if iaf_ is not None and r.lci_contributions is not None:
+        r.lcia_contributions = iaf_.dot(r.lci_contributions)
+
     return r
+
 
 def leontief_inverse(a: pd.DataFrame) -> pd.DataFrame:
     """ Calculates the Leontief-inverse (I-A)^-1 for the given matrix A. """
