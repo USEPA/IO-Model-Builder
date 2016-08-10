@@ -1,7 +1,8 @@
-import pandas as pd
+import iomb.model as iom
+import logging as log
 import numpy as np
 import numpy.linalg as linalg
-import logging as log
+import pandas as pd
 
 DIRECT_PERSPECTIVE = 'direct'
 INTERMEDIATE_PERSPECTIVE = 'intermediate'
@@ -25,53 +26,53 @@ class Result(object):
         self.lcia_contributions = None
 
 
-def calculate(demand: dict, drc: pd.DataFrame, sat: pd.DataFrame, iaf=None,
+def calculate(model: iom.Model, demand: dict,
               perspective=DIRECT_PERSPECTIVE) -> Result:
     """
-    Calculates a result for the given demand.
+    Calculates a result for the given model and demand.
 
+    :param model: The input-output model that should be calculated.
     :param demand: A dictionary containing the demand values of input-output
            sectors
-    :param drc: A data frame (sector x sector) with the direct requirements
-           coefficients.
-    :param sat: A data frame (flow x sector) with the satellite table data.
-    :param iaf: An optional data frame (ia-category x flow) with
-           characterization factors for impact assessment.
     :param perspective: The perspective of the contribution results. See the
            documentation for more information about the different result
            perspectives. """
 
     # prepare demand vector, inverse and scaling vector
+    drc = model.drc_matrix
     dev = demand_vector(drc, demand)
     inv = leontief_inverse(drc)
     sca = scaling_vector(inv, dev)
 
-    r = Result(perspective)
-
+    # prepare satellite and LCIA matrix
+    sat = model.sat_table.as_data_frame()
     # align columns of satellite matrix with DRC matrix (sector index)
-    sat_ = sat.reindex(columns=drc.columns, fill_value=0.0)
-    # align columns of LCIA factors with satellite matrix rows (flow index)
-    iaf_ = None if iaf is None else iaf.reindex(columns=sat.index,
-                                                fill_value=0.0)
+    sat = sat.reindex(columns=drc.columns, fill_value=0.0)
+    iaf = None
+    if model.ia_table is not None:
+        iaf = model.ia_table.as_data_frame()
+        # align columns of LCIA factors with satellite matrix rows (flow index)
+        iaf = iaf.reindex(columns=sat.index, fill_value=0.0)
 
     # calculate the total results
-    r.lci_total = sat_.dot(sca)
-    if iaf_ is not None:
-        r.lcia_total = iaf_.dot(r.lci_total)
+    r = Result(perspective)
+    r.lci_total = sat.dot(sca)
+    if iaf is not None:
+        r.lcia_total = iaf.dot(r.lci_total)
 
     # calculate LCI contributions
     if perspective == DIRECT_PERSPECTIVE:
-        r.lci_contributions = scale_columns(sat_, sca)
+        r.lci_contributions = scale_columns(sat, sca)
     elif perspective == INTERMEDIATE_PERSPECTIVE:
-        upstream = sat_.dot(inv)
+        upstream = sat.dot(inv)
         r.lci_contributions = scale_columns(upstream, sca)
     elif perspective == FINAL_PERSPECTIVE:
-        upstream = sat_.dot(inv)
+        upstream = sat.dot(inv)
         r.lci_contributions = scale_columns(upstream, dev)
 
     # calculate LCIA contributions
-    if iaf_ is not None and r.lci_contributions is not None:
-        r.lcia_contributions = iaf_.dot(r.lci_contributions)
+    if iaf is not None and r.lci_contributions is not None:
+        r.lcia_contributions = iaf.dot(r.lci_contributions)
 
     return r
 
