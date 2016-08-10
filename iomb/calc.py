@@ -57,8 +57,12 @@ def calculate(model: iom.Model, demand: dict,
     # calculate the total results
     r = Result(perspective)
     r.lci_total = sat.dot(sca)
+    if isinstance(r.lci_total, pd.Series):
+        r.lci_total = r.lci_total.to_frame('Total')
     if iaf is not None:
         r.lcia_total = iaf.dot(r.lci_total)
+        if isinstance(r.lcia_total, pd.Series):
+            r.lcia_total = r.lcia_total.to_frame('Total')
 
     # calculate LCI contributions
     if perspective == DIRECT_PERSPECTIVE:

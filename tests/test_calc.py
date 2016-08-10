@@ -65,6 +65,16 @@ class TestCalc(unittest.TestCase):
         r = calc.calculate(self.model, self.demand, calc.DIRECT_PERSPECTIVE)
         print(r.lci_total)
         print(r.lcia_total)
+        print(r.lcia_contributions)
+
+    def test_intermediate_perspective(self):
+        r = calc.calculate(self.model, self.demand,
+                           calc.INTERMEDIATE_PERSPECTIVE)
+        print(r.lcia_contributions)
+
+    def test_final_perspective(self):
+        r = calc.calculate(self.model, self.demand, calc.FINAL_PERSPECTIVE)
+        print(r.lcia_contributions)
 
 if __name__ == '__main__':
     unittest.main()
