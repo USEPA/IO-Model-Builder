@@ -15,12 +15,12 @@ log.basicConfig(level=log.WARNING, format='%(levelname)s %(message)s',
                 stream=sys.stdout)
 
 
-def log_all():
+def log_all(level=log.DEBUG):
     """ By default we only log warnings. This function sets the log-level to
         DEBUG so that all logs of the iomb package are written to the standard
         output.
     """
-    log.getLogger().setLevel(level=log.DEBUG)
+    log.getLogger().setLevel(level=level)
 
 
 def make_io_model(supply_table_csv, use_table_csv, scrap_sectors=None) \

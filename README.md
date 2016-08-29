@@ -224,7 +224,7 @@ impact category result could look like this:
 ```python
 result = ...
 v = result['climate change gwp 100/kg co2 eq.']['1111a0/oilseed farming/us']
-``` 
+```
 
 The data frame class also directly provides a method for storing it as a CSV
 file (`to_csv`) and 
