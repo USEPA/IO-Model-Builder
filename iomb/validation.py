@@ -84,6 +84,7 @@ def validate(m: model.Model) -> ValidationResult:
     _check_field_types(m, vr)
     _check_sat_units(m, vr)
     _check_sat_compartments(m, vr)
+    _check_sat_sectors(m, vr)
     _check_sector_locations(m, vr)
     _check_ia_coverage(m, vr)
     return vr
@@ -174,3 +175,20 @@ def _check_sat_compartments(m: model.Model, vr: ValidationResult):
                                                                        flow))
     if len(unknown) == 0:
         vr.information.append('all compartments in satellite table are known')
+
+
+def _check_sat_sectors(m: model.Model, vr: ValidationResult):
+    """ Check that the sectors from the satellite tables match the sectors in
+        the direct requirements matrix. """
+    unknown = []
+    for sector in m.sat_table.sectors:
+        key = sector.key
+        if key in unknown:
+            continue
+        if key not in m.drc_matrix.index:
+            unknown.append(key)
+            vr.errors.append('Sector %s in satellite matrix does not match a'
+                             ' sector in the direct requirements matrix' % key)
+    if len(unknown) == 0:
+        vr.information.append('all sectors in the satellite matrix match a'
+                              ' sector in the direct requirements matrix')
