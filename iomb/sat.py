@@ -46,13 +46,9 @@ class Entry(object):
 
     def to_csv(self, flow: ref.ElemFlow, sector: ref.Sector) -> list:
         """ Converts the satellite matrix entry to a CSV row. """
-        dq = None
-        if self.data_quality_entry is None:
+        dq = Entry.__split_dq_entry(self.data_quality_entry)
+        if dq is None:
             dq = [None, None, None, None, None]
-        else:
-            s = self.data_quality_entry[1: len(self.data_quality_entry) - 1]
-            dq = [q for q in s.split(';')]
-            dq = dq if len(dq) >= 5 else [None, None, None, None, None]
         return [flow.name, flow.cas_number, flow.category, flow.sub_category,
                 flow.uid, sector.name, sector.code, sector.location,
                 self.value, flow.unit, None, None, None, None, None,
@@ -65,8 +61,45 @@ class Entry(object):
 
     def add(self, value: float, data_quality_entry=None):
         """ Adds the given value to this satellite matrix entry. """
-        # TODO: aggregate data quality entries via weighted means
+        self.__add_dq(value, data_quality_entry)
         self.value += value
+
+    def __add_dq(self, value: float, data_quality_entry=None):
+        self_dq = Entry.__split_dq_entry(self.data_quality_entry)
+        other_dq = Entry.__split_dq_entry(data_quality_entry)
+        if other_dq is None or value is None or value == 0:
+            return
+        if self_dq is None:
+            self.data_quality_entry = data_quality_entry
+            return
+        new_entries = []
+        for i in range(0, 5):
+            sdq_i, odq_i = 0, 0
+            try:
+                sdq_i = int(self_dq[i])
+            except ValueError:
+                sdq_i = 'n.a.'
+            try:
+                odq_i = int(other_dq[i])
+            except ValueError:
+                odq_i = 'n.a.'
+            if sdq_i == 'n.a.':
+                new_entries.append(odq_i)
+            elif odq_i == 'n.a.':
+                new_entries.append(sdq_i)
+            else:
+                val = (sdq_i * self.value + odq_i * value) / (self.value + value)
+                new_entries.append(int(round(val)))
+        new_entries = [str(x) for x in new_entries]
+        self.data_quality_entry = '(' + ';'.join(new_entries) + ')'
+
+    @staticmethod
+    def __split_dq_entry(dq_entry: str):
+        if not isinstance(dq_entry, str):
+            return None
+        sub = dq_entry.strip()[1: len(dq_entry) - 1]
+        dq = [q for q in sub.split(';')]
+        return None if len(dq) < 5 else dq
 
 
 class Table(object):
@@ -85,10 +118,16 @@ class Table(object):
         def handle_row(row, _):
             i = self.__read_flow(row)
             j = self.__read_sector(row)
-            entry = Entry.from_csv(row)
-            if i not in self.entries:
-                self.entries[i] = {}
-            self.entries[i][j] = entry
+            new_entry = Entry.from_csv(row)
+            row_map = self.entries.get(i)
+            if row_map is None:
+                row_map = {}
+                self.entries[i] = row_map
+            old_entry = row_map.get(j)
+            if old_entry is None:
+                row_map[j] = new_entry
+            else:
+                old_entry.add(new_entry.value, new_entry.data_quality_entry)
 
         util.each_csv_row(csv_file, handle_row, skip_header=True)
         log.info('appended entries from %s to satellite table', csv_file)
