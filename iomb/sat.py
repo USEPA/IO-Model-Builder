@@ -92,6 +92,8 @@ class Table(object):
 
         util.each_csv_row(csv_file, handle_row, skip_header=True)
         log.info('appended entries from %s to satellite table', csv_file)
+        log.info('satellite table contains %s flows and %s sectors',
+                 len(self.flows), len(self.sectors))
 
     def __read_flow(self, row) -> int:
         flow = ref.ElemFlow.from_satellite_row(row)
@@ -198,35 +200,48 @@ class Table(object):
             this satellite table. It returns a new satellite table with the same
             flow index but with a commodity sector index that matches the
             columns from the market shares with the given meta-information. """
-        log.info("apply market shares")
+        log.info("apply market shares ...")
         new_table = Table()
         new_table.flows = self.flows
         new_table.flow_idx = self.flow_idx
         sector_info = ref.SectorMap.read(sector_info_csv)
         new_table.entries = {}
+
+        log.info("   ... map shares")
+        shares = {}
         for commodity in market_shares.columns:
-            sector = sector_info.get(commodity)
-            if sector is None:
+            new_sector = sector_info.get(commodity)
+            if new_sector is None:
                 log.error('commodity sector %s is not contained in %s: ignored',
                           commodity, sector_info_csv)
                 continue
             new_col = len(new_table.sectors)
-            new_table.sectors.append(sector)
-            new_table.sector_idx[sector.key] = new_col
-            shares = market_shares.ix[:, commodity]
-            for flow in self.flows:
-                row_idx = self.flow_idx.get(flow.key, -1)
-                old_row = self.entries.get(row_idx)
-                if old_row is None:
-                    continue  # no entries for the flow
+            new_table.sectors.append(new_sector)
+            new_table.sector_idx[new_sector.key] = new_col
+            share_entries = {}
+            shares[new_col] = share_entries
+            m_shares = market_shares.ix[:, commodity]
+            for industry_key in m_shares.index:
+                share = m_shares[industry_key]
+                if share == 0:
+                    continue
+                old_col = self.sector_idx.get(industry_key)
+                if old_col is not None:
+                    share_entries[old_col] = share
+
+        log.info("   ... apply shares")
+        for flow in self.flows:
+            row_idx = self.flow_idx.get(flow.key, -1)
+            old_row = self.entries.get(row_idx)
+            if old_row is None:
+                continue  # no entries for the flow
+            new_row = {}
+            new_table.entries[row_idx] = new_row
+            for new_col, m_shares in shares.items():
                 new_entry = None
-                for industry_key in shares.index:
-                    share = shares[industry_key]
+                for old_col, old_entry in old_row.items():
+                    share = m_shares.get(old_col, 0)
                     if share == 0:
-                        continue
-                    old_col = self.sector_idx.get(industry_key, -1)
-                    old_entry = old_row.get(old_col)
-                    if old_entry is None:
                         continue
                     value = share * old_entry.value
                     if new_entry is None:
@@ -236,9 +251,6 @@ class Table(object):
                         new_entry.add(value, old_entry.data_quality_entry)
                 if new_entry is None:
                     continue
-                new_row = new_table.entries.get(row_idx)
-                if new_row is None:
-                    new_row = {}
-                    new_table.entries[row_idx] = new_row
                 new_row[new_col] = new_entry
+
         return new_table
