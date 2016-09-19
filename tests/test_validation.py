@@ -1,4 +1,3 @@
-import iomb.model as model
 import iomb.validation as validation
 import unittest
 

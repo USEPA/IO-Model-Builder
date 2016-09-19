@@ -97,10 +97,10 @@ def calculate(full_model: model.Model, demand: dict,
     """
     Calculates a result for the given model and demand.
 
-    :param model: The input-output model that should be calculated.
+    :param full_model: The input-output model that should be calculated.
     :param demand: A dictionary containing the demand values of input-output
            sectors
     :param perspective: The perspective of the contribution results. See the
            documentation for more information about the different result
            perspectives. """
-    return calc.calculate(model, demand, perspective)
+    return calc.calculate(full_model, demand, perspective)
