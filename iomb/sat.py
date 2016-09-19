@@ -58,6 +58,16 @@ class Entry(object):
                 self.value, flow.unit, None, None, None, None, None,
                 dq[0], dq[1], dq[2], dq[3], dq[4]]
 
+    def copy(self):
+        c = Entry(self.value)
+        c.data_quality_entry = self.data_quality_entry
+        return c
+
+    def add(self, value: float, data_quality_entry=None):
+        """ Adds the given value to this satellite matrix entry. """
+        # TODO: aggregate data quality entries via weighted means
+        self.value += value
+
 
 class Table(object):
     def __init__(self):
@@ -181,3 +191,54 @@ class Table(object):
                     if entry is None:
                         continue
                     writer.writerow(entry.to_csv(flow, sector))
+
+    def apply_market_shares(self, market_shares: pd.DataFrame,
+                            sector_info_csv: str):
+        """ Applies the given market share matrix (industries x commodities) to
+            this satellite table. It returns a new satellite table with the same
+            flow index but with a commodity sector index that matches the
+            columns from the market shares with the given meta-information. """
+        log.info("apply market shares")
+        new_table = Table()
+        new_table.flows = self.flows
+        new_table.flow_idx = self.flow_idx
+        sector_info = ref.SectorMap.read(sector_info_csv)
+        new_table.entries = {}
+        for commodity in market_shares.columns:
+            sector = sector_info.get(commodity)
+            if sector is None:
+                log.error('commodity sector %s is not contained in %s: ignored',
+                          commodity, sector_info_csv)
+                continue
+            new_col = len(new_table.sectors)
+            new_table.sectors.append(sector)
+            new_table.sector_idx[sector.key] = new_col
+            shares = market_shares.ix[:, commodity]
+            for flow in self.flows:
+                row_idx = self.flow_idx.get(flow.key, -1)
+                old_row = self.entries.get(row_idx)
+                if old_row is None:
+                    continue  # no entries for the flow
+                new_entry = None
+                for industry_key in shares.index:
+                    share = shares[industry_key]
+                    if share == 0:
+                        continue
+                    old_col = self.sector_idx.get(industry_key, -1)
+                    old_entry = old_row.get(old_col)
+                    if old_entry is None:
+                        continue
+                    value = share * old_entry.value
+                    if new_entry is None:
+                        new_entry = old_entry.copy()
+                        new_entry.value = value
+                    else:
+                        new_entry.add(value, old_entry.data_quality_entry)
+                if new_entry is None:
+                    continue
+                new_row = new_table.entries.get(row_idx)
+                if new_row is None:
+                    new_row = {}
+                    new_table.entries[row_idx] = new_row
+                new_row[new_col] = new_entry
+        return new_table
