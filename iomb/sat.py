@@ -1,3 +1,4 @@
+import csv
 import iomb.util as util
 import iomb.refmap as ref
 import logging as log
@@ -8,6 +9,7 @@ import numpy as np
 
 class Entry(object):
     """ Contains the information of an entry in a satellite table. """
+
     def __init__(self, value: float):
         self.value = value
         self.data_quality_entry = None
@@ -42,6 +44,20 @@ class Entry(object):
     def empty():
         return Entry(0.0)
 
+    def to_csv(self, flow: ref.ElemFlow, sector: ref.Sector) -> list:
+        """ Converts the satellite matrix entry to a CSV row. """
+        dq = None
+        if self.data_quality_entry is None:
+            dq = [None, None, None, None, None]
+        else:
+            s = self.data_quality_entry[1: len(self.data_quality_entry) - 1]
+            dq = [q for q in s.split(';')]
+            dq = dq if len(dq) >= 5 else [None, None, None, None, None]
+        return [flow.name, flow.cas_number, flow.category, flow.sub_category,
+                flow.uid, sector.name, sector.code, sector.location,
+                self.value, flow.unit, None, None, None, None, None,
+                dq[0], dq[1], dq[2], dq[3], dq[4]]
+
 
 class Table(object):
     def __init__(self):
@@ -74,7 +90,7 @@ class Table(object):
             i = len(self.flows)
             self.flows.append(flow)
             self.flow_idx[key] = i
-            log.info('flow[%s]: %s', i, key)
+            log.debug('add satellite flow[%s]: %s', i, key)
         return self.flow_idx[key]
 
     def __read_sector(self, row) -> int:
@@ -135,3 +151,33 @@ class Table(object):
         plt.xlabel(flow.unit + ' / USD')
         plt.ylabel('Absolute frequency')
         plt.show()
+
+    def to_csv(self, file_name: str):
+        """ Writes the satellite matrix to a CSV file. """
+        header = ['Flow name', 'CAS number', 'Category', 'Sub-category',
+                  'Flow UUID', 'Sector name', 'Sector code', 'Sector location',
+                  'Amount', 'Unit', 'Distribution type', 'Expected value',
+                  'Dispersion', 'Minimum', 'Maximum', 'Reliability',
+                  'Temporal correlation', 'Geographical correlation',
+                  'Technological correlation', 'Data collection']
+        log.info('write satellite table to %s', file_name)
+        with open(file_name, 'w', encoding='utf-8', newline='\n') as f:
+            writer = csv.writer(f)
+            writer.writerow(header)
+            for flow in self.flows:
+                row_idx = self.flow_idx.get(flow.key, -1)
+                if row_idx == -1:
+                    log.warning('flow %s is not contained in flow index', flow)
+                    continue
+                row = self.entries.get(row_idx)
+                if row is None:
+                    log.warning('no satellite entries for flow %s', flow)
+                    continue
+                for sector in self.sectors:
+                    col = self.sector_idx.get(sector.key, -1)
+                    if col == -1:
+                        continue
+                    entry = row.get(col)
+                    if entry is None:
+                        continue
+                    writer.writerow(entry.to_csv(flow, sector))
