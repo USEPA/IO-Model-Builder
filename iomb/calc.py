@@ -25,6 +25,11 @@ class Result(object):
         self.lci_contributions = None
         self.lcia_contributions = None
 
+        # flow contributions to the LCIA results as a data frame with the LCIA
+        # categories in the rows, flows in the columns, and flow results times
+        # LCIA factors in the cells
+        self.lcia_flow_contributions = None
+
 
 def calculate(model: iom.Model, demand: dict,
               perspective=DIRECT_PERSPECTIVE) -> Result:
@@ -63,6 +68,7 @@ def calculate(model: iom.Model, demand: dict,
         r.lcia_total = iaf.dot(r.lci_total)
         if isinstance(r.lcia_total, pd.Series):
             r.lcia_total = r.lcia_total.to_frame('Total')
+        r.lcia_flow_contributions = scale_columns(iaf, r.lci_total.as_matrix())
 
     # calculate LCI contributions
     if perspective == DIRECT_PERSPECTIVE:
