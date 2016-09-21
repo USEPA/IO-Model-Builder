@@ -142,3 +142,25 @@ def column_totals(m: pd.DataFrame) -> pd.DataFrame:
     """ Calculates the column totals of the given data frame. """
     totals = np.sum(m.values, axis=1, dtype=np.float64)
     return pd.DataFrame(totals, index=m.index, columns=['total'])
+
+
+def get_top(df: pd.DataFrame, row_key=None, column_key=None,
+            count=5) -> pd.DataFrame:
+    """
+    This function takes a data frame and selects the top contributions of the
+    given row (selected by the row_key parameter) or column (selected by the
+    column_key parameter). It returns a data frame with the top 5 contributors
+    (the number of contributors can be modified via the count parameter) and the
+    sum of the other elements.
+    """
+    if row_key is None and column_key is None:
+        log.error('either a row_key or a column_key must be specified')
+        return
+    series = df.loc[row_key, :] if column_key is None else df.loc[:, column_key]
+    total = series.sum()
+    series = series.sort_values(ascending=False)
+    top = len(series) if count > len(series) else count
+    series = series.take([i for i in range(0, top)])
+    others = total - series.sum()
+    series.set_value('Others', others)
+    return series.to_frame(row_key if column_key is None else column_key)
