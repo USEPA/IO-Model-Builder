@@ -167,6 +167,14 @@ class Table(object):
             return Entry.empty()
         return row_entries.get(col, Entry.empty())
 
+    def get_flow(self, flow_key: str) -> ref.ElemFlow:
+        """ Returns the flow for the given flow key or None if there is no such
+            flow in this satellite table. """
+        if flow_key is None:
+            return None
+        idx = self.flow_idx.get(flow_key, -1)
+        return None if idx == -1 else self.flows[idx]
+
     def as_data_frame(self) -> pd.DataFrame:
         """ Converts the satellite table into a pandas data frame where the
             row index contains the keys of the elementary flows, the column

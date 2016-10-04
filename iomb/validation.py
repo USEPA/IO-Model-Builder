@@ -86,6 +86,7 @@ def validate(m: model.Model) -> ValidationResult:
     _check_sat_compartments(m, vr)
     _check_sat_sectors(m, vr)
     _check_sector_locations(m, vr)
+    _check_flow_uids(m, vr)
     _check_ia_coverage(m, vr)
     return vr
 
@@ -192,3 +193,22 @@ def _check_sat_sectors(m: model.Model, vr: ValidationResult):
     if len(unknown) == 0:
         vr.information.append('all sectors in the satellite matrix match a'
                               ' sector in the direct requirements matrix')
+
+
+def _check_flow_uids(m: model.Model, vr: ValidationResult):
+    """ Checks if flows with the same key attributes (name, category, unit,
+        etc.) have also the same UUIDs in the satellite and LCIA table. """
+    if m.sat_table is None or m.ia_table is None:
+        return
+    errors = False
+    for sat_flow in m.sat_table.flows:
+        ia_flow = m.ia_table.get_flow(sat_flow.key)
+        if ia_flow is None or sat_flow.uid == ia_flow.uid:
+            continue
+        errors = True
+        vr.errors.append('Flow %s has different UUIDs in the satellite and LCIA'
+                         ' table (%s <> %s)' % (sat_flow.key, sat_flow.uid,
+                                                ia_flow.uid))
+    if not errors:
+        vr.information.append('all elementary flows have the same UUIDs in the'
+                              ' satellite and LCIA table')

@@ -29,3 +29,30 @@ class Model(object):
                 log.warning('No metadata for sector: %s', sector_key)
             else:
                 yield sector
+
+    def sync_flow_uids(self, prefer_lcia_uids=True):
+        """ Synchronizes the UUIDs of the elementary flows in the model: If
+            there are flows with the same key attributes (name, category, unit
+            etc.) but with different UUIDs in the satellite table and impact
+            assessment model this function will align the UUIDs in both tables.
+            By default it will prefer the UUIDs from the LCIA model but this
+            can be changed by setting the 'prefer_lcia_uids'-parameter to False.
+            """
+        if self.sat_table is None or self.ia_table is None:
+            log.error('Satellite table or LCIA table is None: flow'
+                      'synchronization is only applicable if both tables are'
+                      'in the model')
+            return
+        for sat_flow in self.sat_table.flows:
+            ia_flow = self.ia_table.get_flow(sat_flow.key)
+            if ia_flow is None or sat_flow.uid == ia_flow.uid:
+                continue
+            uid = None
+            if prefer_lcia_uids:
+                uid = ia_flow.uid
+                sat_flow.uid = uid
+            else:
+                uid = sat_flow.uid
+                ia_flow.uid = uid
+            log.debug('different UUIDs for %s in sat. and LCIA table'
+                      ' -> took %s', sat_flow.key, uid)

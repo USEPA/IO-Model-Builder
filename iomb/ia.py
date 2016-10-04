@@ -62,6 +62,14 @@ class Table(object):
         val = row.get(col_idx)
         return 0.0 if val is None else val
 
+    def get_flow(self, flow_key: str) -> ref.ElemFlow:
+        """ Returns the flow for the given flow key or None if there is no such
+            flow in this impact assessment table. """
+        if flow_key is None:
+            return None
+        idx = self.flow_idx.get(flow_key, -1)
+        return None if idx == -1 else self.flows[idx]
+
     def as_data_frame(self) -> pd.DataFrame:
         rows, cols = len(self.categories), len(self.flows)
         log.info('convert IA table to a %sx%s data frame', rows, cols)
