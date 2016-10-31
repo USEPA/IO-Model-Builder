@@ -22,7 +22,6 @@ class Export(object):
         _write_satellite_flows(self.model, pack)
         _write_locations(self.model, pack)
         if self.with_data_quality:
-            json.load()
             dump(dq_process_system(), 'dq_systems', pack)
             dump(dq_exchanges_system(), 'dq_systems', pack)
 
@@ -99,6 +98,9 @@ class Export(object):
                 },
                 "quantitativeReference": False
             }
+            if self.with_data_quality:
+                # TODO: currently a default value
+                e['dqEntry'] = '(1;3;1;1;1)'
             exchanges.append(e)
 
     def __add_elem_entries(self, s: ref.Sector, p: dict):
