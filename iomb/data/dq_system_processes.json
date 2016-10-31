@@ -1,0 +1,101 @@
+{
+  "@context": "http://greendelta.github.io/olca-schema/context.jsonld",
+  "@type": "DQSystem",
+  "@id": "70bf370f-9912-4ec1-baa3-fbd4eaf85a10",
+  "name": "US EPA - Process Pedigree Matrix",
+  "description": "",
+  "version": "00.00.001",
+  "lastChange": "2016-09-21T15:48:58.757-04:00",
+  "hasUncertainties": false,
+  "source": {
+    "@type": "Source",
+    "@id": "06049f3c-0073-42ae-8da7-316b5685dcd7",
+    "name": "Guidance on Data Quality Assessment for Life Cycle Inventory Data"
+  },
+  "indicators": [
+    {
+      "@type": "DQIndicator",
+      "name": "Process Review",
+      "position": 1,
+      "scores": [
+        {
+          "@type": "DQScore",
+          "position": 1,
+          "label": "1",
+          "description": "Documented reviews by a minimum of two types of third party reviewers",
+          "uncertainty": 0.0
+        },
+        {
+          "@type": "DQScore",
+          "position": 2,
+          "label": "2",
+          "description": "Documented reviews by a minimum of two types of reviewers, with one being a third party",
+          "uncertainty": 0.0
+        },
+        {
+          "@type": "DQScore",
+          "position": 3,
+          "label": "3",
+          "description": "Documented review by a third party reviewer",
+          "uncertainty": 0.0
+        },
+        {
+          "@type": "DQScore",
+          "position": 4,
+          "label": "4",
+          "description": "Documented review by an internal reviewer",
+          "uncertainty": 0.0
+        },
+        {
+          "@type": "DQScore",
+          "position": 5,
+          "label": "5",
+          "description": "No documented review",
+          "uncertainty": 0.0
+        }
+      ]
+    },
+    {
+      "@type": "DQIndicator",
+      "name": "Process Completeness",
+      "position": 2,
+      "scores": [
+        {
+          "@type": "DQScore",
+          "position": 1,
+          "label": "1",
+          "description": "\u003e80% of determined flows have been evaluated and given a value",
+          "uncertainty": 0.0
+        },
+        {
+          "@type": "DQScore",
+          "position": 2,
+          "label": "2",
+          "description": "60-79% of determined flows have been evaluated and given a value",
+          "uncertainty": 0.0
+        },
+        {
+          "@type": "DQScore",
+          "position": 3,
+          "label": "3",
+          "description": "40-59% of determined flows have been given a value",
+          "uncertainty": 0.0
+        },
+        {
+          "@type": "DQScore",
+          "position": 4,
+          "label": "4",
+          "description": "\u003c40% of determined flows have been given a value",
+          "uncertainty": 0.0
+        },
+        {
+          "@type": "DQScore",
+          "position": 5,
+          "label": "5",
+          "description": "Process completeness not scored",
+          "uncertainty": 0.0
+        }
+      ]
+    }
+  ]
+}

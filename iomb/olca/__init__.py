@@ -2,7 +2,7 @@ import json
 import iomb.util as util
 import iomb.model as mod
 import iomb.refmap as ref
-from .dqx import dq_exchanges_system, dq_process_system, append_data_quality
+from .dqx import append_data_quality, dq_process_system, dq_exchanges_system
 from .iax import check_export_lcia_method
 import logging as log
 import zipfile as zipf
@@ -22,6 +22,7 @@ class Export(object):
         _write_satellite_flows(self.model, pack)
         _write_locations(self.model, pack)
         if self.with_data_quality:
+            json.load()
             dump(dq_process_system(), 'dq_systems', pack)
             dump(dq_exchanges_system(), 'dq_systems', pack)
 
@@ -253,6 +254,8 @@ def _write_economic_units(pack):
 
 
 def dump(obj: dict, folder: str, pack: zipf.ZipFile):
+    """ dump writes the given dictionary to the zip-file under the given folder.
+    """
     uid = obj.get('@id')
     if uid is None or uid == '':
         log.error('No @id for object %s in %s', obj, folder)
