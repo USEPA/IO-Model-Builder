@@ -5,7 +5,8 @@ setup(
     version="0.0.1",
     author="msrocka",
     author_email="michael.srocka@greendelta.com",
-    description="iomb is a package for creating environmentally extended input-output models",
+    description="iomb is a package for creating environmentally extended "
+                "input-output models",
     license="MIT",
     keywords="converter lca",
     url="http://packages.python.org/iomb",

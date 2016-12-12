@@ -193,6 +193,7 @@ def _write_satellite_flows(model: mod.Model, pack: zipf.ZipFile):
             "@type": "Flow",
             "@id": flow.uid,
             "name": flow.name,
+            "cas": flow.cas_number,
             "flowType": "ELEMENTARY_FLOW",
             "flowProperties": [{
                 "@type": "FlowPropertyFactor",

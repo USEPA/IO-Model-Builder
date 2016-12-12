@@ -3,9 +3,8 @@ import iomb.refmap as ref
 
 
 def demandtodict(vector_name, csv_file):
-    
-   demand = {}
-   with open(csv_file, 'r', encoding='utf8', newline='\n') as f:
+    demand = {}
+    with open(csv_file, 'r', encoding='utf8', newline='\n') as f:
         reader = csv.reader(f)
 
         # find the vector index
@@ -19,8 +18,8 @@ def demandtodict(vector_name, csv_file):
             print('%s not found' % vector_name)
             return
 
-        print('take values for %s from colum %s' % (vector_name, idx+1))
-        
+        print('take values for %s from colum %s' % (vector_name, idx + 1))
+
         for row in reader:
 
             value = float(row[idx])
@@ -33,6 +32,4 @@ def demandtodict(vector_name, csv_file):
             sector.location = row[2]
             demand[sector.key] = value
 
-   return(demand)
-
-
+    return demand
