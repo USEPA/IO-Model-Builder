@@ -88,6 +88,7 @@ def validate(m: model.Model) -> ValidationResult:
     _check_sector_locations(m, vr)
     _check_flow_uids(m, vr)
     _check_ia_coverage(m, vr)
+    _check_duplicate_flow_uids(m, vr)
     return vr
 
 
@@ -212,3 +213,25 @@ def _check_flow_uids(m: model.Model, vr: ValidationResult):
     if not errors:
         vr.information.append('all elementary flows have the same UUIDs in the'
                               ' satellite and LCIA table')
+
+
+def _check_duplicate_flow_uids(m: model.Model, vr: ValidationResult):
+    """ Check if different flows have the same UUID in the satellite table """
+    checks = {}
+    errors = []
+    for flow in m.sat_table.flows:
+        key = checks.get(flow.uid)
+        if key is None:
+            checks[flow.uid] = flow.key
+        elif key != flow.key:
+            log_it = False
+            if key not in errors:
+                errors.append(key)
+                log_it = True
+            if flow.key not in errors:
+                errors.append(flow.key)
+                log_it = True
+            if log_it:
+                vr.errors.append('Flow %s has the same UUID = %s as flow %s' % (flow.key, flow.uid, key))
+    if len(errors) == 0:
+        vr.information.append('all flow UUIDs in the satellite table are unique')
