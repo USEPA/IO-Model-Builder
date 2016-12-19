@@ -5,12 +5,12 @@ import logging as log
 import pandas as pd
 
 
-def make_uuid(*args: list) -> str:
+def make_uuid(*args: str) -> str:
     path = as_path(*args)
     return str(uuid.uuid3(uuid.NAMESPACE_OID, path))
 
 
-def as_path(*args: list) -> str:
+def as_path(*args: str) -> str:
     strings = []
     for arg in args:
         if arg is None:

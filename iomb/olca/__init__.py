@@ -19,6 +19,7 @@ class Export(object):
     def to(self, zip_file):
         pack = zipf.ZipFile(zip_file, mode='a', compression=zipf.ZIP_DEFLATED)
         _write_economic_units(pack)
+        _write_compartments(self.model.compartments, pack)
         _write_satellite_flows(self.model, pack)
         _write_locations(self.model, pack)
         if self.with_data_quality:
@@ -254,6 +255,38 @@ def _write_economic_units(pack):
             "@id": "5df2915b-186f-4773-9ef4-04baca5e56a9"
         }}
     dump(fp, 'flow_properties', pack)
+
+
+def _write_compartments(comp_map: ref.CompartmentMap, pack: zipf.ZipFile):
+    if comp_map is None:
+        return
+
+    def get_parent_uid(name):
+        for pc in comp_map.mappings.values():
+            if pc.compartment != name:
+                continue
+            if pc.sub_compartment is None or pc.sub_compartment == '':
+                return pc.uid
+        return None
+
+    written = []
+    for comp in comp_map.mappings.values():
+        if comp.uid in written:
+            continue
+        written.append(comp.uid)
+        c = {
+            "@context": "http://greendelta.github.io/olca-schema/context.jsonld",
+            "@type": "Category",
+            "modelType": "FLOW",
+            "@id": comp.uid}
+        if comp.sub_compartment is None or comp.sub_compartment == '':
+            c["name"] = comp.compartment
+        else:
+            c["name"] = comp.sub_compartment
+            parent_uid = get_parent_uid(comp.compartment)
+            if parent_uid is not None:
+                c["category"] = {"@type": "Category", "@id": parent_uid}
+        dump(c, 'categories', pack)
 
 
 def dump(obj: dict, folder: str, pack: zipf.ZipFile):
