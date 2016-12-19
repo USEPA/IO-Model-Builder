@@ -1,6 +1,6 @@
 """
-This script exports the default compartments from openLCA to a file that can
-be directly used as compartment mapping file in the iomb package.
+This script exports the default compartments (all categories under 'Elementary flows') from
+openLCA to a file that can be directly used as compartment mapping file in the iomb package.
 
 Note that this script should be executed within openLCA.
 """
@@ -33,14 +33,35 @@ def make_collector(entries):
         if category.getModelType() != MT.FLOW:
             return
         parent = category.getCategory()
-        if parent is None or parent.getName() == 'Elementary flows':
+        if parent is None:
             return
-        direction = 'input' if parent.getName() == 'resource' else 'output'
-        entry = [parent.getName(), category.getName(), category.getRefId(),
-                 direction]
-        entries.append(entry)
+        d = direction(category)
+        if parent.getName() == 'Elementary flows':
+            entries.append([name(category), '', category.refId, d])
+        else:
+            entries.append([name(parent), name(category), category.refId, d])
 
     return fn
+
+
+def direction(category):
+    if category is None:
+        return 'output'
+    name = category.name.lower().strip()
+    if name.startswith('resource'):
+        return 'input'
+    if name.startswith('emission'):
+        return 'output'
+    return direction(category.category)
+
+
+def name(category):
+    if category is None:
+        return ''
+    n = category.name.lower().strip()
+    if n.startswith('emission to '):
+        return n[12:]
+    return n
 
 
 if __name__ == '__main__':

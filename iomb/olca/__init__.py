@@ -3,7 +3,7 @@ import iomb.util as util
 import iomb.model as mod
 import iomb.refmap as ref
 from .dqx import append_data_quality, dq_process_system, dq_exchanges_system
-from .iax import check_export_lcia_method
+from .iax import export_lcia_method
 import logging as log
 import zipfile as zipf
 
@@ -33,7 +33,7 @@ class Export(object):
             self.__add_tech_inputs(s, p)
             self.__add_elem_entries(s, p)
             dump(p, 'processes', pack)
-        check_export_lcia_method(self.model, pack, dump)
+        export_lcia_method(self.model, pack, dump)
         pack.close()
 
     def __write_sector_categories(self, pack):

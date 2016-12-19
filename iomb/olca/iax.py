@@ -7,7 +7,7 @@ import iomb.util as util
 import logging as log
 
 
-def check_export_lcia_method(model: mod.Model, pack, dump_fn):
+def export_lcia_method(model: mod.Model, pack, dump_fn):
     ia_table = model.ia_table
     if ia_table is None:
         return
