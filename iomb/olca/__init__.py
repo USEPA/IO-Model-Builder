@@ -157,12 +157,53 @@ class Export(object):
                                  "@id": "b0682037-e878-4be4-a63a-a7a81053a691"},
                 "quantitativeReference": True}]
         }
+        Export.__add_doc_fields(p, s)
         loc = self.model.locations.get(s.location)
         if loc is not None:
             p["location"] = {"@type": "Location", "@id": loc.uid}
         if self.with_data_quality:
             append_data_quality(p, s)
         return p
+
+    @staticmethod
+    def __add_doc_fields(p: dict, s: ref.Sector):
+        if s.csv_row is None:
+            return
+        if len(s.csv_row) < 6:
+            return
+        p["description"] = s.csv_row[5]
+        fn = Export.__add_doc_field
+        fn(s.csv_row, 6, p, "validFrom")
+        fn(s.csv_row, 7, p, "validUntil")
+        fn(s.csv_row, 8, p, "geographyDescription")
+        fn(s.csv_row, 9, p, "technologyDescription")
+        fn(s.csv_row, 10, p, "intendedApplication")
+        # TODO 11..13 data set owner, generator, and documentor
+        fn(s.csv_row, 14, p, "restrictionsDescription")
+        fn(s.csv_row, 15, p, "projectDescription")
+        fn(s.csv_row, 16, p, "inventoryMethodDescription")
+        fn(s.csv_row, 17, p, "modelingConstantsDescription")
+        fn(s.csv_row, 18, p, "completenessDescription")
+        fn(s.csv_row, 19, p, "dataTreatmentDescription")
+        fn(s.csv_row, 20, p, "samplingDescription")
+        fn(s.csv_row, 21, p, "dataCollectionDescription")
+        # TODO 22 reviewer
+        fn(s.csv_row, 23, p, "reviewDetails")
+        # TODO 26.. sources
+
+    @staticmethod
+    def __add_doc_field(csv_row: list, idx: int, p: dict, field: str):
+        if idx >= len(csv_row):
+            return
+        val = csv_row[idx]
+        if val is None:
+            return
+        if not isinstance(val, str):
+            val = str(val)
+        val = val.strip()
+        if val == '':
+            return
+        p["processDocumentation"][field] = val
 
 
 def _write_category(model_type, name, pack, parent_name=None):
