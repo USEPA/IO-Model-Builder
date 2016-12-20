@@ -134,3 +134,8 @@ sat_table = iomb.make_sat_table('sat_file1.csv',
 
 ### Creating a JSON-LD data package
 TODO: doc
+
+## License
+This work is licensed under a [Creative Commons Attribution-NonCommercial 3.0 Unported License](https://creativecommons.org/licenses/by-nc/3.0/deed.en_US).
+
+![Creative Commons License](https://i.creativecommons.org/l/by-nc/3.0/88x31.png)
