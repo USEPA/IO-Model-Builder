@@ -1,11 +1,10 @@
-.idea/
-.vscode
-__pycache__/
 
-notebooks/.ipynb_checkpoints
-notebooks/sample_notebook.ipynb
+# IDE settings
+.idea/
+.vscode/
+
+__pycache__/
 
 doc_build/
 
-iomb.egg-info
-notebooks/
+iomb.egg-info/
