@@ -32,7 +32,7 @@ pip uninstall iomb
 
 Usage
 -----
-You can find a more detailed [example here](example/example.jnlp) in form of a 
+You can find a more detailed [example here](example/example.ipynb) in form of a 
 [Jupyter notebook](http://jupyter.org/) which is a convenient way to use `iomb`.
 The following script shows the basic usage of `iomb`. For detailed information 
 about the data format see the [data format specification](doc/data_format.md)
