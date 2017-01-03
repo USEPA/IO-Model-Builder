@@ -1,0 +1,52 @@
+Flow name,CAS number,Category,Sub-category,Flow UUID,Sector name,Sector code,Sector location,Amount,Unit
+Carbon dioxide,000124-38-20,air,unspecified,7ae371aa-8532-11e0-9d78-0800200c9a66,Agriculture & Forestry,1,US,-42.741285839999996,kg
+Carbon dioxide,000124-38-20,air,unspecified,7ae371aa-8532-11e0-9d78-0800200c9a66,Mining & Utilities,2,US,9.0553325349,kg
+Carbon dioxide,000124-38-20,air,unspecified,7ae371aa-8532-11e0-9d78-0800200c9a66,Construction & Manufacturing,3,US,30.434544660000007,kg
+Carbon dioxide,000124-38-20,air,unspecified,7ae371aa-8532-11e0-9d78-0800200c9a66,Trade & Transport,4,US,5.521937606999999,kg
+Carbon dioxide,000124-38-20,air,unspecified,7ae371aa-8532-11e0-9d78-0800200c9a66,Information & Finance & Services,5,US,0.9031214419999998,kg
+Carbon dioxide,000124-38-20,air,unspecified,7ae371aa-8532-11e0-9d78-0800200c9a66,Government & Other,6,US,11.214903763999999,kg
+Dinitrogen monoxide,010024-97-366,air,unspecified,20185046-64bb-4c09-a8e7-e8a9e144ca98,Agriculture & Forestry,1,US,0.0159840489767,kg
+Dinitrogen monoxide,010024-97-366,air,unspecified,20185046-64bb-4c09-a8e7-e8a9e144ca98,Mining & Utilities,2,US,0.0015777692869999999,kg
+Dinitrogen monoxide,010024-97-366,air,unspecified,20185046-64bb-4c09-a8e7-e8a9e144ca98,Construction & Manufacturing,3,US,0.001825338581309999,kg
+Dinitrogen monoxide,010024-97-366,air,unspecified,20185046-64bb-4c09-a8e7-e8a9e144ca98,Trade & Transport,4,US,0.0001312775188,kg
+Dinitrogen monoxide,010024-97-366,air,unspecified,20185046-64bb-4c09-a8e7-e8a9e144ca98,Information & Finance & Services,5,US,1.340605673e-05,kg
+Dinitrogen monoxide,010024-97-366,air,unspecified,20185046-64bb-4c09-a8e7-e8a9e144ca98,Government & Other,6,US,0.0003461994068,kg
+Methane,000074-82-92,air,unspecified,20408dd1-8534-11e0-9d78-0800200c9a66,Agriculture & Forestry,1,US,0.175858058515,kg
+Methane,000074-82-92,air,unspecified,20408dd1-8534-11e0-9d78-0800200c9a66,Mining & Utilities,2,US,0.12222645606999999,kg
+Methane,000074-82-92,air,unspecified,20408dd1-8534-11e0-9d78-0800200c9a66,Construction & Manufacturing,3,US,0.02456953744419998,kg
+Methane,000074-82-92,air,unspecified,20408dd1-8534-11e0-9d78-0800200c9a66,Trade & Transport,4,US,0.07486048279999999,kg
+Methane,000074-82-92,air,unspecified,20408dd1-8534-11e0-9d78-0800200c9a66,Information & Finance & Services,5,US,0.05244226667285003,kg
+Methane,000074-82-92,air,unspecified,20408dd1-8534-11e0-9d78-0800200c9a66,Government & Other,6,US,0.000109570864,kg
+"Ethane, 1,1,1,2-tetrafluoro-, HFC-134a",000811-97-2,air,unspecified,e87f039d-d9ce-4242-ac18-c9284cc80f3d,Mining & Utilities,2,US,2.1436875e-08,kg
+"Ethane, 1,1,1,2-tetrafluoro-, HFC-134a",000811-97-2,air,unspecified,e87f039d-d9ce-4242-ac18-c9284cc80f3d,Construction & Manufacturing,3,US,0.00044514674884999986,kg
+"Ethane, 1,1,1,2-tetrafluoro-, HFC-134a",000811-97-2,air,unspecified,e87f039d-d9ce-4242-ac18-c9284cc80f3d,Trade & Transport,4,US,6.194201733e-05,kg
+"Ethane, 1,1,1,2-tetrafluoro-, HFC-134a",000811-97-2,air,unspecified,e87f039d-d9ce-4242-ac18-c9284cc80f3d,Information & Finance & Services,5,US,3.467569585000001e-05,kg
+"Ethane, 1,1,1,2-tetrafluoro-, HFC-134a",000811-97-2,air,unspecified,e87f039d-d9ce-4242-ac18-c9284cc80f3d,Government & Other,6,US,9.964505e-07,kg
+"Ethane, pentafluoro-, HFC-125",000354-33-6,air,unspecified,281e1011-f121-4d5b-ad4d-22d562b2c2cd,Mining & Utilities,2,US,5.687488e-09,kg
+"Ethane, pentafluoro-, HFC-125",000354-33-6,air,unspecified,281e1011-f121-4d5b-ad4d-22d562b2c2cd,Construction & Manufacturing,3,US,0.00011674110018799997,kg
+"Ethane, pentafluoro-, HFC-125",000354-33-6,air,unspecified,281e1011-f121-4d5b-ad4d-22d562b2c2cd,Trade & Transport,4,US,1.6434051900000003e-05,kg
+"Ethane, pentafluoro-, HFC-125",000354-33-6,air,unspecified,281e1011-f121-4d5b-ad4d-22d562b2c2cd,Information & Finance & Services,5,US,9.199934954000001e-06,kg
+"Ethane, pentafluoro-, HFC-125",000354-33-6,air,unspecified,281e1011-f121-4d5b-ad4d-22d562b2c2cd,Government & Other,6,US,2.6437227e-07,kg
+"Methane, difluoro-, HFC-32",000075-10-5,air,unspecified,151212b4-079b-43a2-96d5-a6eef59166ac,Mining & Utilities,2,US,3.312127e-09,kg
+"Methane, difluoro-, HFC-32",000075-10-5,air,unspecified,151212b4-079b-43a2-96d5-a6eef59166ac,Construction & Manufacturing,3,US,6.798456411700004e-05,kg
+"Methane, difluoro-, HFC-32",000075-10-5,air,unspecified,151212b4-079b-43a2-96d5-a6eef59166ac,Trade & Transport,4,US,9.570431011e-06,kg
+"Methane, difluoro-, HFC-32",000075-10-5,air,unspecified,151212b4-079b-43a2-96d5-a6eef59166ac,Information & Finance & Services,5,US,5.357612409999999e-06,kg
+"Methane, difluoro-, HFC-32",000075-10-5,air,unspecified,151212b4-079b-43a2-96d5-a6eef59166ac,Government & Other,6,US,1.5395792e-07,kg
+"Ethane, 1,1,1-trifluoro-, HFC-143a",000420-46-2,air,unspecified,e86bfec2-1025-4fa2-90b1-81e35e621e91,Mining & Utilities,2,US,2.4334419999999996e-09,kg
+"Ethane, 1,1,1-trifluoro-, HFC-143a",000420-46-2,air,unspecified,e86bfec2-1025-4fa2-90b1-81e35e621e91,Construction & Manufacturing,3,US,4.9948616040999995e-05,kg
+"Ethane, 1,1,1-trifluoro-, HFC-143a",000420-46-2,air,unspecified,e86bfec2-1025-4fa2-90b1-81e35e621e91,Trade & Transport,4,US,7.031458521e-06,kg
+"Ethane, 1,1,1-trifluoro-, HFC-143a",000420-46-2,air,unspecified,e86bfec2-1025-4fa2-90b1-81e35e621e91,Information & Finance & Services,5,US,3.936267929e-06,kg
+"Ethane, 1,1,1-trifluoro-, HFC-143a",000420-46-2,air,unspecified,e86bfec2-1025-4fa2-90b1-81e35e621e91,Government & Other,6,US,1.1311366e-07,kg
+"Propane, 1,1,1,3,3,3-hexafluoro-, HCFC-236fa",000690-39-1,air,unspecified,1963a3ba-6d77-4571-bb8f-0e9c8ac28a65,Mining & Utilities,2,US,6.574003e-11,kg
+"Propane, 1,1,1,3,3,3-hexafluoro-, HCFC-236fa",000690-39-1,air,unspecified,1963a3ba-6d77-4571-bb8f-0e9c8ac28a65,Construction & Manufacturing,3,US,1.3493757245000006e-06,kg
+"Propane, 1,1,1,3,3,3-hexafluoro-, HCFC-236fa",000690-39-1,air,unspecified,1963a3ba-6d77-4571-bb8f-0e9c8ac28a65,Trade & Transport,4,US,1.899566529e-07,kg
+"Propane, 1,1,1,3,3,3-hexafluoro-, HCFC-236fa",000690-39-1,air,unspecified,1963a3ba-6d77-4571-bb8f-0e9c8ac28a65,Information & Finance & Services,5,US,1.0633925719999999e-07,kg
+"Propane, 1,1,1,3,3,3-hexafluoro-, HCFC-236fa",000690-39-1,air,unspecified,1963a3ba-6d77-4571-bb8f-0e9c8ac28a65,Government & Other,6,US,3.0557980000000003e-09,kg
+Sulfur hexafluoride,002551-62-4,air,unspecified,35d1dff5-b535-4628-9826-4a8fce08a1f2,Mining & Utilities,2,US,7.81574e-07,kg
+Sulfur hexafluoride,002551-62-4,air,unspecified,35d1dff5-b535-4628-9826-4a8fce08a1f2,Construction & Manufacturing,3,US,4.763258e-06,kg
+"Methane, trifluoro-, HFC-23",000075-46-7,air,unspecified,e5ba3517-a93f-422e-9ce2-f1007fcf6c06,Construction & Manufacturing,3,US,3.737074e-05,kg
+"Methane, tetrafluoro-, R-14",000075-73-0,air,unspecified,33681770-a0e1-4ce8-93c3-941fd607fa5f,Construction & Manufacturing,3,US,5.296825e-05,kg
+"Ethane, hexafluoro-, HFC-116",000076-16-4,air,unspecified,acc39720-dda7-4b3a-80c7-c6394cad4191,Construction & Manufacturing,3,US,1.111294e-05,kg
+Nitrogen fluoride,007783-54-2,air,unspecified,e79e03c3-5b19-45f6-b3f3-bf710c6663d2,Construction & Manufacturing,3,US,5.05539e-07,kg
+"Propane, perfluoro-",000076-19-7,air,unspecified,b339c2d6-aeef-4608-8d1d-98d8cb1c113d,Construction & Manufacturing,3,US,1.64124e-07,kg
+"Butane, perfluorocyclo-, PFC-318",000115-25-3,air,unspecified,4b79b81b-3cd3-450b-a8de-1c397cc70b44,Construction & Manufacturing,3,US,1.407e-07,kg

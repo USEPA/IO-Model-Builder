@@ -1,1 +1,6 @@
 .ipynb_checkpoints/
+
+# generated files of the example notebook
+drc.csv
+satellite_table_com.csv
+example_jsonld.zip

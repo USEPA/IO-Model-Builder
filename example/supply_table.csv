@@ -1,7 +1,7 @@
-,1/Agriculture & Forestry,2/Mining & Utilities,3/Construction & Manufacturing,4/Trade & Transport,5/Information & Finance & Services,6/Government & Other,S/Scrap
-1/Agriculture & Forestry,479908.1,0.0,78.93,0.0,2249.77,0.0,0.0
-2/Mining & Utilities,0.0,957651.46,50167.39,1272.12,1596.8,1666.94,0.0
-3/Construction & Manufacturing,0.0,720.42,6829917.2,59325.22,175390.0,0.0,5421.33
-4/Trade & Transport,1040.29,817.33,37243.85,3791364.47,243880.96,0.0,0.0
-5/Information & Finance & Services,0.0,172.09,56595.81,48913.85,13500433.11,0.0,1596.58
-6/Government & Other,3755.14,115194.0,26377.57,35223.8,499982.52,2639288.75,4279.7
+,1/agriculture & forestry/us,2/mining & utilities/us,3/construction & manufacturing/us,4/trade & transport/us,5/information & finance & services/us,6/government & other/us,s/scrap/us
+1/agriculture & forestry/us,479908.1,0.0,78.93,0.0,2249.77,0.0,0.0
+2/mining & utilities/us,0.0,957651.46,50167.39,1272.12,1596.8,1666.94,0.0
+3/construction & manufacturing/us,0.0,720.42,6829917.2,59325.22,175390.0,0.0,5421.33
+4/trade & transport/us,1040.29,817.33,37243.85,3791364.47,243880.96,0.0,0.0
+5/information & finance & services/us,0.0,172.09,56595.81,48913.85,13500433.11,0.0,1596.58
+6/government & other/us,3755.14,115194.0,26377.57,35223.8,499982.52,2639288.75,4279.7
