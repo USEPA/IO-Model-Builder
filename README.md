@@ -72,6 +72,7 @@ olca.Export(model).to('model_as_json-ld.zip')
 ```
 
 ## License
-This work is licensed under a [Creative Commons Attribution-NonCommercial 3.0 Unported License](https://creativecommons.org/licenses/by-nc/3.0/deed.en_US).
+This project is in the worldwide public domain, released under the 
+[CC0 1.0 Universal Public Domain Dedication](https://creativecommons.org/publicdomain/zero/1.0/).
 
-![Creative Commons License](https://i.creativecommons.org/l/by-nc/3.0/88x31.png)
+![Public Domain Dedication](https://licensebuttons.net/p/zero/1.0/88x31.png)
