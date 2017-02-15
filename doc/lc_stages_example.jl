@@ -50,4 +50,4 @@ Bd = [ 0.0  0.0  5.0]  # kg CO2
 
 gd2 = Bd * f   # 250.0 kg CO2
 
-Gd2 = Bd * f'  # [0.0  0.0  250.0] kg CO2
+Gd2 = Bd * diagm(f)  # [0.0  0.0  250.0] kg CO2

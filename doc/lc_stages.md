@@ -126,7 +126,7 @@ distribution , 3          , Energy        , US         , 2          , Transport 
 ```
 
 Combining this with the final demand vector above, we need `200 * 0.3 + 50 * 0.1`
-USD from transport sector in the use phase. In general, we can calculate the
+USD from transport sector in the distribution phase. In general, we can calculate the
 demand vector `fd` for the distribution phase by creating a coefficients matrix
 for the additional requirements and multiplying it with final demand vector:
 
@@ -185,15 +185,15 @@ final demand vector:
 ```julia
 gd2 = Bd * f   # 250.0 kg CO2
 
-Gd2 = Bd * f'  # [0.0  0.0  250.0] kg CO2
+Gd2 = Bd * diagm(f)  # [0.0  0.0  250.0] kg CO2
 ```
 
 Thus, for the example the energy sector would add 250.0 kg CO2 of additional
-emissions in the use phase for the final demand vector. Together with the
+emissions in the distribution phase for the final demand vector. Together with the
 cradle-to-gate phase and the additional requirements, we would have 
 `1163.27 + 160.13 + 250.00 = 1573.4` kg CO2 of total emissions. The contribution
-of the use phase would be `160.13 + 250.00 = 410.13` kg CO2 and the contribution
+of the distribution phase would be `160.13 + 250.00 = 410.13` kg CO2 and the contribution
 of the energy sector would be `265.31` kg CO2 in the cradle-to-gate phase and
-`45.48 + 250.0 = 295.48` kg CO2 in the use phase where the `45.48` kg are related
+`45.48 + 250.0 = 295.48` kg CO2 in the distribution phase where the `45.48` kg are related
 to the energy use for providing transport as additional requirement and the `250`
-kg to the additional emissions of this sector in the use phase.
+kg to the additional emissions of this sector in the distribution phase.
