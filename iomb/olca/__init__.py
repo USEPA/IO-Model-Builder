@@ -129,7 +129,8 @@ class Export(object):
                          "@id": unit.unit_uid},
                 "flowProperty": {"@type": "FlowProperty",
                                  "@id": unit.quantity_uid},
-                "quantitativeReference": False
+                "quantitativeReference": False,
+                "comment": entry.comment
             }
             if self.with_data_quality and entry.data_quality_entry is not None:
                 e['dqEntry'] = entry.data_quality_entry
