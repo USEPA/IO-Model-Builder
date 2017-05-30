@@ -1,3 +1,4 @@
+import csv
 import random
 
 
@@ -50,6 +51,33 @@ def aggregate_entries(dqi_entries, weights, aggfn=weighted_avg):
     return agg_entry
 
 
+class Entry(object):
+
+    @staticmethod
+    def to_string(val):
+        if val is None:
+            return '(none)'
+        vs = '('
+        for i in range(0, len(val)):
+            vs += '%i' % val[i]
+            if i < (len(val) - 1):
+                vs += ','
+        vs += ')'
+        return vs
+
+    @staticmethod
+    def from_string(s: str):
+        if s is None:
+            return None
+        vals = s.strip().strip('()').split(',')
+        if len(vals) == 0 or vals[0] == 'none':
+            return None
+        e = []
+        for val in vals:
+            e.append(int(val))
+        return e
+
+
 class DqiMatrix(object):
 
     def __init__(self, rows: int, cols: int):
@@ -87,21 +115,19 @@ class DqiMatrix(object):
         for row in range(0, self.rows):
             for col in range(0, self.cols):
                 val = self[row, col]
-                if val is None:
-                    s += ' (none)'
-                    continue
-                vs = ' ('
-                for i in range(0, len(val)):
-                    vs += '%i' % val[i]
-                    if i < (len(val) - 1):
-                        vs += ','
-                vs += ')'
-                s += vs
+                s += ' ' + Entry.to_string(val)
             if row < (self.rows - 1):
                 s += ' ;\n '
             else:
                 s += ' ]'
         return s
+
+    def __eq__(self, other):
+        if not isinstance(other, DqiMatrix):
+            return False
+        if self.rows != other.rows or self.cols != other.cols:
+            return False
+        return self.data == other.data
 
     @staticmethod
     def parse(s: str):
@@ -116,14 +142,8 @@ class DqiMatrix(object):
             v_rows.append(v_row)
             t_entries = t_row.strip().strip('()').split(')')
             for t_entry in t_entries:
-                vals = t_entry.strip().strip('()').split(',')
-                if len(vals) == 0 or vals[0] == 'none':
-                    v_row.append(None)
-                    continue
-                e = []
-                v_row.append(e)
-                for val in vals:
-                    e.append(int(val))
+                entry = Entry.from_string(t_entry)
+                v_row.append(entry)
         if len(v_rows) == 0 or len(v_rows[0]) == 0:
             return DqiMatrix(len(v_rows), 0)
         m = DqiMatrix(len(v_rows), len(v_rows[0]))
@@ -131,6 +151,14 @@ class DqiMatrix(object):
             for col in range(0, m.cols):
                 m[row, col] = v_rows[row][col]
         return m
+
+    def to_csv(self, file_name: str):
+        with open(file_name, 'w', encoding='utf-8', newline='\n') as f:
+            writer = csv.writer(f)
+            for row in range(0, self.rows):
+                csv_row = [Entry.to_string(self[row, col])
+                           for col in range(0, self.cols)]
+                writer.writerow(csv_row)
 
     @staticmethod
     def rand(rows: int, cols: int, tsize=5, mini=1, maxi=5):

@@ -33,6 +33,21 @@ class TestDqiMatrix(unittest.TestCase):
         self.assertEqual(None, m[1, 1])
         self.assertEqual([5, 2, 5], m[1, 2])
 
+    def test_eq(self):
+        t = """
+        [ (1,2,4) (3,3,2) (4,2,2) ;
+          (4,2,4) (none)  (5,2,5) ]
+        """
+        m1 = dqi.DqiMatrix.parse(t)
+        m2 = dqi.DqiMatrix.parse(t)
+        self.assertEqual(m1, m2)
+        t = """
+        [ (2,2,4) (3,3,2) (4,2,2) ;
+          (4,2,4) (none)  (5,2,5) ]
+        """
+        m3 = dqi.DqiMatrix.parse(t)
+        self.assertNotEqual(m1, m3)
+
 
 class TestAggregation(unittest.TestCase):
 
