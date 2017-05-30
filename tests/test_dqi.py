@@ -64,5 +64,45 @@ class TestAggregation(unittest.TestCase):
         self.assertEqual([2, 5, 1], r[1, 0])
         self.assertEqual([2, 1, 5], r[2, 0])
 
+    def test_aggregate_columns_with_factors(self):
+        t = """
+            [ (4,1,3) (2,1,5) ;
+              (4,5,3) (1,5,1) ;
+              (2,1,5) (3,1,4) ]
+        """
+        m = dqi.DqiMatrix.parse(t)
+        base = [[0.4,  0.7],
+                [0.1,  0.5],
+                [0.9,  0.2]]
+        factors = [0.7, 0.3]
+        r = m.aggregate_columns(base, factors)
+        self.assertEqual(3, r.rows)
+        self.assertEqual(1, r.cols)
+        self.assertEqual([3, 1, 4], r[0, 0])
+        self.assertEqual([2, 5, 2], r[1, 0])
+        self.assertEqual([2, 1, 5], r[2, 0])
+
+    def test_aggregate_mmult_left(self):
+        t = """
+            [ (4,1,3) (2,1,5) ;
+              (4,5,3) (1,5,1) ;
+              (2,1,5) (3,1,4) ]
+        """
+        m = dqi.DqiMatrix.parse(t)
+        B = [[20, 5],
+             [2, 8],
+             [10, 3]]
+        L = [[1.4, 0.8],
+             [0.5, 1.2]]
+        r = m.aggregate_mmult(B, L, left=True)
+        self.assertEqual(3, r.rows)
+        self.assertEqual(2, r.cols)
+        self.assertEqual([4, 1, 3], r[0, 0])
+        self.assertEqual([3, 1, 4], r[0, 1])
+        self.assertEqual([2, 5, 2], r[1, 0])
+        self.assertEqual([1, 5, 1], r[1, 1])
+        self.assertEqual([2, 1, 5], r[2, 0])
+        self.assertEqual([2, 1, 5], r[2, 1])
+
 if __name__ == '__main__':
     unittest.main()

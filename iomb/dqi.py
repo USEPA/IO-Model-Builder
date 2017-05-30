@@ -7,7 +7,7 @@ def weighted_avg(dqis, weights) -> int:
 
         Args:
             dqis (List[int]): the data quality indicators that should be
-            aggregated.
+                aggregated.
             weights (List[float]): the weights of the respective indicators
 
         Returns:
@@ -75,6 +75,12 @@ class DqiMatrix(object):
         for col in range(0, self.cols):
             row.append(self[idx, col])
         return row
+
+    def get_col(self, idx):
+        col = []
+        for row in range(0, self.rows):
+            col.append(self[row, idx])
+        return col
 
     def __str__(self):
         s = "["
@@ -144,11 +150,9 @@ class DqiMatrix(object):
             Args:
                 base_matrix: a matrix with the corresponding numeric values
                     (must have the same shape as the DQI matrix).
-
                 factors: an optional vector with colum factors that should be
                     applied (if given, the length of this vector needs to be
                     equal to the column dimension of the base matrix).
-
                 aggfn: the aggregation function for the data quality
                     indicators; defaults to weighted_avg.
 
@@ -166,4 +170,32 @@ class DqiMatrix(object):
                 weights[col] = weight
             entries = self.get_row(row)
             r[row, 0] = aggregate_entries(entries, weights, aggfn)
+        return r
+
+    def aggregate_mmult(self, A, B, left=True, aggfn=weighted_avg):
+        """ Aggregates the DQI matrix within a matrix-matrix multiplication.
+
+            Args:
+                A: the left m*k matrix of the multiplication
+                B: the right k*n matrix of the multiplication
+                left: indicates whether the left matrix (default; True) or the
+                    right matrix is the base-matrix of the DQI matrix.
+                aggfn: the aggregation function for the data quality
+                    indicators; defaults to weighted_avg.
+
+            Returns:
+                a m*n matrix with aggregated DQI values
+        """
+        m = len(A)
+        k = len(B)
+        n = len(B[0])
+        r = DqiMatrix(m, n)
+        for row_A in range(0, m):
+            for col_B in range(0, n):
+                weights = []
+                for i in range(0, k):
+                    weights.append(A[row_A][i] * B[i][col_B])
+                entries = self.get_row(row_A) if left else self.get_col(col_B)
+                agg_entry = aggregate_entries(entries, weights, aggfn)
+                r[row_A, col_B] = agg_entry
         return r
