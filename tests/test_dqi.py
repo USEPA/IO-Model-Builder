@@ -104,5 +104,25 @@ class TestAggregation(unittest.TestCase):
         self.assertEqual([2, 1, 5], r[2, 0])
         self.assertEqual([2, 1, 5], r[2, 1])
 
+    def test_aggregate_mmult_right(self):
+        t = """
+            [ (4,1,3) (3,1,4) ;
+              (2,5,2) (1,5,1) ;
+              (2,1,5) (2,1,5) ]
+        """
+        m = dqi.DqiMatrix.parse(t)
+        F = [[0.1, 0.4, 0.9],
+             [0.8, 0.3, 0.1]]
+        G = [[30.5,  22.],
+             [6.8,  11.2],
+             [15.5,  11.6]]
+        r = m.aggregate_mmult(F, G, left=False)
+        self.assertEqual(2, r.rows)
+        self.assertEqual(2, r.cols)
+        self.assertEqual([2, 2, 4], r[0, 0])
+        self.assertEqual([2, 2, 4], r[0, 1])
+        self.assertEqual([4, 1, 3], r[1, 0])
+        self.assertEqual([3, 2, 4], r[1, 1])
+
 if __name__ == '__main__':
     unittest.main()
