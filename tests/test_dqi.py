@@ -64,9 +64,11 @@ class TestDqiMatrix(unittest.TestCase):
 class TestAggregation(unittest.TestCase):
 
     def test_weighted_avg(self):
-        self.assertEqual(0, dqi.weighted_avg([], []))
+        self.assertEqual('n.a.', dqi.weighted_avg([], []))
         self.assertEqual(5, dqi.weighted_avg([5], [0.3]))
         self.assertEqual(3, dqi.weighted_avg([5, 3, 2], [0.3, 0.8, 0.1]))
+        self.assertEqual(3, dqi.weighted_avg([5, 3, 'n.a.', 2],
+                                             [0.3, 0.8, 42, 0.1]))
 
     def test_aggregate_entries(self):
         entries = [[4, 1, 3], None, [2, 1, 5]]

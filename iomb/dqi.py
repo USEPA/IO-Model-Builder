@@ -2,12 +2,12 @@ import csv
 import random
 
 
-def weighted_avg(dqis, weights) -> int:
+def weighted_avg(dqis, weights):
     """ An aggregation function that calculates the weighted arithmetic mean of
-        the given indicator values and weights.
+        the given indicator values and weights. `n.a.`-values are ignored.
 
         Args:
-            dqis (List[int]): the data quality indicators that should be
+            dqis (List[int|'n.a.']): the data quality indicators that should be
                 aggregated.
             weights (List[float]): the weights of the respective indicators
 
@@ -16,16 +16,24 @@ def weighted_avg(dqis, weights) -> int:
     """
     length = min(len(dqis), len(weights))
     if length == 0:
-        return 0
+        return 'n.a.'
     wsum = 0.0
-    max_dqi = 0
+    max_dqi = -1
     for i in range(0, length):
+        dqi = dqis[i]
+        if dqi == 'n.a.':
+            continue
         wsum += weights[i]
-        max_dqi = max(max_dqi, dqis[i])
+        max_dqi = max(max_dqi, dqi)
+    if max_dqi == -1:
+        return 'n.a.'
     if wsum == 0.0:
         return max_dqi
     wavg = 0.0
     for i in range(0, length):
+        dqi = dqis[i]
+        if dqi == 'n.a.':
+            continue
         wavg += (dqis[i] * weights[i] / wsum)
     return int(round(wavg))
 
