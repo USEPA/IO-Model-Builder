@@ -69,8 +69,8 @@ class TestAggregation(unittest.TestCase):
         self.assertEqual(3, dqi.weighted_avg([5, 3, 2], [0.3, 0.8, 0.1]))
 
     def test_aggregate_entries(self):
-        entries = [[4, 1, 3], [2, 1, 5]]
-        weights = [0.4,  0.7]
+        entries = [[4, 1, 3], None, [2, 1, 5]]
+        weights = [0.4, 42, 0.7]
         agg_entry = dqi.aggregate_entries(entries, weights)
         self.assertEqual([3, 1, 4], agg_entry)
 

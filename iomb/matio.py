@@ -3,6 +3,7 @@ import os
 import struct
 
 import iomb
+import iomb.dqi as dqi
 
 
 class Export(object):
@@ -24,7 +25,7 @@ class Export(object):
         # TODO: currently only supports models with LCIA methods
 
         # the direct requirements matrix: A
-        A = model.drc_matrix
+        A = self.model.drc_matrix
         self.__write_matrix(A.values, 'A')
 
         # the Leontief inverse: L
@@ -32,12 +33,12 @@ class Export(object):
         self.__write_matrix(L.values, 'L')
 
         # the satellite matrix: B
-        B = model.sat_table.as_data_frame().reindex(
+        B = self.model.sat_table.as_data_frame().reindex(
             columns=A.index, fill_value=0.0)
         self.__write_matrix(B.values, 'B')
 
         # the characterization factors: C
-        C = model.ia_table.as_data_frame().reindex(
+        C = self.model.ia_table.as_data_frame().reindex(
             columns=B.index, fill_value=0.0)
         self.__write_matrix(C.values, 'C')
 
@@ -50,16 +51,16 @@ class Export(object):
         self.__write_matrix(U, 'U')
 
         # the data quality matrix of the satellite table: B_dqi
-        B_dqi = iomb.dqi.Matrix.from_sat_table(model.sat_table)
-        B_dqi.to_csv('%/B_dqi.csv' % self.folder)
+        B_dqi = dqi.Matrix.from_sat_table(self.model.sat_table)
+        B_dqi.to_csv('%s/B_dqi.csv' % self.folder)
 
         # the data quality matrix of the direct impacts: D_dqi
         D_dqi = B_dqi.aggregate_mmult(C.values, B.values, left=False)
-        D_dqi.to_csv('%/D_dqi.csv')
+        D_dqi.to_csv('%s/D_dqi.csv')
 
         # the data quality matrix of the upstream impacts: U_dqi
         U_dqi = D_dqi.aggregate_mmult(D, L.values, left=True)
-        U_dqi.to_csv('%/U_dqi.csv')
+        U_dqi.to_csv('%s/U_dqi.csv')
 
         # write matrix indices with meta-data
         self.__write_sectors(A)
@@ -74,7 +75,7 @@ class Export(object):
             f.write(struct.pack("<i", cols))
             for col in range(0, cols):
                 for row in range(0, rows):
-                    val = m[row, col]
+                    val = M[row, col]
                     f.write(struct.pack("<d", val))
 
     def __write_sectors(self, A):

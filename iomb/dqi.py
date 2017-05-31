@@ -32,22 +32,33 @@ def weighted_avg(dqis, weights) -> int:
 
 def aggregate_entries(dqi_entries, weights, aggfn=weighted_avg):
     """ Aggregates all DQI entries using the given weights and aggregation
-        function.
+        function. `None` values in the DQI entries and respective wheights are
+        ignored.
     """
     length = min(len(dqi_entries), len(weights))
     if length == 0:
         return []
-    e_size = len(dqi_entries[0])
-    lines = [[] for _ in range(0, e_size)]
+    e_size = 0
     for dqi_entry in dqi_entries:
+        if dqi_entry is not None:
+            e_size = max(e_size, len(dqi_entry))
+    if e_size == 0:
+        return []
+    lines = [[] for _ in range(0, e_size)]
+    e_weights = []
+    for i in range(0, length):
+        dqi_entry = dqi_entries[i]
         if dqi_entry is None:
-            for i in range(0, e_size):
-                lines[i].append(0)
+            continue
+        e_weights.append(weights[i])
         for pos in range(0, e_size):
-            lines[pos].append(dqi_entry[pos])
+            if pos >= len(dqi_entry):
+                lines[pos].append('n.a.')
+            else:
+                lines[pos].append(dqi_entry[pos])
     agg_entry = []
     for line in lines:
-        agg_entry.append(aggfn(line, weights))
+        agg_entry.append(aggfn(line, e_weights))
     return agg_entry
 
 
@@ -59,7 +70,7 @@ class Entry(object):
             return '(none)'
         vs = '('
         for i in range(0, len(val)):
-            vs += '%i' % val[i]
+            vs += '%s' % val[i]
             if i < (len(val) - 1):
                 vs += ','
         vs += ')'
@@ -187,9 +198,15 @@ class Matrix(object):
                 if e is None or not isinstance(e.data_quality_entry, str):
                     m[row, col] = None
                     continue
-                sat_dq = e.data_quality_entry.strip()[1: len(dq_entry) - 1]
-                # TODO currently only support for plain integer values
-                m[row, col] = [int(i) for i in sat_dq.split(';')]
+                sat_dq = e.data_quality_entry.strip()
+                sat_dq = sat_dq[1: len(sat_dq) - 1]
+                e = []
+                for i in sat_dq.split(';'):
+                    val = i.strip()
+                    if val != 'n.a.':
+                        val = int(val)
+                    e.append(val)
+                m[row, col] = e
         return m
 
     @staticmethod
