@@ -177,6 +177,22 @@ class Matrix(object):
             return m
 
     @staticmethod
+    def from_sat_table(sat_table):
+        m = Matrix(len(sat_table.flows), len(sat_table.sectors))
+        for row in range(0, m.rows):
+            for col in range(0, m.cols):
+                flow = sat_table.flows[row]
+                sector = sat_table.sectors[col]
+                e = sat_table.get_entry(flow.key, sector.key)
+                if e is None or not isinstance(e.data_quality_entry, str):
+                    m[row, col] = None
+                    continue
+                sat_dq = e.data_quality_entry.strip()[1: len(dq_entry) - 1]
+                # TODO currently only support for plain integer values
+                m[row, col] = [int(i) for i in sat_dq.split(';')]
+        return m
+
+    @staticmethod
     def rand(rows: int, cols: int, tsize=5, mini=1, maxi=5):
         m = Matrix(rows, cols)
         for row in range(0, rows):
