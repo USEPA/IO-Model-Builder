@@ -1,16 +1,19 @@
+import os
+import tempfile
 import unittest
+
 import iomb.dqi as dqi
 
 
 class TestDqiMatrix(unittest.TestCase):
 
     def test_indices(self):
-        m = dqi.DqiMatrix(3, 5)
+        m = dqi.Matrix(3, 5)
         m[2, 4] = (1, 2, 3, 4, 5)
         self.assertEqual((1, 2, 3, 4, 5), m[2, 4])
 
     def test_rand(self):
-        m = dqi.DqiMatrix.rand(5, 10)
+        m = dqi.Matrix.rand(5, 10)
         for row in range(0, m.rows):
             for col in range(0, m.cols):
                 val = m[row, col]
@@ -24,7 +27,7 @@ class TestDqiMatrix(unittest.TestCase):
         [ (1,2,4) (3,3,2) (4,2,2) ;
           (4,2,4) (none)  (5,2,5) ]
         """
-        m = dqi.DqiMatrix.parse(t)
+        m = dqi.Matrix.parse(t)
         # print(m)
         self.assertEqual([1, 2, 4], m[0, 0])
         self.assertEqual([3, 3, 2], m[0, 1])
@@ -38,15 +41,24 @@ class TestDqiMatrix(unittest.TestCase):
         [ (1,2,4) (3,3,2) (4,2,2) ;
           (4,2,4) (none)  (5,2,5) ]
         """
-        m1 = dqi.DqiMatrix.parse(t)
-        m2 = dqi.DqiMatrix.parse(t)
+        m1 = dqi.Matrix.parse(t)
+        m2 = dqi.Matrix.parse(t)
         self.assertEqual(m1, m2)
         t = """
         [ (2,2,4) (3,3,2) (4,2,2) ;
           (4,2,4) (none)  (5,2,5) ]
         """
-        m3 = dqi.DqiMatrix.parse(t)
+        m3 = dqi.Matrix.parse(t)
         self.assertNotEqual(m1, m3)
+
+    def test_csv_io(self):
+        tf = tempfile.NamedTemporaryFile(delete=False)
+        m = dqi.Matrix.rand(100, 75)
+        m.to_csv(tf.name)
+        n = dqi.Matrix.from_csv(tf.name)
+        self.assertEqual(m, n)
+        tf.close()
+        os.remove(tf.name)
 
 
 class TestAggregation(unittest.TestCase):
@@ -68,7 +80,7 @@ class TestAggregation(unittest.TestCase):
               (4,5,3) (1,5,1) ;
               (2,1,5) (3,1,4) ]
         """
-        m = dqi.DqiMatrix.parse(t)
+        m = dqi.Matrix.parse(t)
         base = [[0.4,  0.7],
                 [0.1,  0.5],
                 [0.9,  0.2]]
@@ -85,7 +97,7 @@ class TestAggregation(unittest.TestCase):
               (4,5,3) (1,5,1) ;
               (2,1,5) (3,1,4) ]
         """
-        m = dqi.DqiMatrix.parse(t)
+        m = dqi.Matrix.parse(t)
         base = [[0.4,  0.7],
                 [0.1,  0.5],
                 [0.9,  0.2]]
@@ -103,7 +115,7 @@ class TestAggregation(unittest.TestCase):
               (4,5,3) (1,5,1) ;
               (2,1,5) (3,1,4) ]
         """
-        m = dqi.DqiMatrix.parse(t)
+        m = dqi.Matrix.parse(t)
         B = [[20, 5],
              [2, 8],
              [10, 3]]
@@ -125,7 +137,7 @@ class TestAggregation(unittest.TestCase):
               (2,5,2) (1,5,1) ;
               (2,1,5) (2,1,5) ]
         """
-        m = dqi.DqiMatrix.parse(t)
+        m = dqi.Matrix.parse(t)
         F = [[0.1, 0.4, 0.9],
              [0.8, 0.3, 0.1]]
         G = [[30.5,  22.],

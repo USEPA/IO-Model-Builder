@@ -78,7 +78,7 @@ class Entry(object):
         return e
 
 
-class DqiMatrix(object):
+class Matrix(object):
 
     def __init__(self, rows: int, cols: int):
         self.rows = rows
@@ -123,7 +123,7 @@ class DqiMatrix(object):
         return s
 
     def __eq__(self, other):
-        if not isinstance(other, DqiMatrix):
+        if not isinstance(other, Matrix):
             return False
         if self.rows != other.rows or self.cols != other.cols:
             return False
@@ -145,8 +145,8 @@ class DqiMatrix(object):
                 entry = Entry.from_string(t_entry)
                 v_row.append(entry)
         if len(v_rows) == 0 or len(v_rows[0]) == 0:
-            return DqiMatrix(len(v_rows), 0)
-        m = DqiMatrix(len(v_rows), len(v_rows[0]))
+            return Matrix(len(v_rows), 0)
+        m = Matrix(len(v_rows), len(v_rows[0]))
         for row in range(0, m.rows):
             for col in range(0, m.cols):
                 m[row, col] = v_rows[row][col]
@@ -161,8 +161,24 @@ class DqiMatrix(object):
                 writer.writerow(csv_row)
 
     @staticmethod
+    def from_csv(file_name: str):
+        with open(file_name, 'r', encoding='utf-8', newline='\n') as f:
+            reader = csv.reader(f)
+            rows = []
+            for line in reader:
+                rows.append([Entry.from_string(e) for e in line])
+            if len(rows) == 0:
+                return Matrix(0, 0)
+            m = Matrix(len(rows), len(rows[0]))
+            for row_idx in range(0, m.rows):
+                row = rows[row_idx]
+                for col_idx in range(0, len(row)):
+                    m[row_idx, col_idx] = row[col_idx]
+            return m
+
+    @staticmethod
     def rand(rows: int, cols: int, tsize=5, mini=1, maxi=5):
-        m = DqiMatrix(rows, cols)
+        m = Matrix(rows, cols)
         for row in range(0, rows):
             for col in range(0, cols):
                 t = [None] * tsize
@@ -188,7 +204,7 @@ class DqiMatrix(object):
                 an aggregated DQI matrix with one column and the same number of
                 rows as the original matrix.
         """
-        r = DqiMatrix(self.rows, 1)
+        r = Matrix(self.rows, 1)
         for row in range(0, self.rows):
             weights = [0.0] * self.cols
             for col in range(0, self.cols):
@@ -217,7 +233,7 @@ class DqiMatrix(object):
         m = len(A)
         k = len(B)
         n = len(B[0])
-        r = DqiMatrix(m, n)
+        r = Matrix(m, n)
         for row_A in range(0, m):
             for col_B in range(0, n):
                 weights = []
