@@ -2,6 +2,7 @@ import csv
 import json
 import os
 
+import iomb.dqi as dqi
 import iomb.matio as matio
 
 
@@ -59,6 +60,17 @@ class Model(object):
         if not os.path.isfile(path):
             return None
         m = matio.read_matrix(path)
+        self.matrix_cache[name] = m
+        return m
+
+    def get_dqi_matrix(self, name: str):
+        m = self.matrix_cache.get(name)
+        if m is not None:
+            return m
+        path = '%s/%s.csv' % (self.folder, name)
+        if not os.path.isfile(path):
+            return None
+        m = dqi.Matrix.from_csv(path)
         self.matrix_cache[name] = m
         return m
 

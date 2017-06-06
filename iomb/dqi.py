@@ -180,6 +180,16 @@ class Matrix(object):
                            for col in range(0, self.cols)]
                 writer.writerow(csv_row)
 
+    def to_list(self):
+        """ Returns the data of this matrix as 2-dimensional list."""
+        rows = [None] * self.rows
+        for row in range(0, self.rows):
+            vals = [None] * self.cols
+            rows[row] = vals
+            for col in range(0, self.cols):
+                vals[col] = self[row, col]
+        return vals
+
     @staticmethod
     def from_csv(file_name: str):
         with open(file_name, 'r', encoding='utf-8', newline='\n') as f:

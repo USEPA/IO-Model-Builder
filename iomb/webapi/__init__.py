@@ -32,7 +32,7 @@ def get_models():
 
 @app.route('/api/<model>/sectors')
 def get_sectors(model: str):
-    m = models.get(model)  # type: data.Model
+    m = models.get(model)  # type: Model
     if m is None:
         abort(404)
     l = []
@@ -57,18 +57,51 @@ def get_matrix(model: str, name: str):
     m = models.get(model)  # type: Model
     if m is None:
         abort(404)
+    if name in ('A', 'B', 'C', 'D', 'L', 'U'):
+        return __get_numeric_matrix(m, name)
+    elif name in ('B_dqi', 'D_dqi', 'U_dqi'):
+        return __get_dqi_matrix(m, name)
+    else:
+        abort(404)
+
+
+def __get_numeric_matrix(m: Model, name: str):
     mat = m.get_matrix(name)
     if mat is None:
         abort(404)
-    col = request.args.get('col')
-    if col is not None and len(col) > 0:
-        col = int(col)
+    col = __get_index_param('col', mat.shape[1])
+    if col >= 0:
         return jsonify(mat[:, col].tolist())
-    row = request.args.get('row')
-    if row is not None and len(row) > 0:
-        row = int(row)
+    row = __get_index_param('row', mat.shape[0])
+    if row >= 0:
         return jsonify(mat[row, :].tolist())
     return jsonify(mat.tolist())
+
+
+def __get_dqi_matrix(m: Model, name: str):
+    mat = m.get_dqi_matrix(name)
+    if mat is None:
+        abort(404)
+    col = __get_index_param('col', mat.cols)
+    if col >= 0:
+        return jsonify(mat.get_col(col))
+    row = __get_index_param('row', mat.rows)
+    if row >= 0:
+        return jsonify(mat.get_row(row))
+    return jsonify(mat.to_list())
+
+
+def __get_index_param(name: str, size: int) -> int:
+    val = request.args.get(name)
+    if val is None or len(val) == 0:
+        return -1
+    try:
+        idx = int(val)
+        if idx >= size:
+            abort(400)
+        return idx
+    except:
+        abort(400)
 
 
 def serve(data_folder: str, port='5000'):
