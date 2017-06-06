@@ -43,13 +43,32 @@ def get_sectors(model: str):
 
 @app.route('/api/<model>/indicators')
 def get_indicators(model: str):
-    m = models.get(model)  # type: data.Model
+    m = models.get(model)  # type: Model
     if m is None:
         abort(404)
     l = []
     for i in m.indicators:
         l.append(i.as_json_dict())
     return jsonify(l)
+
+
+@app.route('/api/<model>/matrix/<name>')
+def get_matrix(model: str, name: str):
+    m = models.get(model)  # type: Model
+    if m is None:
+        abort(404)
+    mat = m.get_matrix(name)
+    if mat is None:
+        abort(404)
+    col = request.args.get('col')
+    if col is not None and len(col) > 0:
+        col = int(col)
+        return jsonify(mat[:, col].tolist())
+    row = request.args.get('row')
+    if row is not None and len(row) > 0:
+        row = int(row)
+        return jsonify(mat[row, :].tolist())
+    return jsonify(mat.tolist())
 
 
 def serve(data_folder: str, port='5000'):

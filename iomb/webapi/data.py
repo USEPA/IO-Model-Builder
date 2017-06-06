@@ -1,5 +1,8 @@
 import csv
 import json
+import os
+
+import iomb.matio as matio
 
 
 class Sector(object):
@@ -46,6 +49,18 @@ class Model(object):
         self.folder = folder
         self.sectors = read_sectors(folder)
         self.indicators = read_indicators(folder)  # type: list[Indicator]
+        self.matrix_cache = {}
+
+    def get_matrix(self, name: str):
+        m = self.matrix_cache.get(name)
+        if m is not None:
+            return m
+        path = '%s/%s.bin' % (self.folder, name)
+        if not os.path.isfile(path):
+            return None
+        m = matio.read_matrix(path)
+        self.matrix_cache[name] = m
+        return m
 
 
 def read_sectors(folder: str):
