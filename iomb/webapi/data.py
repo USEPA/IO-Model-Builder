@@ -40,6 +40,14 @@ class Indicator(object):
         }
 
 
+class Model(object):
+
+    def __init__(self, folder: str):
+        self.folder = folder
+        self.sectors = read_sectors(folder)
+        self.indicators = read_indicators(folder)  # type: list[Indicator]
+
+
 def read_sectors(folder: str):
     m = {}
     path = '%s/sectors.csv' % folder
@@ -59,7 +67,7 @@ def read_sectors(folder: str):
 
 def read_indicators(folder: str):
     indicators = []
-    path = '%s/lcia-categories.csv' % folder
+    path = '%s/indicators.csv' % folder
     with open(path, 'r', encoding='utf-8', newline='\n') as f:
         reader = csv.reader(f)
         next(reader)
@@ -71,5 +79,5 @@ def read_indicators(folder: str):
             i.code = row[3]
             i.unit = row[4]
             indicators.append(i)
-    indicators.sort(key i: i.index)
+    indicators.sort(key=lambda i: i.index)
     return indicators
