@@ -4,6 +4,7 @@ import os
 
 import iomb.dqi as dqi
 import iomb.matio as matio
+import numpy
 
 
 class Sector(object):
@@ -47,9 +48,14 @@ class Indicator(object):
 class Model(object):
 
     def __init__(self, folder: str):
-        self.folder = folder
-        self.sectors = read_sectors(folder)
-        self.indicators = read_indicators(folder)  # type: list[Indicator]
+        self.folder = folder  # type: str
+        self.sectors = read_sectors(folder)  # type: Dict[str, Sector]
+        sorted_sectors = [s for s in self.sectors.values()]
+        sorted_sectors.sort(key=lambda s: s.index)
+        self.sector_ids = [s.id for s in sorted_sectors]
+        self.indicators = read_indicators(folder)  # type: List[Indicator]
+        self.indicators.sort(key=lambda i: i.index)
+        self.indicator_ids = [i.id for i in self.indicators]
         self.matrix_cache = {}
 
     def get_matrix(self, name: str):
@@ -74,6 +80,66 @@ class Model(object):
         m = dm.to_string_list()
         self.matrix_cache[name] = m
         return m
+
+    def calculate(self, demand):
+        if demand is None:
+            return
+        perspective = demand.get('perspective')
+        d = self.demand_vector(demand)
+        data = None
+        if perspective == 'direct':
+            s = self.scaling_vector(d)
+            D = self.get_matrix('D')
+            data = scale_columns(D, s)
+        elif perspective == 'intermediate':
+            s = self.scaling_vector(d)
+            U = self.get_matrix('U')
+            data = scale_columns(U, s)
+        elif perspective == 'final':
+            U = self.get_matrix('U')
+            data = scale_columns(U, d)
+        else:
+            print('ERROR: unknown perspective %s' % perspective)
+
+        if data is None:
+            print('ERROR: no data')
+            return None
+
+        result = {
+            'indicators': self.indicator_ids,
+            'sectors': self.sector_ids,
+            'data': data.tolist()
+        }
+        return result
+
+    def demand_vector(self, demand):
+        L = self.get_matrix('L')
+        d = numpy.zeros(L.shape[0], dtype=numpy.float64)
+        entries = demand.get('demand')  # type: dict
+        if entries is None:
+            return d
+        for e in entries:
+            sector_key = e.get('sector')
+            amount = e.get('amount')
+            if sector_key is None or amount is None:
+                continue
+            amount = float(amount)
+            sector = self.sectors.get(sector_key)
+            if sector is None:
+                continue
+            d[sector.index] = amount
+        return d
+
+    def scaling_vector(self, demand_vector: numpy.ndarray) -> numpy.ndarray:
+        s = numpy.zeros(demand_vector.shape[0], dtype=numpy.float64)
+        L = self.get_matrix('L')
+        for i in range(0, demand_vector.shape[0]):
+            d = demand_vector[i]
+            if d == 0:
+                continue
+            col = L[:, i]
+            s += d * col
+        return s
 
 
 def read_sectors(folder: str):
@@ -107,5 +173,14 @@ def read_indicators(folder: str):
             i.code = row[3]
             i.unit = row[4]
             indicators.append(i)
-    indicators.sort(key=lambda i: i.index)
     return indicators
+
+
+def scale_columns(matrix: numpy.ndarray, v: numpy.ndarray) -> numpy.ndarray:
+    result = numpy.zeros(matrix.shape, dtype=numpy.float64)
+    for i in range(0, v.shape[0]):
+        s = v[i]
+        if s == 0:
+            continue
+        result[:, i] = s * matrix[:, i]
+    return result

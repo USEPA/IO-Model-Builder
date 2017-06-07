@@ -52,6 +52,16 @@ def get_indicators(model: str):
     return jsonify(l)
 
 
+@app.route('/api/<model>/calculate', methods=['POST'])
+def calculate(model: str):
+    m = models.get(model)  # type: Model
+    if m is None:
+        abort(404)
+    demand = request.get_json()
+    result = m.calculate(demand)
+    return jsonify(result)
+
+
 @app.route('/api/<model>/matrix/<name>')
 def get_matrix(model: str, name: str):
     m = models.get(model)  # type: Model
