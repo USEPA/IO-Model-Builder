@@ -70,7 +70,8 @@ class Model(object):
         path = '%s/%s.csv' % (self.folder, name)
         if not os.path.isfile(path):
             return None
-        m = dqi.Matrix.from_csv(path)
+        dm = dqi.Matrix.from_csv(path)
+        m = dm.to_string_list()
         self.matrix_cache[name] = m
         return m
 

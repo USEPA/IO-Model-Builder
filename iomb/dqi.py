@@ -94,7 +94,11 @@ class Entry(object):
             return None
         e = []
         for val in vals:
-            e.append(int(val))
+            v = val.strip()
+            if v == 'n.a.':
+                e.append(v)
+            else:
+                e.append(int(v))
         return e
 
 
@@ -180,15 +184,16 @@ class Matrix(object):
                            for col in range(0, self.cols)]
                 writer.writerow(csv_row)
 
-    def to_list(self):
-        """ Returns the data of this matrix as 2-dimensional list."""
+    def to_string_list(self):
+        """ Returns the data of this matrix as 2-dimensional list where each
+            DQI entry is converted to a string."""
         rows = [None] * self.rows
         for row in range(0, self.rows):
             vals = [None] * self.cols
             rows[row] = vals
             for col in range(0, self.cols):
-                vals[col] = self[row, col]
-        return vals
+                vals[col] = Entry.to_string(self[row, col])
+        return rows
 
     @staticmethod
     def from_csv(file_name: str):

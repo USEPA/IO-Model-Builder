@@ -82,13 +82,16 @@ def __get_dqi_matrix(m: Model, name: str):
     mat = m.get_dqi_matrix(name)
     if mat is None:
         abort(404)
-    col = __get_index_param('col', mat.cols)
+    if len(mat) == 0:
+        abort(404)
+    col = __get_index_param('col', len(mat[0]))
     if col >= 0:
-        return jsonify(mat.get_col(col))
-    row = __get_index_param('row', mat.rows)
+        vals = [row[col] for row in mat]
+        return jsonify(vals)
+    row = __get_index_param('row', len(mat))
     if row >= 0:
-        return jsonify(mat.get_row(row))
-    return jsonify(mat.to_list())
+        return jsonify(mat[row])
+    return jsonify(mat)
 
 
 def __get_index_param(name: str, size: int) -> int:
