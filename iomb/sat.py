@@ -13,6 +13,7 @@ class Entry(object):
     def __init__(self, value: float):
         self.value = value
         self.data_quality_entry = None
+        self.comment = None  # type: str
         # TODO: add uncertainty information
 
     @staticmethod
@@ -20,6 +21,7 @@ class Entry(object):
         val = float(csv_row[8])
         e = Entry(val)
         e.data_quality_entry = Entry.__read_dq_values(csv_row)
+        e.comment = Entry.__read_comment(csv_row)
         return e
 
     @staticmethod
@@ -41,6 +43,29 @@ class Entry(object):
             return '(' + ';'.join(dq_values) + ')'
 
     @staticmethod
+    def __read_comment(csv_row):
+
+        def add_entry(header: str, row: list, idx: int, comment: str) -> str:
+            val = util.csv_val(row, idx)
+            if val is None or not isinstance(val, str):
+                return
+            val = val.strip()
+            if val == '':
+                return
+            entry = '%s: %s' % (header, val)
+            if comment is not None:
+                comment += ('; ' + entry)
+            else:
+                comment = entry
+            return comment
+
+        comment = add_entry('Data year', csv_row, 20, None)
+        comment = add_entry('Tags', csv_row, 21, comment)
+        comment = add_entry('Sources', csv_row, 22, comment)
+        comment = add_entry('Other', csv_row, 23, comment)
+        return comment
+
+    @staticmethod
     def empty():
         return Entry(0.0)
 
@@ -57,12 +82,15 @@ class Entry(object):
     def copy(self):
         c = Entry(self.value)
         c.data_quality_entry = self.data_quality_entry
+        c.comment = self.comment
         return c
 
-    def add(self, value: float, data_quality_entry=None):
+    def add(self, value: float, data_quality_entry=None, comment=None):
         """ Adds the given value to this satellite matrix entry. """
         self.__add_dq(value, data_quality_entry)
         self.value += value
+        if comment is None or comment != self.comment:
+            self.comment = None
 
     def __add_dq(self, value: float, data_quality_entry=None):
         self_dq = Entry.__split_dq_entry(self.data_quality_entry)
@@ -123,11 +151,12 @@ class Table(object):
             if row_map is None:
                 row_map = {}
                 self.entries[i] = row_map
-            old_entry = row_map.get(j)
+            old_entry = row_map.get(j)  # type: Entry
             if old_entry is None:
                 row_map[j] = new_entry
             else:
-                old_entry.add(new_entry.value, new_entry.data_quality_entry)
+                old_entry.add(new_entry.value, new_entry.data_quality_entry,
+                              new_entry.comment)
 
         util.each_csv_row(csv_file, handle_row, skip_header=True)
         log.info('appended entries from %s to satellite table', csv_file)
