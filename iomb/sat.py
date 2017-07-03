@@ -82,6 +82,7 @@ class Entry(object):
     def copy(self):
         c = Entry(self.value)
         c.data_quality_entry = self.data_quality_entry
+        c.comment = self.comment
         return c
 
     def add(self, value: float, data_quality_entry=None, comment=None):
