@@ -275,7 +275,14 @@ class Table(object):
         """ Applies the given market share matrix (industries x commodities) to
             this satellite table. It returns a new satellite table with the same
             flow index but with a commodity sector index that matches the
-            columns from the market shares with the given meta-information. """
+            columns from the market shares with the given meta-information.
+            
+            Applying the market shares on an industry-based satellite matrix is
+            basically a matrix-matrix multiplication: for each commodity, the
+            elementary flow amounts related to on unit of output of the industries
+            that produce this commodity are aggregated into a single cell using
+            the market shares of these industries. """
+
         log.info("apply market shares ...")
         new_table = Table()
         new_table.flows = self.flows
