@@ -89,8 +89,13 @@ class Entry(object):
         """ Adds the given value to this satellite matrix entry. """
         self.__add_dq(value, data_quality_entry)
         self.value += value
-        if comment is None or comment != self.comment:
-            self.comment = None
+        if comment is not None:
+            if self.comment is None:
+                self.comment = comment
+            else:
+                c = self.comment + '\n\n' + comment
+                if len(c) < 100000:  # ~ openLCA limit
+                    self.comment = c
 
     def __add_dq(self, value: float, data_quality_entry=None):
         self_dq = Entry.__split_dq_entry(self.data_quality_entry)
@@ -331,7 +336,8 @@ class Table(object):
                         new_entry = old_entry.copy()
                         new_entry.value = value
                     else:
-                        new_entry.add(value, old_entry.data_quality_entry)
+                        new_entry.add(value, old_entry.data_quality_entry,
+                                      old_entry.comment)
                 if new_entry is None:
                     continue
                 new_row[new_col] = new_entry

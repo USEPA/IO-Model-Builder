@@ -48,14 +48,11 @@ class TestSat(unittest.TestCase):
                '2013', 'CO2', 'USEPA, 2016a', 'Other']
         entry = sat.Entry.from_csv(row)
         entry.add(2, comment=None)
-        self.assertIsNone(entry.comment)
-        entry = sat.Entry.from_csv(row)
-        entry.add(2, None, entry.comment)
         expected = 'Data year: 2013; Tags: CO2; Sources: USEPA, 2016a; Other: Other'
         self.assertEqual(expected, entry.comment)
         entry = sat.Entry.from_csv(row)
         entry.add(2, comment='other value')
-        self.assertIsNone(entry.comment)
+        self.assertEqual(expected + "\n\n" + 'other value',  entry.comment)
 
 if __name__ == '__main__':
     unittest.main()
