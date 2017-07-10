@@ -112,7 +112,7 @@ class Export(object):
         exchanges = p["exchanges"]
         for flow in sat.flows:
             entry = sat.get_entry(flow.key, s.key)
-            if entry.value == 0:
+            if entry is None or entry.value == 0:
                 continue
             compartment = flow.get_compartment(self.model.compartments)
             unit = flow.get_unit(self.model.units)
@@ -130,11 +130,29 @@ class Export(object):
                 "flowProperty": {"@type": "FlowProperty",
                                  "@id": unit.quantity_uid},
                 "quantitativeReference": False,
-                "comment": entry.comment
+                "comment":  Export.__sat_entry_comment(entry)
             }
             if self.with_data_quality and entry.data_quality_entry is not None:
                 e['dqEntry'] = entry.data_quality_entry
             exchanges.append(e)
+
+    @staticmethod
+    def __sat_entry_comment(e) -> str:
+        """ :type e: iomb.sat.Entry """
+        if e is None:
+            return None
+
+        def append(cmt: str, label: str, field: str) -> str:
+            if field is None:
+                return cmt
+            if cmt is None:
+                return "%s: %s" % (label, field)
+            return "%s; %s: %s" % (cmt, label, field)
+
+        comment = append(None, 'Year', e.year)
+        comment = append(comment, 'Tags', e.tags)
+        comment = append(comment, 'Soures', e.sources)
+        return append(comment, 'Other', e.comment)
 
     def __prepare_process(self, s: ref.Sector):
         cat_id = util.make_uuid('PROCESS', s.sub_category, s.category)

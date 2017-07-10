@@ -24,7 +24,9 @@ class TestSat(unittest.TestCase):
                '2007']
         entry = sat.Entry.from_csv(row)
         self.assertEqual('(1;2;3;4;5)', entry.data_quality_entry)
-        entry.add(2, data_quality_entry='(5;4;3;2;1)')
+        other = sat.Entry(2.0)
+        other.data_quality_entry = '(5;4;3;2;1)'
+        entry.add(other)
         self.assertEqual('(4;3;3;3;2)', entry.data_quality_entry)
 
     def test_no_comment(self):
@@ -39,20 +41,25 @@ class TestSat(unittest.TestCase):
                'US', 1, 'kg', '', '', '', '', '', '1', '2', '3', '4', '5',
                '2013', 'CO2', 'USEPA, 2016a', 'Other']
         entry = sat.Entry.from_csv(row)
-        expected = 'Data year: 2013; Tags: CO2; Sources: USEPA, 2016a; Other: Other'
-        self.assertEqual(expected, entry.comment)
+        self.assertEqual('2013', entry.year)
+        self.assertEqual('CO2', entry.tags)
+        self.assertEqual('USEPA, 2016a', entry.sources)
+        self.assertEqual('Other', entry.comment)
 
     def test_add_comment(self):
-        row = ['CO2', '', 'air', 'unspecified', '123', 'agriculture', 'abc',
-               'US', 1, 'kg', '', '', '', '', '', '1', '2', '3', '4', '5',
-               '2013', 'CO2', 'USEPA, 2016a', 'Other']
-        entry = sat.Entry.from_csv(row)
-        entry.add(2, comment=None)
-        expected = 'Data year: 2013; Tags: CO2; Sources: USEPA, 2016a; Other: Other'
-        self.assertEqual(expected, entry.comment)
-        entry = sat.Entry.from_csv(row)
-        entry.add(2, comment='other value')
-        self.assertEqual(expected + "\n\n" + 'other value',  entry.comment)
+        row1 = ['CO2', '', 'air', 'unspecified', '123', 'agriculture', 'abc',
+                'US', 1, 'kg', '', '', '', '', '', '1', '2', '3', '4', '5',
+                '2013', 'CO2', 'USEPA, 2016a', 'Other']
+        e1 = sat.Entry.from_csv(row1)
+        row2 = ['CO2', '', 'air', 'unspecified', '123', 'agriculture', 'abc',
+                'US', 1, 'kg', '', '', '', '', '', '1', '2', '3', '4', '5',
+                '2017', 'CH4', 'USEPA, 2016a', 'More other']
+        e2 = sat.Entry.from_csv(row2)
+        e1.add(e2)
+        self.assertEqual('2013; 2017', e1.year)
+        self.assertEqual('CO2; CH4', e1.tags)
+        self.assertEqual('USEPA, 2016a', e1.sources)
+        self.assertEqual('Other; More other', e1.comment)
 
 if __name__ == '__main__':
     unittest.main()

@@ -13,6 +13,9 @@ class Entry(object):
     def __init__(self, value: float):
         self.value = value
         self.data_quality_entry = None
+        self.year = None     # type: str
+        self.tags = None     # type: str
+        self.sources = None  # type: str
         self.comment = None  # type: str
         # TODO: add uncertainty information
 
@@ -21,7 +24,7 @@ class Entry(object):
         val = float(csv_row[8])
         e = Entry(val)
         e.data_quality_entry = Entry.__read_dq_values(csv_row)
-        e.comment = Entry.__read_comment(csv_row)
+        e.__read_comment_fields(csv_row)
         return e
 
     @staticmethod
@@ -42,28 +45,11 @@ class Entry(object):
         else:
             return '(' + ';'.join(dq_values) + ')'
 
-    @staticmethod
-    def __read_comment(csv_row):
-
-        def add_entry(header: str, row: list, idx: int, comment: str) -> str:
-            val = util.csv_val(row, idx)
-            if val is None or not isinstance(val, str):
-                return
-            val = val.strip()
-            if val == '':
-                return
-            entry = '%s: %s' % (header, val)
-            if comment is not None:
-                comment += ('; ' + entry)
-            else:
-                comment = entry
-            return comment
-
-        comment = add_entry('Data year', csv_row, 20, None)
-        comment = add_entry('Tags', csv_row, 21, comment)
-        comment = add_entry('Sources', csv_row, 22, comment)
-        comment = add_entry('Other', csv_row, 23, comment)
-        return comment
+    def __read_comment_fields(self, csv_row):
+        self.year = util.csv_val(csv_row, 20)
+        self.tags = util.csv_val(csv_row, 21)
+        self.sources = util.csv_val(csv_row, 22)
+        self.comment = util.csv_val(csv_row, 23)
 
     @staticmethod
     def empty():
@@ -77,25 +63,43 @@ class Entry(object):
         return [flow.name, flow.cas_number, flow.category, flow.sub_category,
                 flow.uid, sector.name, sector.code, sector.location,
                 self.value, flow.unit, None, None, None, None, None,
-                dq[0], dq[1], dq[2], dq[3], dq[4]]
+                dq[0], dq[1], dq[2], dq[3], dq[4], self.year, self.tags,
+                self.sources, self.comment]
 
     def copy(self):
         c = Entry(self.value)
         c.data_quality_entry = self.data_quality_entry
+        c.year = self.year
+        c.tags = self.tags
+        c.sources = self.sources
         c.comment = self.comment
         return c
 
-    def add(self, value: float, data_quality_entry=None, comment=None):
-        """ Adds the given value to this satellite matrix entry. """
-        self.__add_dq(value, data_quality_entry)
-        self.value += value
-        if comment is not None:
-            if self.comment is None:
-                self.comment = comment
-            else:
-                c = self.comment + '\n\n' + comment
-                if len(c) < 100000:  # ~ openLCA limit
-                    self.comment = c
+    def add(self, other):
+        """ Adds the given satellite table entry to this entry.
+            :param other: the satellite table entry to add
+            :type other: Entry
+        """
+        self.__add_dq(other.value, other.data_quality_entry)
+        self.value += other.value
+
+        def merge(this_field: str, other_field: str) -> str:
+            if other_field is None:
+                return this_field
+            if this_field is None:
+                return other_field
+            l_this = this_field.lower().strip()
+            l_other = other_field.lower().strip()
+            if l_other in l_this:
+                return this_field
+            if l_this in l_other:
+                return other_field
+            return "%s; %s" % (this_field, other_field)
+
+        self.year = merge(self.year, other.year)
+        self.tags = merge(self.tags, other.tags)
+        self.sources = merge(self.sources, other.sources)
+        self.comment = merge(self.comment, other.comment)
 
     def __add_dq(self, value: float, data_quality_entry=None):
         self_dq = Entry.__split_dq_entry(self.data_quality_entry)
@@ -121,7 +125,8 @@ class Entry(object):
             elif odq_i == 'n.a.':
                 new_entries.append(sdq_i)
             else:
-                val = (sdq_i * self.value + odq_i * value) / (self.value + value)
+                val = (sdq_i * self.value + odq_i * value) / \
+                    (self.value + value)
                 new_entries.append(int(round(val)))
         new_entries = [str(x) for x in new_entries]
         self.data_quality_entry = '(' + ';'.join(new_entries) + ')'
@@ -136,6 +141,7 @@ class Entry(object):
 
 
 class Table(object):
+
     def __init__(self):
         self.flows = []
         self.flow_idx = {}
@@ -160,8 +166,7 @@ class Table(object):
             if old_entry is None:
                 row_map[j] = new_entry
             else:
-                old_entry.add(new_entry.value, new_entry.data_quality_entry,
-                              new_entry.comment)
+                old_entry.add(new_entry)
 
         util.each_csv_row(csv_file, handle_row, skip_header=True)
         log.info('appended entries from %s to satellite table', csv_file)
@@ -252,7 +257,8 @@ class Table(object):
                   'Amount', 'Unit', 'Distribution type', 'Expected value',
                   'Dispersion', 'Minimum', 'Maximum', 'Reliability',
                   'Temporal correlation', 'Geographical correlation',
-                  'Technological correlation', 'Data collection']
+                  'Technological correlation', 'Data collection',
+                  'Year of data', 'Tags', 'Sources', 'Other']
         log.info('write satellite table to %s', file_name)
         with open(file_name, 'w', encoding='utf-8', newline='\n') as f:
             writer = csv.writer(f)
@@ -270,7 +276,7 @@ class Table(object):
                     col = self.sector_idx.get(sector.key, -1)
                     if col == -1:
                         continue
-                    entry = row.get(col)
+                    entry = row.get(col)  # type: Entry
                     if entry is None:
                         continue
                     writer.writerow(entry.to_csv(flow, sector))
@@ -281,7 +287,7 @@ class Table(object):
             this satellite table. It returns a new satellite table with the same
             flow index but with a commodity sector index that matches the
             columns from the market shares with the given meta-information.
-            
+
             Applying the market shares on an industry-based satellite matrix is
             basically a matrix-matrix multiplication: for each commodity, the
             elementary flow amounts related to on unit of output of the industries
@@ -326,7 +332,7 @@ class Table(object):
             new_row = {}
             new_table.entries[row_idx] = new_row
             for new_col, m_shares in shares.items():
-                new_entry = None
+                new_entry = None  # type: Entry
                 for old_col, old_entry in old_row.items():
                     share = m_shares.get(old_col, 0)
                     if share == 0:
@@ -336,8 +342,9 @@ class Table(object):
                         new_entry = old_entry.copy()
                         new_entry.value = value
                     else:
-                        new_entry.add(value, old_entry.data_quality_entry,
-                                      old_entry.comment)
+                        e = old_entry.copy()  # type: Entry
+                        e.value = value
+                        new_entry.add(e)
                 if new_entry is None:
                     continue
                 new_row[new_col] = new_entry
