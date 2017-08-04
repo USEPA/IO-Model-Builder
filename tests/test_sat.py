@@ -59,7 +59,9 @@ class TestSat(unittest.TestCase):
         self.assertEqual('2013; 2017', e1.year)
         self.assertEqual('CO2; CH4', e1.tags)
         self.assertEqual('USEPA, 2016a', e1.sources)
-        self.assertEqual('Other; More other', e1.comment)
+        # the comment of the first entry is completely contained in the comment of
+        # the second entry -> thus, it will not added to the comment
+        self.assertEqual('More other', e1.comment)
 
 if __name__ == '__main__':
     unittest.main()
