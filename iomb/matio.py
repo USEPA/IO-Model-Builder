@@ -52,16 +52,16 @@ class Export(object):
         self.__write_matrix(U, 'U')
 
         # the data quality matrix of the satellite table: B_dqi
-        #B_dqi = dqi.Matrix.from_sat_table(self.model)
-        #B_dqi.to_csv('%s/B_dqi.csv' % self.folder)
+        B_dqi = dqi.Matrix.from_sat_table(self.model)
+        B_dqi.to_csv('%s/B_dqi.csv' % self.folder)
 
         # the data quality matrix of the direct impacts: D_dqi
-        #D_dqi = B_dqi.aggregate_mmult(C.values, B.values, left=False)
-        #D_dqi.to_csv('%s/D_dqi.csv' % self.folder)
+        D_dqi = B_dqi.aggregate_mmult(C.values, B.values, left=False)
+        D_dqi.to_csv('%s/D_dqi.csv' % self.folder)
 
         # the data quality matrix of the upstream impacts: U_dqi
-        #U_dqi = D_dqi.aggregate_mmult(D, L.values, left=True)
-        #U_dqi.to_csv('%s/U_dqi.csv' % self.folder)
+        U_dqi = D_dqi.aggregate_mmult(D, L.values, left=True)
+        U_dqi.to_csv('%s/U_dqi.csv' % self.folder)
 
         # write matrix indices with meta-data
         self.__write_sectors(A)
