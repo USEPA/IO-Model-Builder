@@ -241,21 +241,23 @@ class ImpactCategory(object):
     """ Describes an impact assessment category. """
 
     def __init__(self):
-        self.method = ''
-        self.name = ''
+        self.group = ''
+        self.code = ''
         self.ref_unit = ''
+        self.name = ''
 
     @staticmethod
     def from_ia_row(csv_row: list):
         ic = ImpactCategory()
-        ic.method = csv_row[0]
-        ic.name = csv_row[1]
+        ic.group = csv_row[0]
+        ic.code = csv_row[1]
         ic.ref_unit = csv_row[2]
+        ic.name = csv_row[9]
         return ic
 
     @property
     def key(self):
-        return as_path(self.method, self.name, self.ref_unit)
+        return as_path(self.group, self.code, self.ref_unit)
 
     @property
     def uid(self):
@@ -299,6 +301,7 @@ class Sector(object):
         s.category = csv_row[2]
         s.sub_category = csv_row[3]
         s.location = csv_row[4]
+        s.description = csv_row[5]
         s.data_quality_entry = Sector.__read_dq_values(csv_row)
         s.csv_row = csv_row
         return s

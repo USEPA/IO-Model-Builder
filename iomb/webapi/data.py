@@ -15,6 +15,7 @@ class Sector(object):
         self.name = ''
         self.code = ''
         self.location = ''
+        self.description = ''
 
     def as_json_dict(self):
         return {
@@ -23,6 +24,7 @@ class Sector(object):
             'name': self.name,
             'code': self.code,
             'location': self.location
+            'description': self.description
         }
 
 
@@ -31,17 +33,19 @@ class Indicator(object):
     def __init__(self):
         self.id = ''
         self.index = 0
-        self.name = ''
+        self.group = ''
         self.code = ''
         self.unit = ''
+        self.name = ''
 
     def as_json_dict(self):
         return {
             'id': self.id,
             'index': self.index,
-            'name': self.name,
+            'group': self.group,
             'code': self.code,
-            'unit': self.unit
+            'unit': self.unit,
+            'name': self.name
         }
 
 
@@ -155,6 +159,7 @@ def read_sectors(folder: str):
             s.name = row[2]
             s.code = row[3]
             s.location = row[4]
+            s.description = row[5]
             m[s.id] = s
     return m
 
@@ -172,6 +177,7 @@ def read_indicators(folder: str):
             i.name = row[2]
             i.code = row[3]
             i.unit = row[4]
+            i.group = row[5]
             indicators.append(i)
     return indicators
 
