@@ -52,16 +52,16 @@ class Export(object):
         self.__write_matrix(U, 'U')
 
         # the data quality matrix of the satellite table: B_dqi
-        B_dqi = dqi.Matrix.from_sat_table(self.model)
-        B_dqi.to_csv('%s/B_dqi.csv' % self.folder)
+        #B_dqi = dqi.Matrix.from_sat_table(self.model)
+        #B_dqi.to_csv('%s/B_dqi.csv' % self.folder)
 
         # the data quality matrix of the direct impacts: D_dqi
-        D_dqi = B_dqi.aggregate_mmult(C.values, B.values, left=False)
-        D_dqi.to_csv('%s/D_dqi.csv' % self.folder)
+        #D_dqi = B_dqi.aggregate_mmult(C.values, B.values, left=False)
+        #D_dqi.to_csv('%s/D_dqi.csv' % self.folder)
 
         # the data quality matrix of the upstream impacts: U_dqi
-        U_dqi = D_dqi.aggregate_mmult(D, L.values, left=True)
-        U_dqi.to_csv('%s/U_dqi.csv' % self.folder)
+        #U_dqi = D_dqi.aggregate_mmult(D, L.values, left=True)
+        #U_dqi.to_csv('%s/U_dqi.csv' % self.folder)
 
         # write matrix indices with meta-data
         self.__write_sectors(A)
@@ -76,12 +76,12 @@ class Export(object):
         path = '%s/sectors.csv' % self.folder
         with open(path, 'w', encoding='utf-8', newline='\n') as f:
             writer = csv.writer(f)
-            writer.writerow(['Index', 'ID', 'Name', 'Code', 'Location'])
+            writer.writerow(['Index', 'ID', 'Name', 'Code', 'Location', 'Description'])
             i = 0
             for sector_key in A.index:
                 sector = self.model.sectors.get(sector_key)
                 writer.writerow([i, sector_key, sector.name, sector.code,
-                                 sector.location])
+                                 sector.location, sector.description])
                 i += 1
 
     def __write_flows(self, B):
@@ -101,13 +101,13 @@ class Export(object):
         path = '%s/indicators.csv' % self.folder
         with open(path, 'w', encoding='utf-8', newline='\n') as f:
             writer = csv.writer(f)
-            writer.writerow(['Index', 'ID', 'Name', 'Code', 'Unit', 'UUID'])
+            writer.writerow(['Index', 'ID', 'Name', 'Code', 'Unit', 'Group'])
             i = 0
             for cat_key in C.index:
                 idx = self.model.ia_table.category_idx.get(cat_key)
                 cat = self.model.ia_table.categories[idx]
-                writer.writerow([i, cat_key, cat.name, '',
-                                 cat.ref_unit, cat.uid])
+                writer.writerow([i, cat_key, cat.name, cat.code,
+                                 cat.ref_unit, cat.group])
                 i += 1
 
 
