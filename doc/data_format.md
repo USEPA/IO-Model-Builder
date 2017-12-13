@@ -147,18 +147,22 @@ optional columns:
 ```
 
 #### Characterization factors
-Characterization factors for impact assessments are stored in CSV files with the
+Characterization factors for indicators are stored in CSV files with the
 following columns:
-
-0. Name of the impact assessment method, e.g. `TRACI`
-1. Name of the impact assessment category, e.g. `Climate change`
-2. Reference unit of the impact assessment category, e.g. `kg CO2 eq.`
-3. Elementary flow name, e.g. `Methane`
-4. Flow category / compartment, e.g. `Air`
-5. Flow sub-category / sub-compartment, e.g. `Unspecified`
-6. Flow unit, e.g. `kg`
-7. Flow UUID
-8. The value of the characterization factor
+```
+Index  Field                                                               Type
+---------------------------------------------------------------------------------------
+0      Group of the indicator, e.g. `Impact Potential`                     string
+1      Code for indicator, e.g. `ACID`                                     string
+2      Reference unit of the indicator, e.g. `kg SO2 eq.`                  string
+3      Elementary flow name, e.g. `Sulfur dioxide`                         string
+4      Flow category / compartment, e.g. `air`                             string
+5      Flow sub-category / sub-compartment, e.g. `unspecified`             string
+6      Flow unit, e.g. `kg`                                                string
+7      Flow UUID                                                           string
+8      Value of the characterization factor                                enumeration
+9      Name of the indicator, e.g. 'Acidification Potential'               string
+```
 
 ### Metadata files
 Metadata files are used when the input-output model is converted to an JSON-LD
