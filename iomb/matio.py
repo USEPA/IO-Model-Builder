@@ -76,12 +76,12 @@ class Export(object):
         path = '%s/sectors.csv' % self.folder
         with open(path, 'w', encoding='utf-8', newline='\n') as f:
             writer = csv.writer(f)
-            writer.writerow(['Index', 'ID', 'Name', 'Code', 'Location'])
+            writer.writerow(['Index', 'ID', 'Name', 'Code', 'Location', 'Description'])
             i = 0
             for sector_key in A.index:
                 sector = self.model.sectors.get(sector_key)
                 writer.writerow([i, sector_key, sector.name, sector.code,
-                                 sector.location])
+                                 sector.location, sector.description])
                 i += 1
 
     def __write_flows(self, B):
@@ -101,13 +101,13 @@ class Export(object):
         path = '%s/indicators.csv' % self.folder
         with open(path, 'w', encoding='utf-8', newline='\n') as f:
             writer = csv.writer(f)
-            writer.writerow(['Index', 'ID', 'Name', 'Code', 'Unit', 'UUID'])
+            writer.writerow(['Index', 'ID', 'Name', 'Code', 'Unit', 'Group'])
             i = 0
             for cat_key in C.index:
                 idx = self.model.ia_table.category_idx.get(cat_key)
                 cat = self.model.ia_table.categories[idx]
-                writer.writerow([i, cat_key, cat.name, '',
-                                 cat.ref_unit, cat.uid])
+                writer.writerow([i, cat_key, cat.name, cat.code,
+                                 cat.ref_unit, cat.group])
                 i += 1
 
 

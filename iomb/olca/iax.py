@@ -60,8 +60,9 @@ def _write_methods(dump_fn, ia_table, pack):
 def _get_methods(ia_table) -> list:
     methods = []
     for cat in ia_table.categories:
-        if cat.method not in methods:
-            methods.append(cat.method)
+        #Use groups as the method
+        if cat.group not in methods:
+            methods.append(cat.group)
     return methods
 
 
