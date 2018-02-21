@@ -37,7 +37,6 @@ You can find a more detailed [example here](example/example.ipynb) in form of a
 The following script shows the basic usage of `iomb`. For detailed information 
 about the data format see the [data format specification](doc/data_format.md)
 
-
 ```python
 import iomb
 
@@ -76,3 +75,10 @@ This project is in the worldwide public domain, released under the
 [CC0 1.0 Universal Public Domain Dedication](https://creativecommons.org/publicdomain/zero/1.0/).
 
 ![Public Domain Dedication](https://licensebuttons.net/p/zero/1.0/88x31.png)
+
+## Citation
+Please cite as:
+Srocka, M. and W. Ingwersen (2017). IO Model Builder, v1.1 (or current version). US Environmental Protection Agency. https://www.github.com/usepa/io-model-builder
+
+A brief description of the iomb is also included in:
+Yang, Y., Ingwersen, W.W., Hawkins, T.R., Srocka, M., Meyer, D.E., 2017. USEEIO: A New and Transparent United States Environmentally-Extended Input-Output Model. Journal of Cleaner Production 158, 308-318. DOI: [10.1016/j.jclepro.2017.04.150](https://doi.org/10.1016/j.jclepro.2017.04.150)
