@@ -170,7 +170,8 @@ def _check_sat_compartments(m: model.Model, vr: ValidationResult):
         ck = flow.compartment_key
         if ck in unknown:
             continue
-        c = m.compartments.get(ck)
+        if ck != "/":
+            c = m.compartments.get(ck)
         if c is None:
             unknown.append(ck)
             vr.errors.append('Compartment %s of flow %s is unknown' % (ck,
