@@ -5,7 +5,7 @@ import unittest
 
 class TestIOModel(unittest.TestCase):
     def setUp(self):
-        pref = os.path.dirname(__file__) + '/sample_data/sample_'
+        pref = os.path.dirname(__file__) + './sample_data/sample_'
         self.model = iomb.make_io_model(pref + 'make.csv', pref + 'use.csv',
                                         scrap_sectors=['Scrap'])
 

@@ -215,7 +215,7 @@ class Model(object):
         # shares = self.make_table.div(commodity_totals, axis=1)
         # shares = shares.ix[self.industries, self.commodities]
 
-        shares = self.make_table.ix[self.industries, self.commodities]
+        shares = self.make_table.loc[self.industries, self.commodities]
         for com in self.commodities:
             total = commodity_totals[com]
             if total == 0:
@@ -266,7 +266,7 @@ class Model(object):
         """
         log.info('calculate direct requirements')
         industry_totals = self.use_table.sum(axis=0)
-        drs = self.use_table.ix[self.commodities, self.industries]
+        drs = self.use_table.loc[self.commodities, self.industries]
         for ind in self.industries:
             total = industry_totals[ind]
             if total == 0:

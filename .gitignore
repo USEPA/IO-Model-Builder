@@ -4,7 +4,5 @@
 .vscode/
 
 __pycache__/
-
-doc_build/
-
 iomb.egg-info/
+IO_Model_Builder.egg-info/
