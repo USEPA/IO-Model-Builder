@@ -20,16 +20,16 @@ Carbon dioxide  ,     , air      , unspecified ,      , steel parts , 2    , US 
 Sulfur dioxide  ,     , air      , unspecified ,      , steel parts , 2    , US       , 0.1    , kg
 """
 
-_SECTORS = """ Code , Name         , Category , SubCategory , Location
-               1    , electricity  ,          ,             , US
-               2    , steel parts  ,          ,             , US
-               3    , car assembly ,          ,             , US
+_SECTORS = """ Code , Name         , Category , SubCategory , Location , Description
+               1    , electricity  ,          ,             , US       ,            
+               2    , steel parts  ,          ,             , US       ,            
+               3    , car assembly ,          ,             , US       ,           
 """
 
-_LCIA = """ Method  , LCIA-Category            , Ref.Unit , Flow           , Compartment , Sub-Compartment , Unit , Flow-UUID , Amount
-SimpleEconomyMethod , Carbon dioxide emissions , kgCO2e   , Carbon dioxide , air         , unspecified     , kg   ,           , 1
-SimpleEconomyMethod , Sulfur dioxide emissions , kgSO2e   , Sulfur dioxide , air         , unspecified     , kg   ,           , 1
-SimpleEconomyMethod , Water use                , kgH2Oe   , Water          , resource    , in water        , kg   ,           , 1
+_LCIA = """ Group   , Code, Ref.Unit , Flow           , Compartment , Sub-Compartment , Unit , Flow-UUID , Amount , Name
+SimpleEconomyMethod , CO2 , kgCO2e   , Carbon dioxide , air         , unspecified     , kg   ,           , 1      , Carbon dioxide emissions 
+SimpleEconomyMethod , SOx , kgSO2e   , Sulfur dioxide , air         , unspecified     , kg   ,           , 1      , Sulfur dioxide emissions 
+SimpleEconomyMethod , WAT , kgH2Oe   , Water          , resource    , in water        , kg   ,           , 1      , Water use
 """
 
 
@@ -53,9 +53,9 @@ class TestCalc(unittest.TestCase):
         self.model = iomb.make_model(drc, [sat], sectors, [lcia])
         self.demand = {'3/car assembly/us': 1}
 
-        self.co2 = 'simpleeconomymethod/carbon dioxide emissions/kgco2e'
-        self.so2 = 'simpleeconomymethod/sulfur dioxide emissions/kgso2e'
-        self.water = 'simpleeconomymethod/water use/kgh2oe'
+        self.co2 = 'simpleeconomymethod/co2/kgco2e'
+        self.so2 = 'simpleeconomymethod/sox/kgso2e'
+        self.water = 'simpleeconomymethod/wat/kgh2oe'
 
     def tearDown(self):
         for path in self.paths:

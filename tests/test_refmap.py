@@ -36,7 +36,7 @@ class TestRefMap(unittest.TestCase):
         self.assertEqual(sector.key, '1111a0/oilseed farming/us')
 
     def test_sector_data_quality(self):
-        row = ['ABC', 'Agriculture', 'top', 'sub', 'US']
+        row = ['ABC', 'Agriculture', 'top', 'sub', 'US','agriculture description']
         sector = ref.Sector.from_info_row(row)
         self.assertIsNone(sector.data_quality_entry)
         for i in range(5, 24):
