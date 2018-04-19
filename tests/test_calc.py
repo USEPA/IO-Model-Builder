@@ -77,7 +77,7 @@ class TestCalc(unittest.TestCase):
         c = r.lcia_contributions
         for sector, values in expected.items():
             for i in range(0, len(flows)):
-                self.assertAlmostEqual(c.ix[flows[i], sector], values[i])
+                self.assertAlmostEqual(c.loc[flows[i], sector], values[i])
 
     def test_intermediate_perspective(self):
         r = calc.calculate(self.model, self.demand,
@@ -92,7 +92,7 @@ class TestCalc(unittest.TestCase):
         c = r.lcia_contributions
         for sector, values in expected.items():
             for i in range(0, len(flows)):
-                self.assertAlmostEqual(c.ix[flows[i], sector], values[i])
+                self.assertAlmostEqual(c.loc[flows[i], sector], values[i])
 
     def test_final_perspective(self):
         r = calc.calculate(self.model, self.demand, calc.FINAL_PERSPECTIVE)
@@ -106,13 +106,13 @@ class TestCalc(unittest.TestCase):
         c = r.lcia_contributions
         for sector, values in expected.items():
             for i in range(0, len(flows)):
-                self.assertAlmostEqual(c.ix[flows[i], sector], values[i])
+                self.assertAlmostEqual(c.loc[flows[i], sector], values[i])
 
     def _check_totals(self, result: calc.Result):
         total = result.lcia_total
-        self.assertAlmostEqual(total.ix[self.co2, 'Total'], 1.111111111)
-        self.assertAlmostEqual(total.ix[self.so2, 'Total'], 0.065843621)
-        self.assertAlmostEqual(total.ix[self.water, 'Total'], 1.522633745)
+        self.assertAlmostEqual(total.loc[self.co2, 'Total'], 1.111111111)
+        self.assertAlmostEqual(total.loc[self.so2, 'Total'], 0.065843621)
+        self.assertAlmostEqual(total.loc[self.water, 'Total'], 1.522633745)
 
 
 if __name__ == '__main__':
