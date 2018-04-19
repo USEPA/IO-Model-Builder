@@ -261,8 +261,8 @@ class Model(object):
 
     def get_direct_requirements(self) -> pd.DataFrame:
         """
-        Calculates the direct requirements table from the use table. This method
-        returns a commodity*industry matrix.
+        Calculates the direct requirements table from the use table. This
+        method returns a commodity*industry matrix.
         """
         log.info('calculate direct requirements')
         industry_totals = self.use_table.sum(axis=0)
@@ -279,8 +279,8 @@ class Model(object):
     def get_dr_coefficients(self) -> pd.DataFrame:
         """
         Calculates the direct requirement coefficients from the market shares
-        and direct requirements table. This method returns a commodity*commodity
-        matrix.
+        and direct requirements table. This method returns a
+        commodity*commodity matrix.
         """
         log.info('calculate direct requirements coefficients A')
         drs = self.get_direct_requirements()
