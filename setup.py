@@ -13,9 +13,10 @@ setup(
     packages=['iomb'],
     package_data={'iomb': ["data/*.*"]},
     install_requires=['numpy', 'pandas', 'matplotlib', 'flask'],
+    python_requires='>=3',
     long_description=open('README.md').read(),
     classifiers=[
-        "Development Status :: 1 - Stable",
+        "Development Status :: 5 - Production/Stable",
         "Environment :: Console",
         "Intended Audience :: Science/Research",
         "License :: CC0 1.0 Universal (CC0 1.0) Public Domain Dedication",
