@@ -69,6 +69,6 @@ def _get_methods(ia_table) -> list:
 def _get_categories(ia_table, method: str) -> list:
     categories = []
     for cat in ia_table.categories:
-        if cat.method == method:
+        if cat.group == method:
             categories.append(cat)
     return categories
