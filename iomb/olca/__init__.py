@@ -80,7 +80,7 @@ class Export(object):
         col_key = s.key
         for row_s in self.model.each_sector():
             row_key = row_s.key
-            val = self.model.drc_matrix.get_value(row_key, col_key)
+            val = self.model.drc_matrix.at[row_key, col_key]
             if abs(val) <= self.cutoff:
                 continue
             e = {

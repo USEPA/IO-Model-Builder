@@ -221,8 +221,8 @@ class Model(object):
             if total == 0:
                 total = 1  # avoid NaN values
             for ind in self.industries:
-                share = shares.get_value(ind, com) / total
-                shares.set_value(ind, com, share)
+                share = shares.at[ind, com] / total
+                shares.at[ind, com] = share
         return shares
 
     def get_non_scrap_ratios(self) -> pd.DataFrame:
@@ -240,9 +240,9 @@ class Model(object):
                 continue
             scrap = 0
             for s in self.scrap_sectors:
-                scrap += self.make_table.get_value(industry, s)
+                scrap += self.make_table.at[industry, s]
             ratio = (total - scrap) / total
-            ratios.set_value(industry, title, ratio)
+            ratios.at[industry, title] = ratio
         return ratios
 
     def get_transformation_matrix(self) -> pd.DataFrame:
@@ -253,10 +253,10 @@ class Model(object):
         ratios = self.get_non_scrap_ratios()
         col = ratios.columns[0]
         for industry in shares.index:
-            ratio = ratios.get_value(industry, col)
+            ratio = ratios.at[industry, col]
             for commodity in shares.columns:
-                share = shares.get_value(industry, commodity)
-                shares.set_value(industry, commodity, share/ratio)
+                share = shares.at[industry, commodity]
+                shares.at[industry, commodity] = share/ratio
         return shares
 
     def get_direct_requirements(self) -> pd.DataFrame:
@@ -272,8 +272,8 @@ class Model(object):
             if total == 0:
                 total = 1  # avoid NaN values
             for com in self.commodities:
-                dr = drs.get_value(com, ind) / total
-                drs.set_value(com, ind, dr)
+                dr = drs.at[com, ind] / total
+                drs.at[com,ind] = dr
         return drs
 
     def get_dr_coefficients(self) -> pd.DataFrame:
