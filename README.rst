@@ -19,9 +19,9 @@ packaged with a Python installation. Open up the command line and enter:
 
 ::
 
-    pip install iomb
+    pip install IO-Model-Builder
 
-This will also install the dependencies of ``iomb``
+This will also install the dependencies of the IO-Model-Builder
 (`NumPy <http://www.numpy.org/>`__,
 `pandas <http://pandas.pydata.org/>`__, and
 `matplotlib <http://matplotlib.org/>`__) if required. After this you
@@ -30,7 +30,7 @@ uninstall the package, you can again use pip from the command line:
 
 ::
 
-    pip uninstall iomb
+    pip uninstall IO-Model-Builder
 
 Usage
 -----
