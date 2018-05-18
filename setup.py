@@ -12,7 +12,7 @@ setup(
     url="https://github.com/USEPA/IO-Model-Builder",
     packages=['iomb'],
     package_data={'iomb': ["data/*.*"]},
-    install_requires=['numpy', 'pandas', 'matplotlib', 'flask'],
+    install_requires=['numpy', 'pandas>=0.17', 'matplotlib', 'flask'],
     python_requires='>=3',
     long_description=open('README.rst').read(),
     classifiers=[
