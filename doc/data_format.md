@@ -164,6 +164,22 @@ Index  Field                                                               Type
 9      Name of the indicator, e.g. 'Acidification Potential'               string
 ```
 
+#### Demand vectors
+Demand vectors are stored in a CSV file with the following columns.
+At least 1 demand vector is required, but an unlimited number can be specified.
+```
+Index  Field                   Type
+------------------------------------------
+0      Process/Sector code     string
+1      Process/Sector name     string
+2      Process/Sector location string
+3      Demand vector 1 amount  enumeration
+4      Demand vector 2 amount  enumeration
+5      Demand vector 3 amount  enumeration
+            ....
+```
+
+
 ### Metadata files
 Metadata files are used when the input-output model is converted to an JSON-LD
 data package that can be imported into openLCA or the LCA Harmonization tool.
