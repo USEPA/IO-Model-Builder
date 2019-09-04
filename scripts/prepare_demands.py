@@ -7,8 +7,8 @@ import json
 import os
 
 ##Configure script. Enter csv file for demand and a path to the file
-CSV_FILE = 'Modelname_FinalDemand.csv'
-MODEL_PATH = '..\data\Modelname'
+CSV_FILE = '../example/demand.csv'
+MODEL_PATH = '../example/matrices'
 
 COL_CODE = 0
 COL_NAME = 1
