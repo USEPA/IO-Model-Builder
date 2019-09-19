@@ -5,15 +5,59 @@ import struct
 import iomb
 import iomb.dqi as dqi
 import numpy
+import logging as log
 
+class Matrices(object):
+    """A collection of model matrices"""
+    def __init__(self, model, DQImatrices = False):
+        # the direct requirements matrix: A
+        self.model = model
+        self.A = model.drc_matrix
+        # the Leontief inverse: L
+        self.L = iomb.calc.leontief_inverse(self.A)
+        # the satellite matrix: B
+        self.B = model.sat_table.as_data_frame().reindex(
+            columns=self.A.index, fill_value=0.0)
+        # the characterization factors: C
+        self.C = model.ia_table.as_data_frame().reindex(
+            columns=self.B.index, fill_value=0.0)
+        # the direct impacts per 1 USD sector output: D
+        self.D = self.C.dot(self.B)
+        # the upstream impacts per 1 USD sector output: U
+        self.U = self.D.dot(self.L)
+        self.component_matrices = {'A':self.A,
+                                   'B':self.B,
+                                   'C': self.C,
+                                   'L': self.L}
+        self.result_matrices= {'D':self.D,
+                               'U':self.U}
+
+        self.dqi_matrices = {}
+        if DQImatrices:
+            # the data quality matrix of the satellite table: B_dqi
+            self.B_dqi = dqi.Matrix.from_sat_table(model)
+            self.dqi_matrices['B_dqi'] = self.B_dqi
+            # the data quality matrix of the direct impacts: D_dqi
+            try:
+                self.D_dqi = self.B_dqi.aggregate_mmult(self.C.values, self.B.values, left=False)
+                self.dqi_matrices['D_dqi'] = self.D_dqi
+            except KeyError:
+                log.warning('D_dqi could not be computed.')
+            # the data quality matrix of the upstream impacts: U_dqi
+            try:
+                self.U_dqi = self.D_dqi.aggregate_mmult(self.D, self.L.values, left=True)
+                self.dqi_matrices['U_dqi'] = self.U_dqi
+            except KeyError:
+                log.warning('U_dqi could not be computed.')
 
 class Export(object):
 
-    def __init__(self, model):
-        self.model = model
+    def __init__(self, matrices):
         self.folder = 'data'
+        self.matrices = matrices
+        self.model = matrices.model
 
-    def to_dir(self, folder: str, exportDQImatrices = False):
+    def to_dir(self, folder: str, exportDQImatrices=False):
         """ Exports the matrices of the model to the given folder.
 
             Args:
@@ -23,51 +67,20 @@ class Export(object):
         if not os.path.exists(folder):
             os.makedirs(folder)
 
-        # TODO: currently only supports models with LCIA methods
+        for k, v in self.matrices.component_matrices.items():
+            self.__write_matrix(v.values, k)
 
-        # the direct requirements matrix: A
-        A = self.model.drc_matrix
-        self.__write_matrix(A.values, 'A')
-
-        # the Leontief inverse: L
-        L = iomb.calc.leontief_inverse(A)
-        self.__write_matrix(L.values, 'L')
-
-        # the satellite matrix: B
-        B = self.model.sat_table.as_data_frame().reindex(
-            columns=A.index, fill_value=0.0)
-        self.__write_matrix(B.values, 'B')
-
-        # the characterization factors: C
-        C = self.model.ia_table.as_data_frame().reindex(
-            columns=B.index, fill_value=0.0)
-        self.__write_matrix(C.values, 'C')
-
-        # the direct impacts per 1 USD sector output: D
-        D = C.values @ B.values
-        self.__write_matrix(D, 'D')
-
-        # the upstream impacts per 1 USD sector output: U
-        U = D @ L.values
-        self.__write_matrix(U, 'U')
+        for k, v in self.matrices.result_matrices.items():
+            self.__write_matrix(v.values, k)
 
         if exportDQImatrices:
-            # the data quality matrix of the satellite table: B_dqi
-            B_dqi = dqi.Matrix.from_sat_table(self.model)
-            B_dqi.to_csv('%s/B_dqi.csv' % self.folder)
-
-            # the data quality matrix of the direct impacts: D_dqi
-            D_dqi = B_dqi.aggregate_mmult(C.values, B.values, left=False)
-            D_dqi.to_csv('%s/D_dqi.csv' % self.folder)
-
-            # the data quality matrix of the upstream impacts: U_dqi
-            U_dqi = D_dqi.aggregate_mmult(D, L.values, left=True)
-            U_dqi.to_csv('%s/U_dqi.csv' % self.folder)
+            for k, v in self.matrices.dqi_matrices.items():
+                v.to_csv(folder+k+'.csv')
 
         # write matrix indices with meta-data
-        self.__write_sectors(A)
-        self.__write_flows(B)
-        self.__write_indicators(C)
+        self.__write_sectors(self.matrices.A)
+        self.__write_flows(self.matrices.B)
+        self.__write_indicators(self.matrices.C)
 
     def __write_matrix(self, M, name: str):
         path = '%s/%s.bin' % (self.folder, name)
@@ -109,7 +122,7 @@ class Export(object):
                 cat = self.model.ia_table.categories[idx]
                 writer.writerow([i, cat_key, cat.name, cat.code,
                                  cat.ref_unit, cat.group])
-                i += 1
+            i += 1
 
 
 def read_shape(file_path: str):
