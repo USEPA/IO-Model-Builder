@@ -8,9 +8,11 @@ import numpy
 import logging as log
 import pandas as pd
 
+
 class Matrices(object):
-    """A collection of model matrices"""
-    def __init__(self, model, DQImatrices = False):
+    """A collection of model matrices with methods to export for API and to csv"""
+
+    def __init__(self, model, DQImatrices=False):
         # the direct requirements matrix: A
         self.model = model
         self.A = model.drc_matrix
@@ -51,13 +53,6 @@ class Matrices(object):
             except KeyError:
                 log.warning('U_dqi could not be computed.')
 
-class Export(object):
-
-    def __init__(self, matrices):
-        self.folder = 'data'
-        self.matrices = matrices
-        self.model = matrices.model
-
     def export_to_csv(self, folder: str, exportDQImatrices=False):
         """Exports all matrices in formatted csv files
 
@@ -69,21 +64,21 @@ class Export(object):
         if not os.path.exists(folder):
             os.makedirs(folder)
 
-        for k, v in self.matrices.component_matrices.items():
+        for k, v in self.component_matrices.items():
             v.to_csv(folder + k +'.csv')
 
-        for k, v in self.matrices.result_matrices.items():
+        for k, v in self.result_matrices.items():
             v.to_csv(folder + k +'.csv')
 
         if exportDQImatrices:
-            if 'B_dqi' in self.matrices.dqi_matrices:
-                df = dqi_matrix_to_df(self.matrices.B_dqi,self.matrices.B.index, self.matrices.B.columns)
+            if 'B_dqi' in self.dqi_matrices:
+                df = dqi_matrix_to_df(self.B_dqi,self.B.index, self.B.columns)
                 df.to_csv(folder+'B_dqi.csv')
-            if 'D_dqi' in self.matrices.dqi_matrices:
-                df = dqi_matrix_to_df(self.matrices.D_dqi, self.matrices.D.index, self.matrices.D.columns)
+            if 'D_dqi' in self.dqi_matrices:
+                df = dqi_matrix_to_df(self.D_dqi, self.D.index, self.D.columns)
                 df.to_csv(folder + 'D_dqi.csv')
-            if 'U_dqi' in self.matrices.dqi_matrices:
-                df = dqi_matrix_to_df(self.matrices.U_dqi, self.matrices.U.index, self.matrices.U.columns)
+            if 'U_dqi' in self.dqi_matrices:
+                df = dqi_matrix_to_df(self.U_dqi, self.U.index, self.U.columns)
                 df.to_csv(folder + 'U_dqi.csv')
 
     def export_for_api(self, folder: str, exportDQImatrices=False):
@@ -96,20 +91,20 @@ class Export(object):
         if not os.path.exists(folder):
             os.makedirs(folder)
 
-        for k, v in self.matrices.component_matrices.items():
+        for k, v in self.component_matrices.items():
             self.__write_matrix(v.values, k)
 
-        for k, v in self.matrices.result_matrices.items():
+        for k, v in self.result_matrices.items():
             self.__write_matrix(v.values, k)
 
         if exportDQImatrices:
-            for k, v in self.matrices.dqi_matrices.items():
+            for k, v in self.dqi_matrices.items():
                 v.to_csv(folder+k+'.csv')
 
         # write matrix indices with meta-data
-        self.__write_sectors(self.matrices.A)
-        self.__write_flows(self.matrices.B)
-        self.__write_indicators(self.matrices.C)
+        self.__write_sectors(self.A)
+        self.__write_flows(self.B)
+        self.__write_indicators(self.C)
 
     def __write_matrix(self, M, name: str):
         path = '%s/%s.bin' % (self.folder, name)
@@ -151,16 +146,24 @@ class Export(object):
                 cat = self.model.ia_table.categories[idx]
                 writer.writerow([i, cat_key, cat.name, cat.code,
                                  cat.ref_unit, cat.group])
-            i += 1
+                i += 1
 
 
-def dqi_matrix_to_df(dqi_matrix,new_index,new_columns):
+def dqi_matrix_to_df(dqi_matrix, new_index, new_columns):
+    """Converts a DQI matrix to csv
+    :param dqi_matrix: a matrix from model.matrices.dqi_matrices
+    :param new_index: a list for using as an index
+    :param new_columns: a list for columns
+    :return: a pandas df of the matrix
+    """
+    # Use matrices existing 'to_csv' function for lack of quicker wat
     dqi_matrix.to_csv('temp_dqi.csv')
     dqi_df = pd.read_csv('temp_dqi.csv', header=None, index_col=False)
     os.remove('temp_dqi.csv')
     dqi_df.index = new_index
     dqi_df.columns = new_columns
     return dqi_df
+
 
 def read_shape(file_path: str):
     """ Reads and returns the shape (rows, columns) from the matrix stored in
