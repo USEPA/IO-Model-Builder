@@ -48,7 +48,7 @@ class Matrices(object):
                 log.warning('D_dqi could not be computed.')
             # the data quality matrix of the upstream impacts: U_dqi
             try:
-                self.U_dqi = self.D_dqi.aggregate_mmult(self.D, self.L.values, left=True)
+                self.U_dqi = self.D_dqi.aggregate_mmult(self.D.values, self.L.values, left=True)
                 self.dqi_matrices['U_dqi'] = self.U_dqi
             except KeyError:
                 log.warning('U_dqi could not be computed.')
