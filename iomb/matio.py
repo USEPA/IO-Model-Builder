@@ -6,6 +6,7 @@ import iomb
 import iomb.dqi as dqi
 import numpy
 import logging as log
+import pandas as pd
 
 class Matrices(object):
     """A collection of model matrices"""
@@ -57,8 +58,36 @@ class Export(object):
         self.matrices = matrices
         self.model = matrices.model
 
-    def to_dir(self, folder: str, exportDQImatrices=False):
-        """ Exports the matrices of the model to the given folder.
+    def export_to_csv(self, folder: str, exportDQImatrices=False):
+        """Exports all matrices in formatted csv files
+
+        :param folder: path to export folder
+        :param exportDQImatrices: True/False, whether to include DQI matrices in export
+        :return:
+        """
+        self.folder = folder
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+
+        for k, v in self.matrices.component_matrices.items():
+            v.to_csv(folder + k +'.csv')
+
+        for k, v in self.matrices.result_matrices.items():
+            v.to_csv(folder + k +'.csv')
+
+        if exportDQImatrices:
+            if 'B_dqi' in self.matrices.dqi_matrices:
+                df = dqi_matrix_to_df(self.matrices.B_dqi,self.matrices.B.index, self.matrices.B.columns)
+                df.to_csv(folder+'B_dqi.csv')
+            if 'D_dqi' in self.matrices.dqi_matrices:
+                df = dqi_matrix_to_df(self.matrices.D_dqi, self.matrices.D.index, self.matrices.D.columns)
+                df.to_csv(folder + 'D_dqi.csv')
+            if 'U_dqi' in self.matrices.dqi_matrices:
+                df = dqi_matrix_to_df(self.matrices.U_dqi, self.matrices.U.index, self.matrices.U.columns)
+                df.to_csv(folder + 'U_dqi.csv')
+
+    def export_for_api(self, folder: str, exportDQImatrices=False):
+        """ Exports the matrices of the model in formats for the API to the given folder.
 
             Args:
                 folder (str): the path to the export folder
@@ -124,6 +153,14 @@ class Export(object):
                                  cat.ref_unit, cat.group])
             i += 1
 
+
+def dqi_matrix_to_df(dqi_matrix,new_index,new_columns):
+    dqi_matrix.to_csv('temp_dqi.csv')
+    dqi_df = pd.read_csv('temp_dqi.csv', header=None, index_col=False)
+    os.remove('temp_dqi.csv')
+    dqi_df.index = new_index
+    dqi_df.columns = new_columns
+    return dqi_df
 
 def read_shape(file_path: str):
     """ Reads and returns the shape (rows, columns) from the matrix stored in
