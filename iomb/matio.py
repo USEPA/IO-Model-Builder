@@ -26,6 +26,8 @@ class Matrices(object):
             columns=self.B.index, fill_value=0.0)
         # the direct impacts per 1 USD sector output: D
         self.D = self.C.dot(self.B)
+        # the aggregate flows per 1 USD sector output: M
+        self.M = self.B.dot(self.L)
         # the upstream impacts per 1 USD sector output: U
         self.U = self.D.dot(self.L)
         self.component_matrices = {'A':self.A,
@@ -33,6 +35,7 @@ class Matrices(object):
                                    'C': self.C,
                                    'L': self.L}
         self.result_matrices= {'D':self.D,
+                               'M':self.M,
                                'U':self.U}
 
         self.dqi_matrices = {}
@@ -46,6 +49,12 @@ class Matrices(object):
                 self.dqi_matrices['D_dqi'] = self.D_dqi
             except KeyError:
                 log.warning('D_dqi could not be computed.')
+            # the data quality matrix of the aggregate flows: M_dqi
+            try:
+                self.M_dqi = self.B_dqi.aggregate_mmult(self.B.values, self.L.values, left=True)
+                self.dqi_matrices['M_dqi'] = self.M_dqi
+            except KeyError:
+                log.warning('M_dqi could not be computed.')
             # the data quality matrix of the upstream impacts: U_dqi
             try:
                 self.U_dqi = self.D_dqi.aggregate_mmult(self.D.values, self.L.values, left=True)
@@ -77,6 +86,9 @@ class Matrices(object):
             if 'D_dqi' in self.dqi_matrices:
                 df = dqi_matrix_to_df(self.D_dqi, self.D.index, self.D.columns)
                 df.to_csv(folder + 'D_dqi.csv')
+            if 'M_dqi' in self.dqi_matrices:
+                df = dqi_matrix_to_df(self.M_dqi, self.M.index, self.M.columns)
+                df.to_csv(folder + 'M_dqi.csv')
             if 'U_dqi' in self.dqi_matrices:
                 df = dqi_matrix_to_df(self.U_dqi, self.U.index, self.U.columns)
                 df.to_csv(folder + 'U_dqi.csv')
