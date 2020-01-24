@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="IO Model Builder",
-    version="1.1.2",
+    version="1.2.2",
     author="Michael Srocka (Greendelta), Wesley Ingwersen (US Environmental Protection Agency)",
     author_email="ingwersen.wesley@epa.gov",
     description="iomb is a package for creating environmentally extended "
