@@ -4,9 +4,17 @@ import random
 
 
 def weighted_avg(dqis, weights):
-    """ An aggregation function that calculates the weighted arithmetic mean of
-        the given indicator values and weights. `n.a.`-values are ignored.
-
+    """
+    An aggregation function that calculates the weighted arithmetic mean of
+    the given indicator values and weights. `n.a.`-values are ignored.
+    This equation is a slight alteration of of Eq 2 in Edelen and Ingwersen (2017),
+    where the absolute value of flows quantities is taken before the calculation.
+    , so DQS_i_f_e * |FQ_e|
+    Reference:
+    Edelen, A., Ingwersen, W., 2017. The creation, management and use of data quality information
+    for life cycle assessment. International Journal of Life Cycle Assessment.
+    https://doi.org/10.1007/s11367-017-1348-1
+    where the
         Args:
             dqis (List[int|'n.a.']): the data quality indicators that should be
                 aggregated.
@@ -19,6 +27,8 @@ def weighted_avg(dqis, weights):
     if length == 0:
         return 'n.a.'
     wsum = 0.0
+    # Force abs value of weights
+    weights = [abs(x) for x in weights]
     max_dqi = -1
     for i in range(0, length):
         dqi = dqis[i]
