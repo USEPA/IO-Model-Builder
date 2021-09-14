@@ -97,7 +97,10 @@ class _Flow:
 
     def __init__(self, csv_row: List[str]):
         self.index = int(csv_row[0])
-        self.uid = _uid(csv_row[1])
+        if(csv_row[5]==''):
+            self.uid = _uid(csv_row[1])
+        else:
+            self.uid = csv_row[5]
         self.name = csv_row[2]
         self.context = csv_row[3]
         self.unit = csv_row[4]
