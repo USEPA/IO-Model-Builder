@@ -541,8 +541,6 @@ def _write_tech_flows(zip_file: zipfile.ZipFile, sectors: List[_Sector]):
                 'flowProperty': {'@id': _RefIds.QUANTITY_USD},
             }]
         }
-        if sector.location_code == 'US':
-            obj['location'] = {'@id': _RefIds.LOCATION_US}
         if sector.category not in ('', '/'):
             path = [p.strip() for p in sector.category.split('/')]
             obj['category'] = {'@id': _uid('flow', *path)}
