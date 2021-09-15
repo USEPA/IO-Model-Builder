@@ -154,9 +154,11 @@ def convert(folder_path, zip_path):
     with zipfile.ZipFile(zip_path, mode='w',
                          compression=zipfile.ZIP_DEFLATED) as zipf:
         _write_ref_data(zipf)
-        _write_categories(zipf, 'FLOW', [f.context for f in flows])
+        _write_categories(zipf, 'FLOW',
+                              ['Elementary flows/'+f.context for f in flows])
         _write_categories(zipf, 'PROCESS', [s.category for s in sectors])
-        _write_categories(zipf, 'FLOW', [s.category for s in sectors])
+        _write_categories(zipf, 'FLOW',
+                          ['Technosphere Flows/'+s.category for s in sectors])
         _write_tech_flows(zipf, sectors)
         _write_envi_flows(zipf, flows)
         _write_processes(zipf, sectors, flows, A, B)
@@ -522,7 +524,7 @@ def _write_categories(zip_file: zipfile.ZipFile, model_type: str,
         return obj
 
     for path in paths:
-        p = path.strip()
+        p = path.strip().rstrip('/')
         if p == '' or p == '/':
             continue
         w([segment.strip() for segment in p.split('/')])
@@ -542,7 +544,8 @@ def _write_tech_flows(zip_file: zipfile.ZipFile, sectors: List[_Sector]):
             }]
         }
         if sector.category not in ('', '/'):
-            path = [p.strip() for p in sector.category.split('/')]
+            cat = "Technosphere Flows/" + sector.category.rstrip('/')
+            path = [p.strip() for p in cat.split('/')]
             obj['category'] = {'@id': _uid('flow', *path)}
         _write_obj(zip_file, 'flows', obj)
 
@@ -561,7 +564,8 @@ def _write_envi_flows(zip_file: zipfile.ZipFile, flows: List[_Flow]):
             }]
         }
         if flow.context not in ('', '/'):
-            path = [p.strip() for p in flow.context.split('/')]
+            context = "Elementary flows/" + flow.context
+            path = [p.strip() for p in context.split('/')]
             obj['category'] = {'@id': _uid('flow', *path)}
 
         _write_obj(zip_file, 'flows', obj)
@@ -594,7 +598,8 @@ def _init_process(sector: _Sector) -> dict:
     if sector.location_code == 'US':
         obj['location'] = {'@id': _RefIds.LOCATION_US}
     if sector.category != '':
-        path = [p.strip() for p in sector.category.split('/')]
+        cat = sector.category.rstrip('/')
+        path = [p.strip() for p in cat.split('/')]
         obj['category'] = {'@id': _uid('process', *path)}
     return obj
 
