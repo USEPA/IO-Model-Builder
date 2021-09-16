@@ -23,6 +23,7 @@ from typing import Dict, List, Optional, Tuple
 
 import numpy
 
+MODEL_VERSION = '2.0.1'
 
 class _RefIds:
     LOCATION_US = '0b3b97fa-6688-3c56-88ee-4ae80ec0c3c2'
@@ -155,7 +156,7 @@ def convert(folder_path, zip_path):
                          compression=zipfile.ZIP_DEFLATED) as zipf:
         _write_ref_data(zipf)
         _write_categories(zipf, 'FLOW',
-                              ['Elementary flows/'+f.context for f in flows])
+                          ['Elementary flows/'+f.context for f in flows])
         _write_categories(zipf, 'PROCESS', [s.category for s in sectors])
         _write_categories(zipf, 'FLOW',
                           ['Technosphere Flows/'+s.category for s in sectors])
@@ -536,6 +537,7 @@ def _write_tech_flows(zip_file: zipfile.ZipFile, sectors: List[_Sector]):
             '@type': 'Flow',
             '@id': _uid('flow', sector.uid),
             'name': sector.name,
+            'version': MODEL_VERSION,
             'flowType': 'PRODUCT_FLOW',
             'flowProperties': [{
                 'referenceFlowProperty': True,
@@ -576,6 +578,7 @@ def _init_process(sector: _Sector) -> dict:
         '@type': 'Process',
         '@id': _uid('process', sector.uid),
         'name': sector.name,
+        'version': MODEL_VERSION,
         'description': sector.description,
         'processType': 'UNIT_PROCESS',
         'processDocumentation': {
@@ -690,6 +693,7 @@ def _write_impacts(zip_file: zipfile.ZipFile, indicators: List[_Indicator],
         '@type': 'ImpactMethod',
         '@id': _RefIds.IMPACT_METHOD,
         'name': 'USEEIO - LCIA Method',
+        'version': MODEL_VERSION,
         'impactCategories': [
             {'@id': indicator.uid} for indicator in indicators
         ]
