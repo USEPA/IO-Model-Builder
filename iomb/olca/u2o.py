@@ -12,6 +12,8 @@ $ python3 u2o.py [USEEIO data folder] [openLCA JSON-LD zip file]
 
 import csv
 import json
+import yaml
+import datetime
 import logging as log
 import os.path
 import struct
@@ -24,6 +26,8 @@ from typing import Dict, List, Optional, Tuple
 import numpy
 
 MODEL_VERSION = '2.0.1'
+USEEIOR_VERSION = '0.4.2'
+TARGET_YEAR = 2021
 
 class _RefIds:
     LOCATION_US = '0b3b97fa-6688-3c56-88ee-4ae80ec0c3c2'
@@ -440,7 +444,7 @@ def _write_ref_data(zip_file: zipfile.ZipFile):
     _write_obj(zip_file, 'flow_properties', {
         "@type": "FlowProperty",
         "@id": _RefIds.QUANTITY_USD,
-        "name": "Market value",
+        "name": "Producer price",
         "flowPropertyType": "ECONOMIC_QUANTITY",
         "unitGroup": {
             "@type": "UnitGroup",
@@ -583,6 +587,14 @@ def _write_envi_flows(zip_file: zipfile.ZipFile, flows: List[_Flow],
 
 
 def _init_process(sector: _Sector) -> dict:
+    with open(os.path.dirname(__file__) + "/useeio_metadata.yml") as f:
+        metadata=yaml.safe_load(f)
+        for key, value in metadata.items():
+            value = value.replace('[model_version]',MODEL_VERSION)
+            value = value.replace('[useeior_package_version]',USEEIOR_VERSION)
+            value = value.replace('[target_year]',str(TARGET_YEAR))
+            metadata[key] = value
+
     obj = {
         '@type': 'Process',
         '@id': _uid('process', sector.uid),
@@ -592,7 +604,15 @@ def _init_process(sector: _Sector) -> dict:
         'processType': 'UNIT_PROCESS',
         'processDocumentation': {
             'copyright': False,
-            # 'creationDate': datetime.datetime.now().isoformat(timespec='seconds')
+            'intendedApplication': metadata['intended_application'],
+            'projectDescription': metadata['project'],
+            'technologyDescription': metadata['technology_descripton'],
+            'geographyDescription': metadata['geographic_description'],
+            'timeDescription': metadata['time_description'],
+            'inventoryMethodDescription': metadata['lci_method'],
+            'validFrom': datetime.datetime(TARGET_YEAR, 1, 1).isoformat(timespec='seconds'),
+            'validUntil': datetime.datetime(TARGET_YEAR, 12, 31).isoformat(timespec='seconds'),
+            'creationDate': datetime.datetime.now().isoformat(timespec='seconds')
         },
         'lastInternalId': 1,
         'exchanges': [

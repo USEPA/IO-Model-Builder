@@ -1,0 +1,28 @@
+time_description: >
+    [target_year] is the year in which this version of USEEIO was released and
+    is the target date for the model. All dollar values reflect USD in 2012.
+
+geographic_description: >
+    Data represent the 50 US states.
+
+technology_descripton: >
+    The process describes the average US production of this good or service
+    within this NAICS-based grouping defined in the BEA 2012 detailed input-output
+    tables. Distribution, wholesale and retailing of this good or service, use,
+    and final disposal are not included. Creation of a product system with this
+    process will enable modeling of all upstream (supply-chain) activities.
+
+intended_application: >
+    The primary application is for use in the US Environmentally-Extended Input-Ouput
+    model, USEEIO, version [model_version]. This model is being used by the US EPA for
+    supporting tools that prioritize goods and services based on potential environmental
+    impacts, resource use or emissions for large regions, including the US and US
+    states, and as a strealined tool for organizations as a starting point to
+    consider sustainable materials management. Model results are designed to
+    provide meso/macro-level decision support.
+
+project: >
+    This USEEIO model was built useing useeior v[useeior_package_version].
+
+lci_method: 'Input-output'
+
