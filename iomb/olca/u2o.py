@@ -147,6 +147,8 @@ def convert(folder_path, zip_path):
     sectors: List[_Sector] = [_Sector(row) for row in sector_rows]
     flow_rows = _read_csv(os.path.join(folder_path, 'flows.csv'))
     flows: List[_Flow] = [_Flow(row) for row in flow_rows]
+    env_flows = [flow for flow in flows if not flow.context.startswith('Waste')]
+    waste_flows = [flow for flow in flows if flow.context.startswith('Waste')]
     indicator_rows = _read_csv(os.path.join(folder_path, 'indicators.csv'))
     indicators: List[_Indicator] = [_Indicator(row) for row in indicator_rows]
     demand_rows = _read_csv(os.path.join(folder_path, 'demands.csv'))
@@ -156,12 +158,15 @@ def convert(folder_path, zip_path):
                          compression=zipfile.ZIP_DEFLATED) as zipf:
         _write_ref_data(zipf)
         _write_categories(zipf, 'FLOW',
-                          ['Elementary flows/'+f.context for f in flows])
+                          ['Elementary flows/'+f.context for f in env_flows])
+        _write_categories(zipf, 'FLOW',
+                          [f.context for f in waste_flows])
         _write_categories(zipf, 'PROCESS', [s.category for s in sectors])
         _write_categories(zipf, 'FLOW',
                           ['Technosphere Flows/'+s.category for s in sectors])
         _write_tech_flows(zipf, sectors)
-        _write_envi_flows(zipf, flows)
+        _write_envi_flows(zipf, env_flows, 'ELEMENTARY_FLOW')
+        _write_envi_flows(zipf, waste_flows, 'WASTE_FLOW')
         _write_processes(zipf, sectors, flows, A, B)
         _write_impacts(zipf, indicators, flows, C)
 
@@ -552,13 +557,14 @@ def _write_tech_flows(zip_file: zipfile.ZipFile, sectors: List[_Sector]):
         _write_obj(zip_file, 'flows', obj)
 
 
-def _write_envi_flows(zip_file: zipfile.ZipFile, flows: List[_Flow]):
+def _write_envi_flows(zip_file: zipfile.ZipFile, flows: List[_Flow],
+                      flowType = 'ELEMENTARY_FLOW'):
     for flow in flows:
         obj = {
             '@type': 'Flow',
             '@id': flow.uid,
             'name': flow.name,
-            'flowType': 'ELEMENTARY_FLOW',
+            'flowType': flowType,
             'flowProperties': [{
                 'referenceFlowProperty': True,
                 'conversionFactor': 1.0,
@@ -566,7 +572,10 @@ def _write_envi_flows(zip_file: zipfile.ZipFile, flows: List[_Flow]):
             }]
         }
         if flow.context not in ('', '/'):
-            context = "Elementary flows/" + flow.context
+            if flowType == 'ELEMENTARY_FLOW':
+                context = "Elementary flows/" + flow.context
+            else:
+                context = flow.context
             path = [p.strip() for p in context.split('/')]
             obj['category'] = {'@id': _uid('flow', *path)}
 
