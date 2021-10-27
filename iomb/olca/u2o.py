@@ -791,11 +791,18 @@ def _read_metadata():
     with open(os.path.dirname(__file__) + "/useeio_metadata.yml") as f:
         metadata = yaml.safe_load(f)
         for key, value in metadata.items():
+            value = _conc_meta(value)
             value = value.replace('[model_version]', MODEL_VERSION)
             value = value.replace('[useeior_package_version]', USEEIOR_VERSION)
             value = value.replace('[target_year]', str(TARGET_YEAR))
             metadata[key] = value
     return metadata
+
+def _conc_meta(m):
+    if isinstance(m, str):
+        return m
+    if isinstance(m, list):
+        return "\n\n".join(m)
 
 
 if __name__ == '__main__':
