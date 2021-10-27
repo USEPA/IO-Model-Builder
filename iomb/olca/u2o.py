@@ -28,6 +28,7 @@ import numpy
 MODEL_VERSION = '2.0.1'
 USEEIOR_VERSION = '0.4.2'
 TARGET_YEAR = 2021
+FLOW_STR = 'Flow generated for use in USEEIO models'
 
 class _RefIds:
     LOCATION_US = '0b3b97fa-6688-3c56-88ee-4ae80ec0c3c2'
@@ -102,7 +103,7 @@ class _Flow:
 
     def __init__(self, csv_row: List[str]):
         self.index = int(csv_row[0])
-        if(csv_row[5]==''):
+        if(csv_row[5] == ''):
             self.uid = _uid(csv_row[1])
         else:
             self.uid = csv_row[5]
@@ -137,6 +138,29 @@ class _Demand:
         return f'{self.demand_type}, {self.system}, {self.year}'
 
 
+actor_dict = {'owner': {'name': 'US EPA',
+                        'id': '6e9920b7-8b49-32a1-a6d1-85988edc7ad7',
+                        'description': '',
+                        'email': 'lca@epa.gov',
+                        },
+              'generator': {'name': 'US EPA with GDIT and ERG',
+                            'id': '',
+                            'description': 'US EPA staff with GDIT and ERG staff working under contract to US EPA',
+                            'email': 'lca@epa.gov',
+                            },
+              # 'documentor': {'name': ,
+              #                'id': ,
+              #                'description': ,
+              #                'email': ,
+              #                },
+              'reviewer': {'name': '',
+                           'id': '',
+                           'description': '',
+                           'email': '',
+                           },
+              }
+
+
 def convert(folder_path, zip_path):
     if not _is_valid_useeio_folder(folder_path):
         return
@@ -162,12 +186,12 @@ def convert(folder_path, zip_path):
                          compression=zipfile.ZIP_DEFLATED) as zipf:
         _write_ref_data(zipf)
         _write_categories(zipf, 'FLOW',
-                          ['Elementary flows/'+f.context for f in env_flows])
+                          ['Elementary flows/' + f.context for f in env_flows])
         _write_categories(zipf, 'FLOW',
                           [f.context for f in waste_flows])
         _write_categories(zipf, 'PROCESS', [s.category for s in sectors])
         _write_categories(zipf, 'FLOW',
-                          ['Technosphere Flows/'+s.category for s in sectors])
+                          ['Technosphere Flows/' + s.category for s in sectors])
         _write_tech_flows(zipf, sectors)
         _write_envi_flows(zipf, env_flows, 'ELEMENTARY_FLOW')
         _write_envi_flows(zipf, waste_flows, 'WASTE_FLOW')
@@ -244,7 +268,7 @@ def _write_demand(zip_file: zipfile.ZipFile, demand: _Demand,
         'processType': 'UNIT_PROCESS',
         'processDocumentation': {
             'copyright': False,
-            # 'creationDate': datetime.datetime.now().isoformat(timespec='seconds')
+            'creationDate': datetime.datetime.now().isoformat(timespec='seconds')
         },
     }
     if demand.location_code == 'US':
@@ -444,7 +468,7 @@ def _write_ref_data(zip_file: zipfile.ZipFile):
     _write_obj(zip_file, 'flow_properties', {
         "@type": "FlowProperty",
         "@id": _RefIds.QUANTITY_USD,
-        "name": "Producer price",
+        "name": "Producer price, USD 2012",
         "flowPropertyType": "ECONOMIC_QUANTITY",
         "unitGroup": {
             "@type": "UnitGroup",
@@ -507,6 +531,18 @@ def _write_ref_data(zip_file: zipfile.ZipFile):
         }
     })
 
+    for actor in actor_dict.values():
+        uid = actor['id']
+        if actor['id'] == '':
+            uid = _uid(actor['name'])
+        _write_obj(zip_file, 'actors', {
+            "@type": "Actor",
+            "@id": uid,
+            "name": actor['name'],
+            "description": actor['description'],
+            "email": actor['email'],
+        })
+
 
 def _write_categories(zip_file: zipfile.ZipFile, model_type: str,
                       paths: List[str]):
@@ -546,6 +582,7 @@ def _write_tech_flows(zip_file: zipfile.ZipFile, sectors: List[_Sector]):
             '@type': 'Flow',
             '@id': _uid('flow', sector.uid),
             'name': sector.name,
+            'description': FLOW_STR,
             'version': MODEL_VERSION,
             'flowType': 'PRODUCT_FLOW',
             'flowProperties': [{
@@ -562,7 +599,7 @@ def _write_tech_flows(zip_file: zipfile.ZipFile, sectors: List[_Sector]):
 
 
 def _write_envi_flows(zip_file: zipfile.ZipFile, flows: List[_Flow],
-                      flowType = 'ELEMENTARY_FLOW'):
+                      flowType='ELEMENTARY_FLOW'):
     for flow in flows:
         obj = {
             '@type': 'Flow',
@@ -582,37 +619,49 @@ def _write_envi_flows(zip_file: zipfile.ZipFile, flows: List[_Flow],
                 context = flow.context
             path = [p.strip() for p in context.split('/')]
             obj['category'] = {'@id': _uid('flow', *path)}
+        if flowType == 'WASTE_FLOW':
+            obj['description'] = FLOW_STR
 
         _write_obj(zip_file, 'flows', obj)
 
 
 def _init_process(sector: _Sector) -> dict:
-    with open(os.path.dirname(__file__) + "/useeio_metadata.yml") as f:
-        metadata=yaml.safe_load(f)
-        for key, value in metadata.items():
-            value = value.replace('[model_version]',MODEL_VERSION)
-            value = value.replace('[useeior_package_version]',USEEIOR_VERSION)
-            value = value.replace('[target_year]',str(TARGET_YEAR))
-            metadata[key] = value
+    metadata = _read_metadata()
 
     obj = {
         '@type': 'Process',
         '@id': _uid('process', sector.uid),
         'name': sector.name,
         'version': MODEL_VERSION,
-        'description': sector.description,
+        'description': "\n\n".join([sector.description, metadata['description']]),
         'processType': 'UNIT_PROCESS',
         'processDocumentation': {
-            'copyright': False,
-            'intendedApplication': metadata['intended_application'],
-            'projectDescription': metadata['project'],
-            'technologyDescription': metadata['technology_descripton'],
-            'geographyDescription': metadata['geographic_description'],
-            'timeDescription': metadata['time_description'],
-            'inventoryMethodDescription': metadata['lci_method'],
             'validFrom': datetime.datetime(TARGET_YEAR, 1, 1).isoformat(timespec='seconds'),
             'validUntil': datetime.datetime(TARGET_YEAR, 12, 31).isoformat(timespec='seconds'),
-            'creationDate': datetime.datetime.now().isoformat(timespec='seconds')
+            'timeDescription': metadata['time_description'],
+            'geographyDescription': metadata['geographic_description'],
+            'technologyDescription': metadata['technology_descripton'],
+
+            'intendedApplication': metadata['intended_application'],
+            'dataSetOwner': {'@id': actor_dict['owner']['id']},
+            'dataGenerator': {'@id': actor_dict['generator']['id']},
+            'dataDocumentor': {'@id': actor_dict['documentor']['id']},
+            #'publication': ,
+            'restrictionsDescription': metadata['access_restrictions'],
+            'projectDescription': metadata['project'],
+            'creationDate': datetime.datetime.now().isoformat(timespec='seconds'),
+            'copyright': False,
+
+            'inventoryMethodDescription': metadata['lci_method'],
+            'modelingConstantsDescription': metadata['model_constants'],
+            'completenessDescription': metadata['data_completeness'],
+            'dataSelectDescription': metadata['data_selection'],
+            'dataTreatmentDescription': metadata['data_treatment'],
+            'samplingDescription': metadata['sampling_procedure'],
+            'dataCollectionDescription': metadata['data_collection_period'],
+            #'reviewer': ,
+            #'reviewDetails': ,
+            #'sources': ,
         },
         'lastInternalId': 1,
         'exchanges': [
@@ -736,6 +785,17 @@ def _write_obj(zip_file: zipfile.ZipFile, path: str, obj: dict):
         log.error('invalid @id for object %s in %s', obj, path)
         return
     zip_file.writestr(f'{path}/{uid}.json', json.dumps(obj))
+
+
+def _read_metadata():
+    with open(os.path.dirname(__file__) + "/useeio_metadata.yml") as f:
+        metadata = yaml.safe_load(f)
+        for key, value in metadata.items():
+            value = value.replace('[model_version]', MODEL_VERSION)
+            value = value.replace('[useeior_package_version]', USEEIOR_VERSION)
+            value = value.replace('[target_year]', str(TARGET_YEAR))
+            metadata[key] = value
+    return metadata
 
 
 if __name__ == '__main__':
