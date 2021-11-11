@@ -140,29 +140,6 @@ class _Demand:
         return f'{self.demand_type}, {self.system}, {self.year}'
 
 
-actor_dict = {'owner': {'name': 'US EPA',
-                        'id': '6e9920b7-8b49-32a1-a6d1-85988edc7ad7',
-                        'description': '',
-                        'email': 'lca@epa.gov',
-                        },
-              'generator': {'name': 'US EPA with GDIT and ERG',
-                            'id': '',
-                            'description': 'US EPA staff with GDIT and ERG staff working under contract to US EPA',
-                            'email': 'lca@epa.gov',
-                            },
-              # 'documentor': {'name': ,
-              #                'id': ,
-              #                'description': ,
-              #                'email': ,
-              #                },
-              'reviewer': {'name': '',
-                           'id': '',
-                           'description': '',
-                           'email': '',
-                           },
-              }
-
-
 def convert(folder_path, zip_path):
     if not _is_valid_useeio_folder(folder_path):
         return
@@ -534,8 +511,10 @@ def _write_ref_data(zip_file: zipfile.ZipFile):
     })
 
     for actor in actor_dict.values():
+        if actor['name'] is None:
+            continue
         uid = actor['id']
-        if actor['id'] == '':
+        if actor['id'] == '' or actor['id'] is None:
             uid = _uid(actor['name'])
         _write_obj(zip_file, 'actors', {
             "@type": "Actor",
@@ -766,8 +745,8 @@ def _read_metadata(path=None):
     if not path:
         path = os.path.dirname(__file__) + "/useeio_metadata.yml"
     with open(path) as f:
-        metadata = yaml.safe_load(f)
-    return metadata
+        m = yaml.safe_load(f)
+    return m
 
 
 def _parse_metadata(m, subset=None):
@@ -779,7 +758,12 @@ def _parse_metadata(m, subset=None):
             if k not in metadata and not isinstance(v, dict):
                 metadata[k] = v
     for key, value in metadata.items():
-        value = _conc_meta(value)
+        if key == 'id' and not value:
+            value = _uid(metadata['name'])
+        elif not value:
+            value = ''
+        else:
+            value = _conc_meta(value)
         # update key words
         value = value.replace('[model_version]', MODEL_VERSION)
         value = value.replace('[useeior_package_version]', USEEIOR_VERSION)
@@ -802,9 +786,9 @@ def _process_doc(m):
                  'technologyDescription': m['technology_descripton'],
 
                  'intendedApplication': m['intended_application'],
-                 'dataSetOwner': {'@id': actor_dict['owner']['id']},
-                 'dataGenerator': {'@id': actor_dict['generator']['id']},
-                 'dataDocumentor': {'@id': actor_dict['generator']['id']},
+                 'dataSetOwner': {'@id': _parse_metadata(actor_dict, 'owner')['id']},
+                 'dataGenerator': {'@id': _parse_metadata(actor_dict, 'generator')['id']},
+                 'dataDocumentor': {'@id': _parse_metadata(actor_dict, 'generator')['id']},
                  #'publication': ,
                  'restrictionsDescription': m['access_restrictions'],
                  'projectDescription': m['project'],
@@ -826,9 +810,10 @@ def _process_doc(m):
 
 
 # define metadata for entire script
-yaml = _read_metadata()
-metadata = _parse_metadata(yaml)
-demand_metadata = _parse_metadata(yaml, 'demand_processes')
+model_yaml = _read_metadata()
+metadata = _parse_metadata(model_yaml)
+demand_metadata = _parse_metadata(model_yaml, 'demand_processes')
+actor_dict = _read_metadata(os.path.dirname(__file__) + "/useeio_actors.yml")
 
 if __name__ == '__main__':
     args = sys.argv
