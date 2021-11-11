@@ -28,7 +28,9 @@ import numpy
 MODEL_VERSION = '2.0.1'
 USEEIOR_VERSION = '0.4.2'
 TARGET_YEAR = 2021
+NOW = datetime.datetime.now().isoformat(timespec='seconds')
 FLOW_STR = 'Flow generated for use in USEEIO models'
+indicators_to_write = ['Waste Generated', 'Economic & Social']
 
 class _RefIds:
     LOCATION_US = '0b3b97fa-6688-3c56-88ee-4ae80ec0c3c2'
@@ -196,7 +198,8 @@ def convert(folder_path, zip_path):
         _write_envi_flows(zipf, env_flows, 'ELEMENTARY_FLOW')
         _write_envi_flows(zipf, waste_flows, 'WASTE_FLOW')
         _write_processes(zipf, sectors, flows, A, B)
-        _write_impacts(zipf, indicators, flows, C)
+        _write_impacts(zipf, [i for i in indicators if i.group in indicators_to_write],
+                              flows, C)
 
         # write the demands
         demand_category = {
@@ -248,6 +251,8 @@ def _write_demand(zip_file: zipfile.ZipFile, demand: _Demand,
         '@type': 'Flow',
         '@id': _uid('flow', demand.uid),
         'name': demand.name,
+        'description': FLOW_STR,
+        'version': MODEL_VERSION,
         'flowType': 'PRODUCT_FLOW',
         'category': {'@id': _uid('flow', 'demands')},
         'flowProperties': [{
@@ -256,8 +261,6 @@ def _write_demand(zip_file: zipfile.ZipFile, demand: _Demand,
             'flowProperty': {'@id': _RefIds.QUANTITY_USD},
         }]
     }
-    if demand.location_code == 'US':
-        flow['location'] = {'@id': _RefIds.LOCATION_US}
     _write_obj(zip_file, 'flows', flow)
 
     process = {
@@ -265,11 +268,10 @@ def _write_demand(zip_file: zipfile.ZipFile, demand: _Demand,
         '@id': demand.uid,
         'name': demand.name,
         'category': {'@id': _uid('process', 'demands')},
+        'version': MODEL_VERSION,
+        'description': demand_metadata['description'],
         'processType': 'UNIT_PROCESS',
-        'processDocumentation': {
-            'copyright': False,
-            'creationDate': datetime.datetime.now().isoformat(timespec='seconds')
-        },
+        'processDocumentation': _process_doc(demand_metadata),
     }
     if demand.location_code == 'US':
         process['location'] = {'@id': _RefIds.LOCATION_US}
@@ -626,43 +628,15 @@ def _write_envi_flows(zip_file: zipfile.ZipFile, flows: List[_Flow],
 
 
 def _init_process(sector: _Sector) -> dict:
-    metadata = _read_metadata()
 
     obj = {
         '@type': 'Process',
         '@id': _uid('process', sector.uid),
         'name': sector.name,
         'version': MODEL_VERSION,
-        'description': "\n\n".join([sector.description, metadata['description']]),
+        'description': _conc_meta([sector.description, metadata['description']]),
         'processType': 'UNIT_PROCESS',
-        'processDocumentation': {
-            'validFrom': datetime.datetime(TARGET_YEAR, 1, 1).isoformat(timespec='seconds'),
-            'validUntil': datetime.datetime(TARGET_YEAR, 12, 31).isoformat(timespec='seconds'),
-            'timeDescription': metadata['time_description'],
-            'geographyDescription': metadata['geographic_description'],
-            'technologyDescription': metadata['technology_descripton'],
-
-            'intendedApplication': metadata['intended_application'],
-            'dataSetOwner': {'@id': actor_dict['owner']['id']},
-            'dataGenerator': {'@id': actor_dict['generator']['id']},
-            'dataDocumentor': {'@id': actor_dict['documentor']['id']},
-            #'publication': ,
-            'restrictionsDescription': metadata['access_restrictions'],
-            'projectDescription': metadata['project'],
-            'creationDate': datetime.datetime.now().isoformat(timespec='seconds'),
-            'copyright': False,
-
-            'inventoryMethodDescription': metadata['lci_method'],
-            'modelingConstantsDescription': metadata['model_constants'],
-            'completenessDescription': metadata['data_completeness'],
-            'dataSelectDescription': metadata['data_selection'],
-            'dataTreatmentDescription': metadata['data_treatment'],
-            'samplingDescription': metadata['sampling_procedure'],
-            'dataCollectionDescription': metadata['data_collection_period'],
-            #'reviewer': ,
-            #'reviewDetails': ,
-            #'sources': ,
-        },
+        'processDocumentation': _process_doc(metadata),
         'lastInternalId': 1,
         'exchanges': [
             {
@@ -771,6 +745,7 @@ def _write_impacts(zip_file: zipfile.ZipFile, indicators: List[_Indicator],
         '@type': 'ImpactMethod',
         '@id': _RefIds.IMPACT_METHOD,
         'name': 'USEEIO - LCIA Method',
+        'description': 'Indicators generated specifically for use in USEEIO models',
         'version': MODEL_VERSION,
         'impactCategories': [
             {'@id': indicator.uid} for indicator in indicators
@@ -787,15 +762,29 @@ def _write_obj(zip_file: zipfile.ZipFile, path: str, obj: dict):
     zip_file.writestr(f'{path}/{uid}.json', json.dumps(obj))
 
 
-def _read_metadata():
-    with open(os.path.dirname(__file__) + "/useeio_metadata.yml") as f:
+def _read_metadata(path=None):
+    if not path:
+        path = os.path.dirname(__file__) + "/useeio_metadata.yml"
+    with open(path) as f:
         metadata = yaml.safe_load(f)
-        for key, value in metadata.items():
-            value = _conc_meta(value)
-            value = value.replace('[model_version]', MODEL_VERSION)
-            value = value.replace('[useeior_package_version]', USEEIOR_VERSION)
-            value = value.replace('[target_year]', str(TARGET_YEAR))
-            metadata[key] = value
+    return metadata
+
+
+def _parse_metadata(m, subset=None):
+    if not subset:
+        metadata = {k: v for k, v in m.items() if not isinstance(v, dict)}
+    else:
+        metadata = m[subset]
+        for k, v in m.items():
+            if k not in metadata and not isinstance(v, dict):
+                metadata[k] = v
+    for key, value in metadata.items():
+        value = _conc_meta(value)
+        # update key words
+        value = value.replace('[model_version]', MODEL_VERSION)
+        value = value.replace('[useeior_package_version]', USEEIOR_VERSION)
+        value = value.replace('[target_year]', str(TARGET_YEAR))
+        metadata[key] = value
     return metadata
 
 def _conc_meta(m):
@@ -804,6 +793,42 @@ def _conc_meta(m):
     if isinstance(m, list):
         return "\n\n".join(m)
 
+
+def _process_doc(m):
+    proc_dict = {'validFrom': datetime.datetime(TARGET_YEAR, 1, 1).isoformat(timespec='seconds'),
+                 'validUntil': datetime.datetime(TARGET_YEAR, 12, 31).isoformat(timespec='seconds'),
+                 'timeDescription': m['time_description'],
+                 'geographyDescription': m['geographic_description'],
+                 'technologyDescription': m['technology_descripton'],
+
+                 'intendedApplication': m['intended_application'],
+                 'dataSetOwner': {'@id': actor_dict['owner']['id']},
+                 'dataGenerator': {'@id': actor_dict['generator']['id']},
+                 'dataDocumentor': {'@id': actor_dict['generator']['id']},
+                 #'publication': ,
+                 'restrictionsDescription': m['access_restrictions'],
+                 'projectDescription': m['project'],
+                 'creationDate': NOW,
+                 'copyright': False,
+
+                 'inventoryMethodDescription': m['lci_method'],
+                 'modelingConstantsDescription': m['model_constants'],
+                 'completenessDescription': m['data_completeness'],
+                 'dataSelectDescription': m['data_selection'],
+                 'dataTreatmentDescription': m['data_treatment'],
+                 'samplingDescription': m['sampling_procedure'],
+                 'dataCollectionDescription': m['data_collection_period'],
+                 #'reviewer': ,
+                 #'reviewDetails': ,
+                 #'sources': ,
+                 }
+    return proc_dict
+
+
+# define metadata for entire script
+yaml = _read_metadata()
+metadata = _parse_metadata(yaml)
+demand_metadata = _parse_metadata(yaml, 'demand_processes')
 
 if __name__ == '__main__':
     args = sys.argv

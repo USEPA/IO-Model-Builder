@@ -1,5 +1,5 @@
 # General Information
-description: >
+description: &desc >
     This USEEIO model version [model_version] was built useing useeior
     v[useeior_package_version] which can be found at
     https://github.com/USEPA/useeior. More information at USEEIO is available at
@@ -82,4 +82,12 @@ sampling_procedure: >
 data_collection_period: >
     Satellite data characterizing environmental flows reflect the best available data
     at the time of model development, typically 2012 - 2017.
+
+demand_processes:
+    demand_desc: &demand_desc >
+        text for demand vector description
+
+    description:
+        - *demand_desc
+        - *desc
 
