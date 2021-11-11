@@ -31,6 +31,14 @@ TARGET_YEAR = 2021
 NOW = datetime.datetime.now().isoformat(timespec='seconds')
 FLOW_STR = 'Flow generated for use in USEEIO models'
 indicators_to_write = ['Waste Generated', 'Economic & Social']
+SOURCES = ['epa_us_2018', 'us_epa_national_2020', 'us_epa_toxics_2018',
+           'us_epa_discharge_2018', 'usda_census_2012', 'usda_census_2017',
+           'eia_2014_2017', 'bls_quarterly_2014', 'bea_use_2012',
+           'bls_quarterly_2012', 'zeng_impact_2020', 'bea_gross_2017',
+           'bls_quarterly_2017', 'eia_commercial_2012', 'blm_public_2012',
+           'us_department_of_transportation_federal_highway_administration_addendum_1997',
+           'bigelow_major_2017', 'usgs_water_2015', 'bls_quarterly_2015',
+           'usda_irrigation_2018', 'usgs_method_2005']
 
 class _RefIds:
     LOCATION_US = '0b3b97fa-6688-3c56-88ee-4ae80ec0c3c2'
@@ -140,10 +148,41 @@ class _Demand:
         return f'{self.demand_type}, {self.system}, {self.year}'
 
 
-def convert(folder_path, zip_path):
+class _Source:
+
+    def __init__(self, source_dict):
+        source_keys = {'name',
+                       'description',
+                       'textReference',
+                       'year',
+                       'url',
+                       }
+        self.__dict__.update((k, v) for k, v in source_dict.items()
+                             if k in source_keys)
+
+    def json_obj(self):
+        obj = {
+            '@type': 'Source',
+            '@id': _uid(self.name),
+            'name': self.name,
+            'description': self.description,
+            'textReference': self.textReference,
+            'year': self.year,
+            'url': self.url,
+        }
+        return obj
+
+
+def convert(folder_path, zip_path, bib_path=None):
     if not _is_valid_useeio_folder(folder_path):
         return
 
+    source_list = []
+    if bib_path:
+        try:
+            source_list = generate_sources(bib_path, SOURCES)
+        except:
+            print('error generating source list')
     # read the matrix files
     A = _read_matrix(os.path.join(folder_path, 'A.bin'))
     B = _read_matrix(os.path.join(folder_path, 'B.bin'))
@@ -164,6 +203,7 @@ def convert(folder_path, zip_path):
     with zipfile.ZipFile(zip_path, mode='w',
                          compression=zipfile.ZIP_DEFLATED) as zipf:
         _write_ref_data(zipf)
+        _write_sources(zipf, source_list)
         _write_categories(zipf, 'FLOW',
                           ['Elementary flows/' + f.context for f in env_flows])
         _write_categories(zipf, 'FLOW',
@@ -174,7 +214,7 @@ def convert(folder_path, zip_path):
         _write_tech_flows(zipf, sectors)
         _write_envi_flows(zipf, env_flows, 'ELEMENTARY_FLOW')
         _write_envi_flows(zipf, waste_flows, 'WASTE_FLOW')
-        _write_processes(zipf, sectors, flows, A, B)
+        _write_processes(zipf, sectors, flows, A, B, source_list)
         _write_impacts(zipf, [i for i in indicators if i.group in indicators_to_write],
                               flows, C)
 
@@ -199,9 +239,10 @@ def convert(folder_path, zip_path):
 
 
 def _write_processes(zip_file: zipfile.ZipFile, sectors: List[_Sector],
-                     flows: List[_Flow], A: numpy.ndarray, B: numpy.ndarray):
+                     flows: List[_Flow], A: numpy.ndarray, B: numpy.ndarray,
+                     source_list: List[_Source]):
     for sector in sectors:
-        process = _init_process(sector)
+        process = _init_process(sector, source_list)
         exchanges: List[dict] = process['exchanges']
         iid = 1
 
@@ -525,6 +566,10 @@ def _write_ref_data(zip_file: zipfile.ZipFile):
         })
 
 
+def _write_sources(zip_file: zipfile.ZipFile, sources: List[_Source]):
+    for source in sources:
+        _write_obj(zip_file, 'sources', source.json_obj())
+
 def _write_categories(zip_file: zipfile.ZipFile, model_type: str,
                       paths: List[str]):
     handled: Dict[str, dict] = {}
@@ -606,7 +651,7 @@ def _write_envi_flows(zip_file: zipfile.ZipFile, flows: List[_Flow],
         _write_obj(zip_file, 'flows', obj)
 
 
-def _init_process(sector: _Sector) -> dict:
+def _init_process(sector: _Sector, source_list: List[_Source]) -> dict:
 
     obj = {
         '@type': 'Process',
@@ -615,7 +660,7 @@ def _init_process(sector: _Sector) -> dict:
         'version': MODEL_VERSION,
         'description': _conc_meta([sector.description, metadata['description']]),
         'processType': 'UNIT_PROCESS',
-        'processDocumentation': _process_doc(metadata),
+        'processDocumentation': _process_doc(metadata, source_list),
         'lastInternalId': 1,
         'exchanges': [
             {
@@ -778,7 +823,13 @@ def _conc_meta(m):
         return "\n\n".join(m)
 
 
-def _process_doc(m):
+def _process_doc(m, source_list=None):
+    source_ids = []
+    if source_list:
+        source_ids = [{'@type': s.json_obj()['@type'],
+                       '@id': s.json_obj()['@id'],
+                       'name': s.json_obj()['name']} for s in source_list]
+
     proc_dict = {'validFrom': datetime.datetime(TARGET_YEAR, 1, 1).isoformat(timespec='seconds'),
                  'validUntil': datetime.datetime(TARGET_YEAR, 12, 31).isoformat(timespec='seconds'),
                  'timeDescription': m['time_description'],
@@ -804,9 +855,66 @@ def _process_doc(m):
                  'dataCollectionDescription': m['data_collection_period'],
                  #'reviewer': ,
                  #'reviewDetails': ,
-                 #'sources': ,
+                 'sources': source_ids,
                  }
     return proc_dict
+
+
+def generate_sources(bib_path, bibids):
+    import bibtexparser
+    from bibtexparser.bparser import BibTexParser
+
+
+    def customizations(record):
+        """Use some functions delivered by the library
+
+        :param record: a record
+        :returns: -- customized record
+        """
+        #record = bibtexparser.customization.author(record)
+        record = bibtexparser.customization.add_plaintext_fields(record)
+        record = bibtexparser.customization.doi(record)
+
+        return record
+
+    parser = BibTexParser(common_strings=True)
+    parser.ignore_nonstandard_types = False
+    parser.homogenize_fields = True
+    parser.customization = customizations
+
+    def read_bib_file(path: str):
+        with open(path) as bibtex_file:
+            bib_database = parser.parse_file(bibtex_file)
+
+        return bib_database.entries_dict
+
+
+    def parse_for_olca(bibids, d):
+
+        key_dict = {'name': 'ID',
+                    'description': 'plain_title',
+                    'textReference': '',
+                    'year': 'plain_year',
+                    'url': 'url',
+                    }
+        s = []
+        for bibid in bibids:
+            try:
+                record = d[bibid]
+            except KeyError:
+                print('id not found')
+            source = {}
+            for key, value in key_dict.items():
+                try:
+                    source[key] = record[value]
+                except KeyError:
+                    source[key] = ''
+            s.append(_Source(source))
+        return s
+
+    d = read_bib_file(bib_path)
+    source_list = parse_for_olca(bibids, d)
+    return source_list
 
 
 # define metadata for entire script
@@ -814,6 +922,8 @@ model_yaml = _read_metadata()
 metadata = _parse_metadata(model_yaml)
 demand_metadata = _parse_metadata(model_yaml, 'demand_processes')
 actor_dict = _read_metadata(os.path.dirname(__file__) + "/useeio_actors.yml")
+
+
 
 if __name__ == '__main__':
     args = sys.argv
@@ -826,4 +936,7 @@ Usage:
   $ python3 [USEEIO data folder] [openLCA JSON-LD zip file]
 """)
     else:
-        convert(args[1], args[2])
+        bib_path = None
+        if len(args) == 4:
+            bib_path = args[3]
+        convert(args[1], args[2], bib_path)
